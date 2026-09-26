@@ -1,0 +1,55 @@
+name: Build PRISMA V11 FLOW
+
+on:
+  push:
+    branches:
+      - prisma-v11-flow-build-20260926
+  workflow_dispatch:
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node syntax
+        run: |
+          node --check prisma-v11/prisma_v11_worker.js
+          node --check prisma-v11/prisma_v11_worker_factory.js
+          node --check prisma-v11/prisma_v11_db.js
+          node --check prisma-v11/prisma_v11_core.js
+          node --check prisma-v11/prisma_v11_flow.js
+          node --check prisma-v11/prisma_v11_data.js
+
+      - name: Worker regression
+        run: node prisma-v11/tests/v11-worker-test.cjs
+
+      - name: Static integration
+        run: node prisma-v11/tests/v11-static-test.cjs
+
+      - name: Package
+        run: |
+          mkdir -p dist/PRISMA_FLOW_V11_UPDATE
+          cp prisma-v11/index.html dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/prisma_v11_worker_factory.js dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/prisma_v11_db.js dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/prisma_v11_core.js dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/prisma_v11_flow.js dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/prisma_v11_data.js dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/MANIFEST_V11.json dist/PRISMA_FLOW_V11_UPDATE/
+          cp prisma-v11/LEIA-ME-PRISMA-FLOW-V11.txt dist/PRISMA_FLOW_V11_UPDATE/
+          cd dist
+          zip -r PRISMA_FLOW_V11_UPDATE_FINAL.zip PRISMA_FLOW_V11_UPDATE
+          sha256sum PRISMA_FLOW_V11_UPDATE_FINAL.zip > PRISMA_FLOW_V11_UPDATE_FINAL.sha256
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PRISMA_FLOW_V11_UPDATE_FINAL
+          path: |
+            dist/PRISMA_FLOW_V11_UPDATE_FINAL.zip
+            dist/PRISMA_FLOW_V11_UPDATE_FINAL.sha256
+          if-no-files-found: error
