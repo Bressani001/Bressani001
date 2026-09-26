@@ -1,4 +1,5 @@
-function prismaV11WorkerMain(){\n'use strict';
+function prismaV11WorkerMain(){
+'use strict';
 var CORE=[],OVERLAY=[],COREMAP={point:new Map(),machine:new Map(),ticket:new Map(),group:new Map(),message:new Map()};
 function norm(v){return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ').trim()}
 function compact(v){return norm(v).replace(/[^a-z0-9]+/g,'')}
@@ -178,4 +179,5 @@ self.onmessage=function(ev){
   throw new Error('Comando desconhecido do worker.');
  }catch(e){self.postMessage({id:id,ok:false,error:String(e&&e.message||e)})}
 };
-}\nif(typeof document==='undefined'){prismaV11WorkerMain();}else{window.PRISMA_V11_WORKER_MAIN=prismaV11WorkerMain;}
+}
+if(typeof document==='undefined'){prismaV11WorkerMain();}else{window.PRISMA_V11_WORKER_MAIN=prismaV11WorkerMain;}
