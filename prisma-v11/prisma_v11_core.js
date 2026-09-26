@@ -152,7 +152,7 @@ async function buildIndex(){
 }
 function fallbackSearch(query,limit){
  var q=norm(query),t=q.split(/\s+/).filter(Boolean),out=[],arr=V.fallbackRecords||[],max=limit||40;if(!q)return [];
- for(var i=0;i<arr.length;i++){var r=arr[i],s=r.s||'',ok=t.every(function(x){return s.indexOf(x)>=0});if(!ok)continue;var score=(r.k&&norm(r.k)===q?10000:0)+(r.primary&&norm(r.primary)===q?8500:0)+(s.indexOf(q)>=0?1200:0);out.push({score:score,t:r.t,i:r.i,k:r.k,primary:r.primary,secondary:r.secondary,overlay:false})}
+ for(var i=0;i<arr.length;i++){var r=arr[i],s=r.s||'',ok=t.every(function(x){return s.indexOf(x)>=0});if(!ok)continue;var score=(r.k&&norm(r.k)===q?10000:0)+(r.primary&&norm(r.primary)===q?8500:0)+(s.indexOf(q)>=0?1200:0);out.push({score:score,t:r.t,i:r.i,k:r.k,primary:r.primary,secondary:r.secondary,overlay:!!r.overlay,importId:r.importId||null,overlayIndex:r.overlayIndex})}
  out.sort(function(a,b){return b.score-a.score});return out.slice(0,max);
 }
 V.search=function(query,limit){
