@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PRISMA FLOW V11 • NOC Workspace</title>
+<style>
+:root{
+ --bg:#070809;--panel:#101216;--panel2:#171a1f;--panel3:#20242a;--line:#30343b;
+ --text:#f7f7f7;--muted:#9ca3ad;--orange:#ff5a13;--orange2:#ff7b40;
+ --ok:#39d98a;--warn:#ffc04d;--bad:#ff646c;--blue:#75c2ff;--purple:#c395ff;
+ --shadow:0 18px 55px rgba(0,0,0,.42);--radius:13px
+}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;height:100%}
+body{min-height:100vh}.stripe{height:4px;background:var(--orange);position:fixed;top:0;left:0;right:0;z-index:100}
+.app{display:grid;grid-template-columns:235px minmax(0,1fr);min-height:100vh;padding-top:4px}
+.side{position:sticky;top:4px;height:calc(100vh - 4px);border-right:1px solid var(--line);background:#0b0d10;padding:18px 12px;overflow:auto}
+.logo{padding:4px 8px 18px}.logo h1{margin:0;font-size:18px;line-height:1.12}.logo b{color:var(--orange)}.logo small{display:block;color:var(--muted);font-size:10px;margin-top:5px}
+.navgroup{margin:8px 0 15px}.navtitle{font-size:9px;color:#646b75;text-transform:uppercase;letter-spacing:.12em;padding:0 8px 6px}
+.navbtn{width:100%;border:0;background:transparent;color:#c5cad1;text-align:left;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;justify-content:space-between;gap:8px;align-items:center}.navbtn:hover{background:#16191e;color:white}.navbtn.active{background:var(--orange);color:white;font-weight:750}.navbtn .n{font-size:9px;border:1px solid #454a52;border-radius:999px;padding:2px 5px}.navbtn.active .n{border-color:rgba(255,255,255,.45)}
+.main{min-width:0;padding:18px 20px 50px}.top{display:flex;gap:15px;align-items:flex-start;justify-content:space-between}.top h2{margin:0;font-size:24px;letter-spacing:-.4px}.top h2 b{color:var(--orange)}.top p{margin:5px 0 0;font-size:11px;color:var(--muted)}
+.badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}.badge,.pill{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:5px 8px;font-size:10px;color:#d8dce1}.badge.orange,.pill.orange{color:#ff9e73;border-color:#6b351e}.badge.ok,.pill.ok{color:#75e6af;border-color:#286747}.badge.warn,.pill.warn{color:#ffd16f;border-color:#68531f}.badge.bad,.pill.bad{color:#ff9298;border-color:#703036}.badge.blue,.pill.blue{color:#9bd4ff;border-color:#315d7a}.badge.purple,.pill.purple{color:#d6b9ff;border-color:#594173}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.searchbar{position:sticky;top:8px;z-index:20;margin:14px 0;padding:13px}.searchrow{display:grid;grid-template-columns:minmax(300px,1fr) 160px 120px;gap:8px}
+input,select,textarea{background:#090b0e;color:var(--text);border:1px solid var(--line);border-radius:8px;outline:none;font:inherit}input,select{height:45px;padding:0 11px}textarea{padding:10px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,90,19,.12)}#q{font-size:16px}
+.tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}button{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:11px;font-weight:680}button:hover{border-color:var(--orange)}button.primary{background:var(--orange);border-color:var(--orange)}button.ghost{background:transparent}.statusline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:8px}.hint{font-size:9px;color:#747b84;margin-top:7px;line-height:1.5}.hint code{color:#eee;background:#22262c;border:1px solid #343941;border-radius:4px;padding:1px 4px}
+.page{display:none}.page.active{display:block}.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:12px 0}.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px}.kpi b{display:block;font-size:20px}.kpi span{display:block;color:var(--muted);font-size:9px;margin-top:2px}.kpi.orange b{color:var(--orange2)}.kpi.ok b{color:var(--ok)}.kpi.warn b{color:var(--warn)}
+.section{margin-top:12px;overflow:hidden}.shead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:var(--panel2);border-bottom:1px solid var(--line)}.shead h3{margin:0;font-size:13px}.shead span{font-size:10px;color:var(--muted)}.body{padding:13px}.empty{padding:38px;text-align:center;color:var(--muted);font-size:12px}
+.diagram{display:grid;grid-template-columns:1fr 70px 1.1fr 70px 1fr;align-items:center;gap:8px;padding:18px}.node{border:1px solid var(--line);background:#0d0f12;border-radius:12px;padding:13px;min-height:110px}.node strong{display:block;font-size:13px}.node small{display:block;color:var(--muted);font-size:9px;margin-top:5px;line-height:1.5}.node.orange{border-color:#71371d}.node.blue{border-color:#315b79}.node.purple{border-color:#584270}.arrow{text-align:center;color:var(--orange);font-size:24px}.minirow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tablewrap{overflow:auto;max-height:66vh}table{border-collapse:collapse;width:100%;min-width:1100px}th{position:sticky;top:0;z-index:2;background:#15181d;border-bottom:2px solid var(--orange);text-align:left;text-transform:uppercase;letter-spacing:.04em;font-size:9px;padding:9px;white-space:nowrap}td{font-size:10.5px;padding:8px 9px;border-bottom:1px solid #292d33;vertical-align:top}tr:hover td{background:#171a1f}.mono{font-family:Consolas,Monaco,monospace}.bold{font-weight:800}.muted{color:var(--muted)}.nowrap{white-space:nowrap}.clip{max-width:380px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.msgtext{max-width:620px;white-space:pre-wrap;line-height:1.35}.small{font-size:9px}.tiny{font-size:8px}mark{background:rgba(255,90,19,.35);color:white;border-radius:3px;padding:0 1px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}.chip{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px 6px;font-size:8.5px;color:#c8cdd4}.chip.high{color:#74e4aa;border-color:#286547}.chip.medium{color:#ffd47a;border-color:#705a27}.chip.context{color:#abb2bb;border-color:#444a52}.chip.event{color:#ffae88;border-color:#6a3a25}.chip.media{color:#a7d8ff;border-color:#315b79}
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px}.threecol{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.box{border:1px solid var(--line);background:#0d0f12;border-radius:9px;padding:10px}.box h4{margin:0 0 7px;font-size:11px}.box p{margin:0;color:var(--muted);font-size:10px;line-height:1.45}.box.ok{border-left:3px solid var(--ok)}.box.warn{border-left:3px solid var(--warn)}.box.bad{border-left:3px solid var(--bad)}
+.groupgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:12px}.gcard{border:1px solid var(--line);background:#0d0f12;border-radius:9px;padding:10px;cursor:pointer}.gcard:hover{border-color:var(--orange)}.gcard strong{display:block;font-size:11px}.gcard small{display:block;color:var(--muted);font-size:9px;margin-top:4px}.gmeta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.cover{height:6px;background:#23272d;border-radius:99px;overflow:hidden;margin-top:8px}.cover i{height:100%;display:block;background:var(--orange)}
+.drawerback{display:none;position:fixed;inset:0;background:rgba(0,0,0,.74);z-index:80}.drawerback.open{display:block}.drawer{position:absolute;right:0;top:0;width:min(900px,97vw);height:100%;background:#0d0f12;border-left:1px solid var(--line);overflow:auto;box-shadow:-25px 0 70px #000}.dtop{position:sticky;top:0;z-index:4;background:#111318;border-bottom:1px solid var(--line);padding:13px 14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.dtop h3{margin:0;font-size:17px}.dtop p{margin:4px 0 0;color:var(--muted);font-size:10px}.dbody{padding:14px}.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.field{border:1px solid #2a2f36;background:#12151a;border-radius:8px;padding:8px}.field.full{grid-column:1/-1}.field label{display:block;color:#858c96;font-size:8px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}.field div{font-size:11px;word-break:break-word;line-height:1.4}.sect{margin:16px 0 7px;color:#ff9a6d;font-size:9px;text-transform:uppercase;letter-spacing:.11em}.actions{display:flex;gap:6px;flex-wrap:wrap}.note{width:100%;min-height:80px}.timeline{display:flex;flex-direction:column;gap:7px}.titem{border:1px solid #292e35;background:#111419;border-radius:9px;padding:9px}.titem .meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#8e959f;font-size:8.5px}.titem .text{white-space:pre-wrap;font-size:10.5px;margin-top:6px;line-height:1.4}.titem:hover{border-color:#41464e}.quote{margin-top:7px;border-left:2px solid #555b64;padding:6px 8px;background:#0d0f12;color:#aeb4bc;font-size:9.5px;white-space:pre-wrap}.mediaGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}.mediaCard{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#080a0c}.mediaCard img,.mediaCard video{display:block;width:100%;max-height:240px;object-fit:contain;background:#050607}.mediaCard .cap{padding:6px;font-size:8px;color:var(--muted)}
+.load{position:fixed;inset:0;z-index:200;background:#08090b;display:flex;align-items:center;justify-content:center}.load.hide{display:none}.loadbox{text-align:center;width:min(520px,90vw)}.loadbox h2{margin:0;font-size:23px}.loadbox h2 b{color:var(--orange)}.loadbox p{font-size:10px;color:var(--muted)}.bar{height:7px;border-radius:99px;background:#22262c;overflow:hidden;margin-top:12px}.bar i{height:100%;display:block;width:20%;background:var(--orange);animation:run 1.1s infinite}@keyframes run{0%{transform:translateX(-130%)}100%{transform:translateX(650%)}}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:150;background:#20242a;border:1px solid #424750;border-radius:8px;padding:8px 12px;font-size:10px;display:none}.toast.show{display:block}
+@media(max-width:1200px){.app{grid-template-columns:190px 1fr}.kpis{grid-template-columns:repeat(3,1fr)}.groupgrid{grid-template-columns:1fr 1fr}.diagram{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+@media(max-width:760px){.app{display:block}.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);display:flex;gap:6px;overflow:auto;padding:8px}.logo,.navtitle{display:none}.navgroup{display:flex;margin:0;gap:5px}.navbtn{white-space:nowrap;width:auto}.main{padding:12px}.top{flex-direction:column}.badges{justify-content:flex-start}.searchbar{position:static}.searchrow{grid-template-columns:1fr}.kpis,.twocol,.threecol,.groupgrid,.fieldgrid,.mediaGrid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+
+/* ===== ROTEADOR NOC v7 ===== */
+.routerhero{padding:16px;border-color:#5a321f;background:linear-gradient(180deg,#13100e,#101216)}
+.routertitle{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.routertitle h3{margin:0;font-size:20px}.routertitle h3 b{color:var(--orange)}
+.routertitle p{margin:5px 0 0;color:var(--muted);font-size:11px;max-width:850px;line-height:1.5}
+.routeform{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:10px;margin-top:13px}
+.routeform textarea{width:100%;min-height:128px;font-size:15px;line-height:1.45}
+.rside{display:grid;gap:8px;align-content:start}.rside select{width:100%}
+.routebtn{min-height:48px;font-size:13px;background:var(--orange)!important;border-color:var(--orange)!important}
+.routehint{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5}
+.routehint b{color:#fff}
+.routestatus{display:grid;grid-template-columns:1.2fr .8fr;gap:10px;margin-top:12px}
+.routeanswer{padding:14px;border:1px solid var(--line);border-radius:11px;background:#0b0d10}
+.routeanswer.confirmed{border-color:#286747;background:#0d1712}.routeanswer.high{border-color:#315d7a;background:#0d151b}
+.routeanswer.medium{border-color:#68531f;background:#17140d}.routeanswer.ambiguous{border-color:#703036;background:#180e10}
+.routeanswer .eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:9px;color:var(--muted)}
+.routeanswer .target{font-size:22px;font-weight:850;margin-top:5px;line-height:1.15}
+.routeanswer .target b{color:var(--orange2)}
+.routeanswer .why{margin:10px 0 0;padding-left:18px;color:#d7dbe0;font-size:11px;line-height:1.55}
+.actioncard{padding:14px;border:1px solid var(--line);border-radius:11px;background:#0b0d10}
+.actioncard h4{margin:0 0 7px;font-size:13px}.actioncard p{margin:4px 0;color:#c7ccd2;font-size:11px;line-height:1.5}
+.conf{display:inline-flex;border-radius:999px;padding:4px 8px;font-weight:850;font-size:9px;border:1px solid}
+.conf.confirmed{color:#75e6af;border-color:#286747}.conf.high{color:#9bd4ff;border-color:#315d7a}
+.conf.medium{color:#ffd16f;border-color:#68531f}.conf.ambiguous{color:#ff9298;border-color:#703036}
+.routegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.routebox{border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.routebox .rh{padding:9px 11px;background:var(--panel2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.routebox .rh strong{font-size:12px}.routebox .rb{padding:10px}
+.routeflow{display:grid;grid-template-columns:1fr 42px 1fr 42px 1fr;gap:6px;align-items:center;margin-top:10px}
+.routeflow .step{border:1px solid var(--line);border-radius:9px;padding:10px;background:#0d0f12;min-height:74px}
+.routeflow .step b{display:block;font-size:11px}.routeflow .step span{display:block;color:var(--muted);font-size:9px;margin-top:4px;line-height:1.4}
+.routeflow .arr{text-align:center;color:var(--orange);font-size:19px}
+.altrow{display:grid;grid-template-columns:minmax(0,1fr) 90px 110px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #24282e;font-size:11px}
+.altrow:last-child{border-bottom:0}.altscore{font-family:Consolas,monospace;color:var(--muted);text-align:right}
+.evidence{padding:8px 0;border-bottom:1px solid #24282e}.evidence:last-child{border-bottom:0}
+.evidence .meta{font-size:9px;color:var(--muted);margin-bottom:4px}.evidence .txt{font-size:11px;line-height:1.45;white-space:pre-wrap}
+.entityrow{display:grid;grid-template-columns:95px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #24282e;font-size:11px}
+.entityrow:last-child{border-bottom:0}.etype{color:var(--muted);font-size:9px;text-transform:uppercase}
+.routewarn{padding:10px 12px;border-radius:8px;font-size:11px;line-height:1.45;margin-top:10px}
+.routewarn.ok{border:1px solid #286747;background:#0d1712;color:#b9f1d1}
+.routewarn.warn{border:1px solid #68531f;background:#17140d;color:#ffe2a2}
+.routewarn.bad{border:1px solid #703036;background:#180e10;color:#ffbec1}
+.routertools{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+@media(max-width:900px){.routeform,.routestatus,.routegrid{grid-template-columns:1fr}.routeflow{grid-template-columns:1fr}.routeflow .arr{transform:rotate(90deg)}}
+
+</style>
+<script src="catalog.js"></script>
+<script src="whatsapp.js"></script>
+<script src="router.js"></script>
+
+<style id="prismaBrandBoot">
+.logo .prisma-brand{display:flex;align-items:center;gap:9px;padding:2px 5px 15px}
+.logo .prisma-brand img{width:34px;height:34px;object-fit:contain}
+.logo .prisma-brand strong{display:block;font-size:19px;letter-spacing:.08em}
+.logo .prisma-brand strong b{color:var(--orange)}
+.logo .prisma-brand small{display:block;color:#777f89;font-size:8px;line-height:1.35;margin-top:2px;max-width:150px}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<div id="loading" class="load"><div class="loadbox"><h2>PRISM<b>A</b></h2><p id="loadText">Carregando workspace operacional e conectando evidências…</p><div class="bar"><i></i></div></div></div>
+<div class="app">
+ <aside class="side">
+  <div class="logo"><div class="prisma-brand"><img src="prisma_mark.png" alt=""><div><strong>PRISM<b>A</b></strong><small>Plataforma de Roteamento, Informação, Suporte, Mensagens e Acessos</small></div></div></div>
+  <div class="navgroup">
+   <div class="navtitle">Operação</div>
+   <button class="navbtn active" data-page="router">Roteador NOC</button>
+   <button class="navbtn" data-page="dashboard">Visão geral</button>
+   <button class="navbtn" data-page="search">Busca unificada</button>
+   <button class="navbtn" data-page="machines">Máquinas <span class="n" id="navM"></span></button>
+   <button class="navbtn" data-page="points">Pontos <span class="n" id="navP"></span></button>
+  </div>
+  <div class="navgroup">
+   <div class="navtitle">Conhecimento NOC</div>
+   <button class="navbtn" data-page="whatsapp">WhatsApp <span class="n" id="navW"></span></button>
+   <button class="navbtn" data-page="events">Eventos</button>
+   <button class="navbtn" data-page="assets">Ativos / Chamados</button>
+   <button class="navbtn" data-page="groups">Grupos <span class="n" id="navG"></span></button>
+  </div>
+  <div class="navgroup">
+   <div class="navtitle">Controle</div>
+   <button class="navbtn" data-page="integrity">Integridade</button>
+   <button class="navbtn" id="backupBtn">Backup local</button>
+  </div>
+ </aside>
+ <main class="main">
+  <div class="top"><div><h2>PRISM<b>A</b></h2><p>Workspace operacional do NOC • encontre, entenda e encaminhe</p></div><div class="badges" id="topBadges"></div></div>
+  <div class="card searchbar">
+   <div class="searchrow"><input id="q" autocomplete="off" placeholder="Código, máquina, ponto, ativo, chamado, mensagem, autor, IP…"><select id="scope"><option value="all">Tudo</option><option value="machine">Máquinas</option><option value="point">Pontos</option><option value="message">WhatsApp</option><option value="asset">Ativos</option><option value="ticket">Chamados</option><option value="group">Grupos</option></select><select id="limit"><option>50</option><option selected>150</option><option>300</option><option>500</option></select></div>
+   <div class="tools"><button id="searchBtn" class="primary">Buscar</button><button id="clearBtn">Limpar</button><button id="passBtn">Senhas locais</button><button id="helpBtn">Sintaxe</button></div>
+   <div class="statusline"><span id="status">Base iniciando…</span><span id="timing"></span></div>
+   <div class="hint">Exemplos: <code>40007</code> <code>pauliceia</code> <code>372799</code> <code>grupo:"CHAMADOS SP"</code> <code>autor:bressani</code> <code>evento:offline</code> <code>os:linux</code> <code>praca:BA</code> <code>fonte:whatsapp</code>. Todos os termos livres podem estar fora de ordem.</div>
+  </div>
+
+  
+  <section id="router" class="page active">
+   <div class="card routerhero">
+    <div class="routertitle">
+     <div><h3>PARA ONDE EU MANDO <b>ISSO?</b></h3><p>Cole a ocorrência como ela chegou. O motor cruza histórico real dos grupos, termos distintivos, evidências repetidas, tipo de problema e origem da mensagem. Se não houver segurança suficiente, ele não inventa certeza.</p></div>
+     <span class="pill orange">Roteador NOC v7</span>
+    </div>
+    <div class="routeform">
+     <div>
+      <textarea id="routeInput" placeholder="Ex.: Elevador da Renner sem mídia - SCIRP, quando vai ser reparado?"></textarea>
+      <div class="routehint"><b>Não precisa escrever bonito.</b> Pode colar mensagem do WhatsApp, código, nome da máquina, local, praça, ativo, chamado ou qualquer mistura disso.</div>
+     </div>
+     <div class="rside">
+      <select id="routeSource"><option value="">Grupo onde RECEBI (opcional)</option></select>
+      <select id="routeIssue">
+       <option value="auto">Problema: detectar automaticamente</option>
+       <option value="media">Mídia / conteúdo</option><option value="offline">Offline / sem acesso</option>
+       <option value="hardware">Hardware / tela / energia</option><option value="network">Rede / internet</option>
+       <option value="configuration">Configuração</option><option value="activation">Ativação / instalação</option>
+       <option value="ticket">Chamado / ticket</option>
+      </select>
+      <button id="routeAnalyze" class="routebtn">ANALISAR ROTA</button>
+      <button id="routeExample">Testar exemplo SCIRP</button>
+     </div>
+    </div>
+    <div id="routeOutput" class="empty">Cole uma ocorrência acima e clique em <b>ANALISAR ROTA</b>.</div>
+   </div>
+  </section>
+
+  <section id="dashboard" class="page"><div id="dashKpis" class="kpis"></div><div class="card section"><div class="shead"><h3>Mapa lógico da informação</h3><span>vínculos separados da evidência original</span></div><div class="diagram"><div class="node orange"><strong>PONTOS</strong><small>Cadastro comercial/operacional, endereço, praça, tipo, status e dados enriquecidos.</small><div class="minirow"><span class="pill orange">95.520 registros</span></div></div><div class="arrow">⇄</div><div class="node blue"><strong>MÁQUINAS</strong><small>ID, código do ponto, nome, rede, SO, hardware, localização e relação segura com ponto.</small><div class="minirow"><span class="pill blue">42.431 máquinas</span></div></div><div class="arrow">⇄</div><div class="node purple"><strong>EVIDÊNCIAS NOC</strong><small>Mensagens, grupos, anexos, eventos, chamados, ativos e linha do tempo. Vínculos carregam confiança e motivo.</small><div class="minirow"><span class="pill purple" id="diagramWa"></span></div></div></div></div><div class="twocol"><div class="card section"><div class="shead"><h3>O que foi conectado</h3><span>camada derivada</span></div><div class="body" id="connectedSummary"></div></div><div class="card section"><div class="shead"><h3>Qualidade da coleta</h3><span>não mascara lacunas</span></div><div class="body" id="coverageSummary"></div></div></div><div class="card section"><div class="shead"><h3>Eventos operacionais encontrados</h3><span>extraídos por evidência textual</span></div><div class="body" id="eventSummary"></div></div></section>
+
+  <section id="search" class="page"><div id="searchResults"></div></section>
+  <section id="machines" class="page"><div class="card section"><div class="shead"><h3>Máquinas</h3><span>use a busca global para filtrar</span></div><div id="machinePage" class="empty">Digite um termo acima ou clique em um vínculo.</div></div></section>
+  <section id="points" class="page"><div class="card section"><div class="shead"><h3>Pontos</h3><span>cadastro + relação com máquinas e histórico NOC</span></div><div id="pointPage" class="empty">Digite um termo acima ou clique em um vínculo.</div></div></section>
+  <section id="whatsapp" class="page"><div class="card section"><div class="shead"><h3>Mensagens do WhatsApp</h3><span id="waPageCount"></span></div><div id="waPage"></div></div></section>
+  <section id="events" class="page"><div class="card section"><div class="shead"><h3>Eventos derivados</h3><span>sempre apontam para a mensagem original</span></div><div id="eventsPage"></div></div></section>
+  <section id="assets" class="page"><div class="twocol"><div class="card section"><div class="shead"><h3>Ativos / patrimônios citados</h3><span id="assetCount"></span></div><div id="assetPage"></div></div><div class="card section"><div class="shead"><h3>Chamados / tickets citados</h3><span id="ticketCount"></span></div><div id="ticketPage"></div></div></div></section>
+  <section id="groups" class="page"><div class="card section"><div class="shead"><h3>Grupos e cobertura</h3><span>status da coleta original</span></div><div id="groupPage" class="groupgrid"></div></div></section>
+  <section id="integrity" class="page"><div id="integrityPage"></div></section>
+ </main>
+</div>
+
+<div class="drawerback" id="drawerBack"><div class="drawer"><div class="dtop"><div><h3 id="drawerTitle"></h3><p id="drawerSub"></p></div><button id="drawerClose">Fechar</button></div><div class="dbody" id="drawerBody"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+let C,M=[],P=[],MS=[],PS=[],AUD={},WA,RDATA=null,MD=null,PD=null,loadingMD=null,loadingPD=null;
+let currentPage='router', lastSearch=null;
+const PASS='eletromidia_password_overlay_v2',NOTE='eletromidia_notes_v5',FAV='eletromidia_favorites_v5',MSGNOTE='eletromidia_message_notes_v6',ROUTEKEY='eletromidia_router_confirmed_v7';
+function loadObj(k){try{return JSON.parse(localStorage.getItem(k)||'{}')||{}}catch{return {}}}
+let passes=loadObj(PASS),notes=loadObj(NOTE),favs=loadObj(FAV),msgNotes=loadObj(MSGNOTE);
+function saveObj(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function norm(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[‐‑‒–—]/g,'-').replace(/\s+/g,' ').trim()}
+function compact(v){return norm(v).replace(/[^a-z0-9]+/g,'')}
+function fmt(n){return Number(n||0).toLocaleString('pt-BR')}
+function dt(ts){if(!ts)return '—';try{return new Date(ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch{return '—'}}
+function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1200)}
+function ctext(t){navigator.clipboard?.writeText(t).then(()=>toast('Copiado')).catch(()=>prompt('Copie:',t))}
+async function unpack(b64){const bin=atob(b64),b=new Uint8Array(bin.length);for(let o=0;o<bin.length;o+=1048576){const e=Math.min(bin.length,o+1048576);for(let i=o;i<e;i++)b[i]=bin.charCodeAt(i)}return JSON.parse(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'))).text())}
+function loadScript(src,global){return new Promise((ok,er)=>{if(window[global])return ok();const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>er(new Error('Não foi possível carregar '+src));document.head.appendChild(s)})}
+async function ensureM(){if(MD)return MD;if(loadingMD)return loadingMD;loadingMD=(async()=>{await loadScript('machine_details.js','__PACK_MACHINE_DETAILS__');MD=await unpack(window.__PACK_MACHINE_DETAILS__);window.__PACK_MACHINE_DETAILS__='';return MD})();return loadingMD}
+async function ensureP(){if(PD)return PD;if(loadingPD)return loadingPD;loadingPD=(async()=>{await loadScript('point_details.js','__PACK_POINT_DETAILS__');PD=await unpack(window.__PACK_POINT_DETAILS__);window.__PACK_POINT_DETAILS__='';return PD})();return loadingPD}
+
+const EVENT_LABEL={asset_swap:'Troca de ativo',outage:'Indisponibilidade',restored:'Restabelecimento',configuration:'Configuração',activation:'Ativação',access:'Acesso / liberação',maintenance:'Manutenção',ticket:'Chamado',inventory:'Estoque / movimentação'};
+const LINK_LABEL={machine_name_exact:'nome exato da máquina',machine_name_labeled:'campo Máquina',machine_id_labeled:'ID da máquina',machine_to_point:'máquina → ponto',point_code_unique:'código único do ponto',point_code_disambiguated:'código + contexto',point_code_machine_context:'código + máquina',point_name_token_match:'nome distintivo do ponto',quoted_point_context:'resposta citando evidência',quoted_machine_context:'resposta citando evidência',short_followup_context:'continuação curta da conversa',short_followup_machine_context:'continuação curta da conversa'};
+function confClass(c){return c>=.9?'high':c>=.7?'medium':'context'}
+function confLabel(c){return c>=.9?'alto':c>=.7?'médio':'contexto'}
+
+let pointMap=new Map(),machinesByPoint=new Map(),pointMsgMap=new Map(),machineMsgMap=new Map(),eventByMessage=new Map(),msgsByGroup=new Map(),assetById=new Map(),ticketById=new Map();
+function pkey(code,praca){return /^\d+$/.test(String(code||''))?String(code):String(code||'')+'|'+String(praca||'')}
+function buildRelations(){
+ pointMap.clear();machinesByPoint.clear();
+ for(let i=0;i<P.length;i++)pointMap.set(pkey(P[i][1],P[i][6]),i);
+ for(let i=0;i<M.length;i++){const k=pkey(M[i][1],M[i][5]);if(!machinesByPoint.has(k))machinesByPoint.set(k,[]);machinesByPoint.get(k).push(i)}
+ pointMsgMap=new Map(WA.reverse.p);machineMsgMap=new Map(WA.reverse.m);
+ eventByMessage.clear();for(const e of WA.events){if(!eventByMessage.has(e.m))eventByMessage.set(e.m,[]);eventByMessage.get(e.m).push(e)}
+ msgsByGroup.clear();WA.messages.forEach((m,i)=>{const g=m[4];if(!msgsByGroup.has(g))msgsByGroup.set(g,[]);msgsByGroup.get(g).push(i)});
+ assetById=new Map(WA.assets.map(x=>[x[0],x]));ticketById=new Map(WA.tickets.map(x=>[x[0],x]));
+}
+
+function field(label,value,full=false,raw=false){let v=value===true?'Sim':value===false?'Não':(value===0?'0':value);return `<div class="field ${full?'full':''}"><label>${esc(label)}</label><div>${v!==null&&v!==undefined&&v!==''?(raw?v:esc(v)):'<span class="muted">—</span>'}</div></div>`}
+function pill(text,cls=''){return `<span class="pill ${cls}">${esc(text)}</span>`}
+function chips(items){return `<div class="chips">${items.join('')}</div>`}
+function highlight(v,terms){let s=esc(v);const a=(terms||[]).filter(x=>x&&!x.includes(':')).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));if(!a.length)return s;try{return s.replace(new RegExp('('+a.join('|')+')','ig'),'<mark>$1</mark>')}catch{return s}}
+function parseTokens(raw){const out=[];const re=/"([^"]+)"|(\S+)/g;let m;while((m=re.exec(raw)))out.push(m[1]||m[2]);return out}
+function parseQ(raw){const o={free:[],f:{}};for(const tok of parseTokens(raw)){const m=tok.match(/^([\p{L}_]+):(.*)$/u);if(m){let k=norm(m[1]),v=norm(m[2]);const aliases={codigo:'cod',codigo_ponto:'cod',maquina:'nome',ponto:'ponto',endereco:'end',area_trabalho:'area',sistema:'os',grupo:'grupo',autor:'autor',evento:'evento',fonte:'fonte',chamado:'ticket',ativo:'asset',patrimonio:'asset',id:'id',cod:'cod',nome:'nome',praca:'praca',ip:'ip',provedor:'provedor',modelo:'modelo',cidade:'cidade',estado:'estado',cep:'cep',status:'status',tipo:'tipo',midia:'midia',vinculo:'vinculo'};k=aliases[k]||k;if(v){(o.f[k]??=[]).push(v);continue}}o.free.push(norm(tok))}return o}
+function inc(v,t){const n=norm(v),tt=norm(t),c=compact(v),tc=compact(t);return n.includes(tt)||(tc&&c.includes(tc))}
+function allTerms(s,terms){return terms.every(t=>inc(s,t))}
+function score(v,t,w=1){const n=norm(v),tt=norm(t),c=compact(v),tc=compact(t);if(!tt)return 0;if(n===tt||c===tc)return 1000*w;if(n.startsWith(tt)||c.startsWith(tc))return 620*w;if(n.includes(tt)||c.includes(tc))return 250*w;return 0}
+function machineObj(m){return{id:m[0],cod:m[1],nome:m[2],ponto:m[3],end:m[4],praca:m[5],os:m[6],ip:m[7],provedor:m[8],modelo:m[9],status:m[10]?'atual':'fora cadastro atual',tipo:m[11],cep:m[12],area:m[13]}}
+function pointObj(p){return{id:p[0],cod:p[1],nome:p[2],ponto:p[2],end:p[3],cidade:p[4],estado:p[5],praca:p[6],status:(p[7]||'')+' '+(p[8]?'atual':'fora cadastro atual'),tipo:p[9]+' '+p[14],area:p[10],cep:p[11],bairro:p[12]}}
+function fieldsOK(o,pq,allowed){for(const[k,vs]of Object.entries(pq.f)){if(!allowed.includes(k))continue;if(!(k in o)||!vs.every(v=>inc(o[k],v)))return false}return true}
+function passOS(m){const p=norm(passes[m[0]]||'');return p?(p==='senha padrao'?'Linux':'Windows'):''}
+
+function searchMachine(pq,max){const arr=[];for(let i=0;i<M.length;i++){const m=M[i],o=machineObj(m);if(!fieldsOK(o,pq,['id','cod','nome','ponto','end','praca','os','ip','provedor','modelo','status','tipo','cep','area']))continue;if(!allTerms(MS[i],pq.free))continue;let s=0;for(const t of pq.free)s+=score(m[0],t,1.8)+score(m[1],t,1.8)+score(m[2],t,1.6)+score(m[3],t,1.25)+score(m[7],t,1.3)+score(m[8],t,.8)+score(m[9],t,.8);for(const[k,vs]of Object.entries(pq.f))for(const t of vs)s+=score(o[k]||'',t,2);if(m[10])s+=8;arr.push([s,i])}arr.sort((a,b)=>b[0]-a[0]||a[1]-b[1]);return arr.slice(0,max).map(x=>x[1])}
+function searchPoint(pq,max){const arr=[];for(let i=0;i<P.length;i++){const p=P[i],o=pointObj(p);if(!fieldsOK(o,pq,['id','cod','nome','ponto','end','praca','cidade','estado','status','tipo','area','cep']))continue;if(!allTerms(PS[i],pq.free))continue;let s=0;for(const t of pq.free)s+=score(p[0],t,1.5)+score(p[1],t,1.8)+score(p[2],t,1.6)+score(p[3],t,1.1)+score(p[4],t,.9)+score(p[6],t,.9);for(const[k,vs]of Object.entries(pq.f))for(const t of vs)s+=score(o[k]||'',t,2);if(p[8])s+=8;arr.push([s,i])}arr.sort((a,b)=>b[0]-a[0]||a[1]-b[1]);return arr.slice(0,max).map(x=>x[1])}
+function messageMatches(i,m,pq){const g=WA.groups[m[4]]||{};for(const[k,vs]of Object.entries(pq.f)){if(k==='fonte'&&!vs.every(v=>inc('whatsapp',v)))return false;if(k==='grupo'&&!vs.every(v=>inc(g.name,v)))return false;if(k==='autor'&&!vs.every(v=>inc(m[5],v)))return false;if(k==='midia'){const yes=(m[14]||[]).some(x=>x[7]==='captured');if(vs.some(v=>['sim','yes','1','com'].includes(v))&&!yes)return false;if(vs.some(v=>['nao','não','no','0','sem'].includes(v))&&yes)return false}if(k==='vinculo'){const links=[...(m[17]||[]),...(m[18]||[])];const best=links.reduce((a,x)=>Math.max(a,x[1]||0),0);if(vs.some(v=>v.startsWith('alt'))&&best<.9)return false;if(vs.some(v=>v.startsWith('med'))&&(best<.7||best>=.9))return false;if(vs.some(v=>v.startsWith('cont'))&&(best>=.7||best===0))return false;if(vs.some(v=>v.startsWith('sem'))&&best>0)return false}if(k==='evento'){const es=eventByMessage.get(i)||[];const names=es.flatMap(e=>e.types||[]).map(x=>EVENT_LABEL[x]+' '+x).join(' ');if(!vs.every(v=>inc(names,v)))return false}if(k==='asset'){const es=eventByMessage.get(i)||[];const ids=es.flatMap(e=>[...(e.oldAssets||[]),...(e.newAssets||[]),...(e.assets||[]),...(e.outAssets||[]),...(e.inAssets||[])]).join(' ');if(!vs.every(v=>inc(ids,v)))return false}if(k==='ticket'){const es=eventByMessage.get(i)||[];const ids=es.flatMap(e=>e.tickets||[]).join(' ');if(!vs.every(v=>inc(ids,v)))return false}}
+ return allTerms(m[20],pq.free)}
+function searchMessage(pq,max){const arr=[];for(let i=0;i<WA.messages.length;i++){const m=WA.messages[i];if(!messageMatches(i,m,pq))continue;let s=0;for(const t of pq.free)s+=score(m[6],t,1.2)+score(m[5],t,.8)+score((WA.groups[m[4]]||{}).name,t,.7);if((m[17]||[]).some(x=>x[1]>=.9)||(m[18]||[]).some(x=>x[1]>=.9))s+=8;s+=Math.min((m[1]||0)/1e12,10);arr.push([s,i])}arr.sort((a,b)=>b[0]-a[0]||(WA.messages[b[1]][1]||0)-(WA.messages[a[1]][1]||0));return arr.slice(0,max).map(x=>x[1])}
+function searchRegistry(rows,pq,max,kind){const arr=[];for(let i=0;i<rows.length;i++){const r=rows[i],id=r[0];if(pq.f[kind]&&!pq.f[kind].every(v=>inc(id,v)))continue;if(!allTerms(id,pq.free))continue;let s=0;for(const t of pq.free)s+=score(id,t,2);s+=Math.min(r[1].length,20);arr.push([s,i])}arr.sort((a,b)=>b[0]-a[0]);return arr.slice(0,max).map(x=>x[1])}
+function searchGroup(pq,max){const arr=[];WA.groups.forEach((g,i)=>{if(pq.f.grupo&&!pq.f.grupo.every(v=>inc(g.name,v)))return;if(!allTerms(g.name+' '+g.category+' '+(g.regionHints||[]).join(' '),pq.free))return;let s=pq.free.reduce((a,t)=>a+score(g.name,t,1.5),0)+g.messagesObserved/100;arr.push([s,i])});arr.sort((a,b)=>b[0]-a[0]);return arr.slice(0,max).map(x=>x[1])}
+
+function renderMachineTable(ids,terms=[]){if(!ids.length)return '<div class="empty">Nenhuma máquina encontrada.</div>';let h='<div class="tablewrap"><table><thead><tr><th>ID</th><th>Cod Ponto</th><th>Máquina</th><th>Ponto</th><th>Praça</th><th>SO</th><th>IP</th><th>Histórico NOC</th><th></th></tr></thead><tbody>';for(const i of ids){const m=M[i],refs=machineMsgMap.get(i)||[],pass=passes[m[0]]||'',os=passOS(m)||m[6]||'Desconhecido';h+=`<tr><td class="mono bold">${highlight(m[0],terms)}</td><td class="mono">${highlight(m[1],terms)}</td><td class="mono">${highlight(m[2],terms)}</td><td class="clip">${highlight(m[3],terms)}</td><td>${pill(m[5]||'—')}</td><td>${pill(os,os==='Linux'?'warn':os==='Windows'?'blue':'')}</td><td class="mono">${highlight(m[7],terms)}</td><td>${refs.length?pill(refs.length+' msg','purple'):'<span class="muted">—</span>'}</td><td><button onclick="openM(${i})">Detalhes</button></td></tr>`}return h+'</tbody></table></div>'}
+function renderPointTable(ids,terms=[]){if(!ids.length)return '<div class="empty">Nenhum ponto encontrado.</div>';let h='<div class="tablewrap"><table><thead><tr><th>ID DB</th><th>Código</th><th>Ponto</th><th>Endereço</th><th>Área</th><th>Praça</th><th>Status</th><th>Histórico NOC</th><th></th></tr></thead><tbody>';for(const i of ids){const p=P[i],refs=pointMsgMap.get(i)||[];h+=`<tr><td class="mono">${highlight(p[0],terms)}</td><td class="mono bold">${highlight(p[1],terms)}</td><td>${highlight(p[2],terms)}</td><td class="clip">${highlight(p[3],terms)}</td><td>${highlight(p[10],terms)}</td><td>${pill(p[6]||'—')}</td><td>${p[8]?pill('Atual','ok'):pill(p[7]||'Legado','')}</td><td>${refs.length?pill(refs.length+' msg','purple'):'<span class="muted">—</span>'}</td><td><button onclick="openP(${i})">Detalhes</button></td></tr>`}return h+'</tbody></table></div>'}
+function eventChips(i){const es=eventByMessage.get(i)||[];return es.length?chips([...new Set(es.flatMap(e=>e.types||[]))].map(x=>`<span class="chip event">${esc(EVENT_LABEL[x]||x)}</span>`)):''}
+function linkChips(m){const out=[];for(const x of (m[17]||[]).slice(0,3))out.push(`<span class="chip ${confClass(x[1])}">Ponto ${esc(P[x[0]]?.[1]||x[0])} • ${confLabel(x[1])}</span>`);for(const x of (m[18]||[]).slice(0,3))out.push(`<span class="chip ${confClass(x[1])}">Maq ${esc(M[x[0]]?.[0]||x[0])} • ${confLabel(x[1])}</span>`);return out.length?chips(out):''}
+function renderMessageTable(ids,terms=[]){if(!ids.length)return '<div class="empty">Nenhuma mensagem encontrada.</div>';let h='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Grupo</th><th>Autor</th><th>Mensagem</th><th>Vínculos / eventos</th><th>Mídia</th><th></th></tr></thead><tbody>';for(const i of ids){const m=WA.messages[i],g=WA.groups[m[4]]||{},med=(m[14]||[]).filter(x=>x[7]==='captured').length;h+=`<tr><td class="nowrap">${esc(m[2])}<br><span class="muted">${esc(m[3])}</span></td><td>${highlight(g.name,terms)}<br>${coveragePill(g)}</td><td>${highlight(m[5],terms)}</td><td class="msgtext">${highlight(m[6],terms)}</td><td>${linkChips(m)}${eventChips(i)}</td><td>${med?`<span class="chip media">${med} arquivo(s)</span>`:'<span class="muted">—</span>'}</td><td><button onclick="openMsg(${i})">Abrir</button></td></tr>`}return h+'</tbody></table></div>'}
+function coveragePill(g){if(!g)return '';if(g.status==='COMPLETE')return '<span class="chip high">coleta completa</span>';if(g.status==='COMPLETE_WITH_MEDIA_GAPS')return '<span class="chip medium">texto completo • gaps mídia</span>';if(g.status==='NEEDS_REVIEW')return '<span class="chip context">revisão necessária</span>';return '<span class="chip context" style="color:#ff9aa0">falha de coleta</span>'}
+
+function renderSearch(){const raw=$('q').value.trim(),scope=$('scope').value,max=+$('limit').value,pq=parseQ(raw),terms=parseTokens(raw).map(norm),t0=performance.now();if(!raw){$('searchResults').innerHTML='<div class="card empty">Digite qualquer informação. A busca cruza máquinas, pontos e o histórico do NOC.</div>';$('status').textContent='Aguardando pesquisa.';$('timing').textContent='';return}
+ const R={};if(scope==='all'||scope==='machine')R.m=searchMachine(pq,max);if(scope==='all'||scope==='point')R.p=searchPoint(pq,max);if(scope==='all'||scope==='message')R.w=searchMessage(pq,max);if(scope==='all'||scope==='asset')R.a=searchRegistry(WA.assets,pq,max,'asset');if(scope==='all'||scope==='ticket')R.t=searchRegistry(WA.tickets,pq,max,'ticket');if(scope==='all'||scope==='group')R.g=searchGroup(pq,max);
+ let h='';if(R.m)h+=`<div class="card section"><div class="shead"><h3>Máquinas</h3><span>${R.m.length} exibida(s)</span></div>${renderMachineTable(R.m,terms)}</div>`;if(R.p)h+=`<div class="card section"><div class="shead"><h3>Pontos</h3><span>${R.p.length} exibido(s)</span></div>${renderPointTable(R.p,terms)}</div>`;if(R.w)h+=`<div class="card section"><div class="shead"><h3>WhatsApp</h3><span>${R.w.length} exibida(s)</span></div>${renderMessageTable(R.w,terms)}</div>`;if(R.a)h+=renderAssetResults(R.a,terms);if(R.t)h+=renderTicketResults(R.t,terms);if(R.g)h+=renderGroupResults(R.g,terms);$('searchResults').innerHTML=h||'<div class="card empty">Nada encontrado.</div>';const total=Object.values(R).reduce((a,x)=>a+(x?.length||0),0);$('status').textContent=`${fmt(total)} resultado(s) exibido(s).`;$('timing').textContent=(performance.now()-t0).toFixed(1)+' ms';lastSearch={raw,R,terms};
+ if(currentPage==='machines'&&R.m)$('machinePage').innerHTML=renderMachineTable(R.m,terms);if(currentPage==='points'&&R.p)$('pointPage').innerHTML=renderPointTable(R.p,terms);if(currentPage==='whatsapp'&&R.w)$('waPage').innerHTML=renderMessageTable(R.w,terms);
+}
+function renderAssetResults(indices,terms=[]){let h='<div class="card section"><div class="shead"><h3>Ativos / patrimônios citados</h3><span>'+indices.length+' exibido(s)</span></div><div class="tablewrap"><table><thead><tr><th>Ativo</th><th>Ocorrências</th><th>Pontos relacionados</th><th>Máquinas relacionadas</th><th></th></tr></thead><tbody>';for(const i of indices){const r=WA.assets[i];h+=`<tr><td class="mono bold">${highlight(r[0],terms)}</td><td>${r[1].length}</td><td>${r[2].slice(0,3).map(x=>pill(P[x[0]]?.[1]||x[0])).join(' ')||'—'}</td><td>${r[3].slice(0,3).map(x=>pill(M[x[0]]?.[0]||x[0],'blue')).join(' ')||'—'}</td><td><button onclick="openAsset(${i})">Abrir</button></td></tr>`}return h+'</tbody></table></div></div>'}
+function renderTicketResults(indices,terms=[]){let h='<div class="card section"><div class="shead"><h3>Chamados / tickets citados</h3><span>'+indices.length+' exibido(s)</span></div><div class="tablewrap"><table><thead><tr><th>Chamado</th><th>Ocorrências</th><th>Pontos relacionados</th><th></th></tr></thead><tbody>';for(const i of indices){const r=WA.tickets[i];h+=`<tr><td class="mono bold">${highlight(r[0],terms)}</td><td>${r[1].length}</td><td>${r[2].slice(0,4).map(x=>pill(P[x[0]]?.[1]||x[0])).join(' ')||'—'}</td><td><button onclick="openTicket(${i})">Abrir</button></td></tr>`}return h+'</tbody></table></div></div>'}
+function renderGroupResults(indices,terms=[]){return `<div class="card section"><div class="shead"><h3>Grupos</h3><span>${indices.length} exibido(s)</span></div><div class="groupgrid">${indices.map(i=>groupCard(i,terms)).join('')}</div></div>`}
+function groupCard(i,terms=[]){const g=WA.groups[i];return `<div class="gcard" onclick="openGroup(${i})"><strong>${highlight(g.name,terms)}</strong><small>${esc(g.category||'')} ${g.regionHints?.length?'• '+esc(g.regionHints.join(', ')):''}</small><div class="gmeta">${coveragePill(g)}<span class="chip">${fmt(g.messagesObserved)} msg</span><span class="chip media">${fmt(g.mediaUnique)} mídia</span></div></div>`}
+
+function openDrawer(title,sub,body){$('drawerTitle').textContent=title;$('drawerSub').textContent=sub;$('drawerBody').innerHTML=body;$('drawerBack').classList.add('open')}
+function closeDrawer(){$('drawerBack').classList.remove('open')}
+function noteUI(key){return `<div class="sect">Nota local</div><textarea class="note" id="noteEdit" placeholder="Anotação operacional local…">${esc(notes[key]||'')}</textarea><div class="actions" style="margin-top:6px"><button onclick="saveNote('${esc(key)}')">Salvar nota</button></div>`}
+window.saveNote=k=>{notes[k]=$('noteEdit').value;saveObj(NOTE,notes);toast('Nota salva')}
+function timeline(refs,max=100){if(!refs||!refs.length)return '<div class="empty">Nenhuma mensagem vinculada com confiança suficiente.</div>';const ids=[...refs].sort((a,b)=>(WA.messages[b[0]][1]||0)-(WA.messages[a[0]][1]||0)).slice(0,max);return `<div class="timeline">${ids.map(([i,c])=>timelineItem(i,c)).join('')}</div>${refs.length>max?`<div class="muted small" style="margin-top:7px">+ ${refs.length-max} mensagens não exibidas aqui; use a busca.</div>`:''}`}
+function timelineItem(i,conf){const m=WA.messages[i],g=WA.groups[m[4]]||{};return `<div class="titem" onclick="openMsg(${i})"><div class="meta"><span>${esc(m[2])} ${esc(m[3])} • ${esc(g.name)}</span><span class="chip ${confClass(conf)}">vínculo ${confLabel(conf)}</span></div><div class="text">${esc(m[6])}</div>${eventChips(i)}</div>`}
+
+window.openM=async i=>{const c=M[i];openDrawer(c[2]||('Máquina '+c[0]),`ID ${c[0]} • carregando detalhes…`,'<div class="empty">Carregando base detalhada…</div>');const a=await ensureM(),m=a[i],key='m:'+m[0],pass=passes[m[0]]||'',os=passOS(c)||m[12]||'Desconhecido',rp=pointMap.get(pkey(c[1],c[5])),refs=machineMsgMap.get(i)||[];let h=`<div class="actions"><button class="primary" onclick="copyM(${i})">Copiar resumo</button>${rp!==undefined?`<button onclick="openP(${rp})">Abrir ponto relacionado</button>`:''}<button onclick="toggleFav('${key}')">${favs[key]?'★ Favorito':'☆ Favoritar'}</button></div>`;if(m[30])h+=`<div class="box warn" style="margin-top:9px"><p>Conflito de praça preservado: detalhada = <b>${esc(m[5])}</b>; lista completa = <b>${esc(m[30])}</b>.</p></div>`;h+=`<div class="sect">Identificação</div><div class="fieldgrid">${field('ID Máquina',m[0])}${field('Cod Ponto',m[1])}${field('Ponto',m[2],true)}${field('Nome Máquina',m[7])}${field('Nome Máquina original',m[8])}${field('Nome Sistema',m[9])}${field('Praça',m[5])}${field('Área de Trabalho',m[6])}${field('Endereço',m[3],true)}${field('CEP',m[4])}${field('Tipo de Estabelecimento',m[10],true)}</div><div class="sect">Sistema / Rede</div><div class="fieldgrid">${field('Sistema classificado',os)}${field('Sistema Operacional',m[11],true)}${field('Senha Acesso',pass||'não cadastrada')}${field('IP',m[13])}${field('Provedor',m[14],true)}${field('Hashcode',m[15],true)}${field('Tipo Instalação',m[16])}${field('Versão Sistema',m[17])}</div><div class="sect">Hardware / instalação</div><div class="fieldgrid">${field('Monitores',m[18])}${field('Localização',m[19],true)}${field('Resolução',m[20])}${field('Processador',m[21])}${field('Memória em uso',m[22])}${field('Fabricante',m[23])}${field('Modelo',m[24])}${field('Status HD',m[25])}${field('Último reboot',m[26])}</div><div class="sect">Senha local</div><div class="fieldgrid"><div class="field full"><label>Senha de acesso</label><div class="actions"><input id="passEdit" value="${esc(pass)}" placeholder="Senha Padrão ou senha Windows" style="height:35px;flex:1"><button onclick="savePass(${i})">Salvar</button><button onclick="linuxPass(${i})">Senha Padrão</button><button onclick="clearPass(${i})">Remover</button></div></div></div><div class="sect">Histórico NOC relacionado (${refs.length})</div>${timeline(refs)}${noteUI(key)}`;openDrawer(m[7]||('Máquina '+m[0]),`ID ${m[0]} • Ponto ${m[1]} • ${m[5]}`,h)};
+window.openP=async i=>{const c=P[i];openDrawer(c[2]||('Ponto '+c[1]),`ID DB ${c[0]} • carregando detalhes…`,'<div class="empty">Carregando base detalhada…</div>');const a=await ensureP(),p=a[i],key='p:'+p[0],rel=machinesByPoint.get(pkey(c[1],c[6]))||[],refs=pointMsgMap.get(i)||[];let h=`<div class="actions"><button class="primary" onclick="copyP(${i})">Copiar resumo</button><button onclick="toggleFav('${key}')">${favs[key]?'★ Favorito':'☆ Favoritar'}</button></div><div class="sect">Base de pontos</div><div class="fieldgrid">${field('ID DB',p[0])}${field('Código',p[1])}${field('Ponto original',p[2],true)}${field('Nome do ponto',p[3])}${field('Endereço CSV',p[4],true)}${field('Área de Trabalho CSV',p[5])}${field('Praça CSV',p[6])}${field('Estado CSV',p[7])}</div><div class="sect">Cadastro atual</div><div class="fieldgrid">${field('Presente no Excel atual',p[8])}${field('Tipo cadastro',p[9])}${field('Identificador Local',p[10])}${field('Nome interno',p[11])}${field('Endereço atual',p[12],true)}${field('Bairro',p[13])}${field('Cidade',p[14])}${field('Estado atual',p[15])}${field('Praça atual',p[16])}${field('CEP',p[17])}${field('Latitude',p[18])}${field('Longitude',p[19])}${field('Área de Trabalho atual',p[20])}${field('Ambiente',p[21])}${field('Tipo de estabelecimento',p[22],true)}${field('Tipo equipamento',p[23])}${field('Monitores atuais',p[24])}${field('Status',p[25])}${field('Comercializado',p[26])}${field('Visível Prefeitura',p[27])}${field('Data Ativação/Cadastro',p[28])}${field('Link Operações',p[29],true)}</div>`;if(p[9]==='NÃO SEP')h+=`<div class="sect">Detalhes não-SEP</div><div class="fieldgrid">${field('Nº Parada',p[30])}${field('Filial',p[31])}${field('Área de Risco',p[32])}${field('Modelo Abrigo',p[33])}${field('Energizado',p[37])}${field('Wi-Fi',p[40])}${field('Câmera',p[41])}${field('Foto referência',p[49],true)}${field('Observações',p[50],true)}</div>`;if(rel.length)h+=`<div class="sect">Máquinas relacionadas (${rel.length})</div><div class="actions">${rel.slice(0,60).map(mi=>`<button onclick="openM(${mi})">${esc(M[mi][2]||M[mi][0])}</button>`).join('')}${rel.length>60?`<span class="muted small">+${rel.length-60}</span>`:''}</div>`;h+=`<div class="sect">Histórico NOC relacionado (${refs.length})</div>${timeline(refs)}${noteUI(key)}`;openDrawer(p[3]||('Ponto '+p[1]),`Código ${p[1]} • ${p[16]||p[6]||''}`,h)};
+window.copyM=i=>{const m=M[i],pass=passes[m[0]]||'';ctext(`ID MÁQUINA: ${m[0]}\nCOD PONTO: ${m[1]}\nNOME MÁQUINA: ${m[2]}\nPONTO: ${m[3]}\nENDEREÇO: ${m[4]}\nPRAÇA: ${m[5]}\nSISTEMA: ${passOS(m)||m[6]||'Desconhecido'}\nSENHA ACESSO: ${pass||'não cadastrada'}\nIP: ${m[7]}\nPROVEDOR: ${m[8]}`)};
+window.copyP=i=>{const p=P[i];ctext(`ID DB: ${p[0]}\nCÓDIGO: ${p[1]}\nPONTO: ${p[2]}\nENDEREÇO: ${p[3]}\nÁREA: ${p[10]}\nPRAÇA: ${p[6]}\nESTADO: ${p[5]}\nSTATUS: ${p[7]}`)};
+window.savePass=i=>{const v=$('passEdit').value.trim(),id=M[i][0];if(v)passes[id]=v;else delete passes[id];saveObj(PASS,passes);openM(i);toast('Senha salva')};window.linuxPass=i=>{$('passEdit').value='Senha Padrão';savePass(i)};window.clearPass=i=>{$('passEdit').value='';savePass(i)};window.toggleFav=k=>{favs[k]?delete favs[k]:favs[k]=1;saveObj(FAV,favs);toast('Favoritos atualizados')};
+
+window.openMsg=i=>{const m=WA.messages[i],g=WA.groups[m[4]]||{},es=eventByMessage.get(i)||[];let h=`<div class="actions"><button class="primary" onclick="copyMsg(${i})">Copiar mensagem</button><button onclick="openGroup(${m[4]})">Abrir grupo</button></div><div class="sect">Origem</div><div class="fieldgrid">${field('Grupo',g.name,true)}${field('Cobertura',g.status)}${field('Data',m[2])}${field('Hora',m[3])}${field('Autor',m[5])}${field('ID da mensagem',m[0],true)}${field('Identidade',`${m[15]||''} / ${m[16]||''}`)}</div><div class="sect">Mensagem original</div><div class="field full"><div style="white-space:pre-wrap">${esc(m[6])||'<span class="muted">sem texto</span>'}</div></div>`;if(m[8])h+=`<div class="sect">Mensagem citada</div><div class="quote"><b>${esc(m[9]||'')}</b>\n${esc(m[10]||'')}</div>${m[11]&&messageIndexById.has(m[11])?`<div class="actions" style="margin-top:5px"><button onclick="openMsg(${messageIndexById.get(m[11])})">Abrir original citada</button></div>`:''}`;
+ if((m[17]||[]).length||(m[18]||[]).length){h+='<div class="sect">Vínculos operacionais</div><div class="fieldgrid">';for(const x of m[17]||[]){const p=P[x[0]];h+=`<div class="field"><label>Ponto • confiança ${confLabel(x[1])}</label><div><b>${esc(p?.[1]||x[0])}</b> • ${esc(p?.[2]||'')}<br><span class="muted tiny">${esc(x[2].map(r=>LINK_LABEL[r]||r).join(' + '))}</span><br><button onclick="openP(${x[0]})">Abrir ponto</button></div></div>`}for(const x of m[18]||[]){const mm=M[x[0]];h+=`<div class="field"><label>Máquina • confiança ${confLabel(x[1])}</label><div><b>${esc(mm?.[0]||x[0])}</b> • ${esc(mm?.[2]||'')}<br><span class="muted tiny">${esc(x[2].map(r=>LINK_LABEL[r]||r).join(' + '))}</span><br><button onclick="openM(${x[0]})">Abrir máquina</button></div></div>`}h+='</div>'}
+ if(es.length){h+='<div class="sect">Eventos / identificadores extraídos</div><div class="fieldgrid">';for(const e of es)h+=`${field('Eventos',(e.types||[]).map(x=>EVENT_LABEL[x]||x).join(', '),true)}${field('Ativos retirados/antigos',(e.oldAssets||[]).join(', '))}${field('Ativos instalados/novos',(e.newAssets||[]).join(', '))}${field('Saída',(e.outAssets||[]).join(', '))}${field('Entrada',(e.inAssets||[]).join(', '))}${field('Ativos citados',(e.assets||[]).join(', '))}${field('Chamados/Tickets',(e.tickets||[]).join(', '))}`;h+='</div>'}
+ const med=(m[14]||[]);if(med.length){h+='<div class="sect">Mídias</div><div class="mediaGrid">';for(const mm of med){if(mm[7]==='captured'&&mm[0]){const src=`media/${mm[0]}${mm[1]}`;if((mm[2]||'').startsWith('video/'))h+=`<div class="mediaCard"><video controls preload="metadata" src="${esc(src)}"></video><div class="cap">${esc(mm[2])} • ${fmt(mm[4])} bytes</div></div>`;else h+=`<div class="mediaCard"><a href="${esc(src)}" target="_blank"><img loading="lazy" src="${esc(src)}" alt="Mídia da mensagem"></a><div class="cap">${esc(mm[2])} • ${mm[5]||'?'}×${mm[6]||'?'}</div></div>`}else h+=`<div class="mediaCard"><div class="empty">Mídia não capturada</div><div class="cap">${esc(mm[7])}</div></div>`}h+='</div>'}
+ const key='msg:'+m[0];h+=`<div class="sect">Nota local sobre esta evidência</div><textarea class="note" id="msgNoteEdit">${esc(msgNotes[key]||'')}</textarea><div class="actions" style="margin-top:6px"><button onclick="saveMsgNote('${key}')">Salvar nota</button></div>`;openDrawer(`${m[5]||'Mensagem'} • ${m[2]} ${m[3]}`,g.name,h)};
+window.copyMsg=i=>{const m=WA.messages[i],g=WA.groups[m[4]]||{};ctext(`[${m[2]} ${m[3]}] ${m[5]} • ${g.name}\n${m[6]}`)};window.saveMsgNote=k=>{msgNotes[k]=$('msgNoteEdit').value;saveObj(MSGNOTE,msgNotes);toast('Nota salva')};
+
+window.openGroup=i=>{const g=WA.groups[i],ids=[...(msgsByGroup.get(i)||[])].sort((a,b)=>(WA.messages[b][1]||0)-(WA.messages[a][1]||0));let h=`<div class="fieldgrid">${field('Grupo',g.name,true)}${field('Categoria',g.category)}${field('Região sugerida',(g.regionHints||[]).join(', '))}${field('Status da coleta',g.status)}${field('Mensagens observadas',g.messagesObserved)}${field('Mídias únicas',g.mediaUnique)}${field('Gaps de mídia',g.mediaGaps)}${field('Limite desde entrada preciso',g.sinceJoinPrecise)}${field('Motivos de revisão',(g.reviewReasons||[]).join(', '),true)}${field('Erro de coleta',g.lastError,true)}</div><div class="sect">Mensagens (${ids.length})</div>${renderMessageTable(ids.slice(0,250))}${ids.length>250?'<div class="muted small" style="margin-top:7px">Exibindo 250 mais recentes. Use grupo:&quot;'+esc(g.name)+'&quot; na busca para pesquisar dentro do grupo.</div>':''}`;openDrawer(g.name,`${g.status} • ${fmt(g.messagesObserved)} mensagens`,h)};
+window.openAsset=i=>{const r=WA.assets[i];let h=`<div class="fieldgrid">${field('Ativo / patrimônio',r[0])}${field('Ocorrências',r[1].length)}${field('Pontos relacionados',r[2].length)}${field('Máquinas relacionadas',r[3].length)}</div>`;if(r[2].length)h+=`<div class="sect">Pontos com evidência</div><div class="actions">${r[2].map(x=>`<button onclick="openP(${x[0]})">${esc(P[x[0]]?.[1]||x[0])} (${x[1]})</button>`).join('')}</div>`;if(r[3].length)h+=`<div class="sect">Máquinas com evidência</div><div class="actions">${r[3].map(x=>`<button onclick="openM(${x[0]})">${esc(M[x[0]]?.[0]||x[0])} (${x[1]})</button>`).join('')}</div>`;h+=`<div class="sect">Ocorrências</div><div class="timeline">${r[1].slice().reverse().map(x=>{const m=WA.messages[x[0]],g=WA.groups[m[4]]||{};return `<div class="titem" onclick="openMsg(${x[0]})"><div class="meta"><span>${esc(m[2])} ${esc(m[3])} • ${esc(g.name)}</span><span>${esc(x[1])}</span></div><div class="text">${esc(m[6])}</div></div>`}).join('')}</div>`;openDrawer('Ativo '+r[0],`${r[1].length} ocorrência(s) rotulada(s)`,h)};
+window.openTicket=i=>{const r=WA.tickets[i];let h=`<div class="fieldgrid">${field('Chamado / ticket',r[0])}${field('Ocorrências',r[1].length)}${field('Pontos relacionados',r[2].length)}${field('Máquinas relacionadas',r[3].length)}</div><div class="sect">Ocorrências</div><div class="timeline">${r[1].slice().reverse().map(mi=>timelineItem(mi,1)).join('')}</div>`;openDrawer('Chamado '+r[0],`${r[1].length} ocorrência(s)`,h)};
+
+
+/* ==================== ROTEADOR NOC v7 ==================== */
+let rtLast=null, rtAssocMap=new Map(), rtProfileMap=new Map(), rtOverrides=[];
+function rtLoadOverrides(){try{const x=JSON.parse(localStorage.getItem(ROUTEKEY)||'[]');rtOverrides=Array.isArray(x)?x:[]}catch{rtOverrides=[]}}
+function rtSaveOverrides(){try{localStorage.setItem(ROUTEKEY,JSON.stringify(rtOverrides.slice(-500)))}catch{}}
+function rtTokens(raw){
+ const st=new Set(RDATA.stop||[]), out=[];
+ for(const t of norm(raw).match(/[a-z0-9][a-z0-9._-]{1,}/g)||[]){
+  const x=t.replace(/^[._-]+|[._-]+$/g,''); if(!x||st.has(x)||(x.length<3&&!/^\d+$/.test(x)))continue;
+  if(/^\d+$/.test(x)&&x.length<4)continue; out.push(x)
+ }
+ return [...new Set(out)]
+}
+function rtPhraseHits(raw,list){const n=norm(raw);return (list||[]).filter(x=>n.includes(norm(x)))}
+function rtDetectIssue(raw,forced){
+ if(forced&&forced!=='auto')return forced;
+ const n=norm(raw);
+ if(/\b(chamado|ticket|protocolo)\b/.test(n))return 'ticket';
+ if(/\b(configurar|configuracao|configuração)\b/.test(n))return 'configuration';
+ if(/\b(ativacao|ativação|implantacao|implantação)\b/.test(n))return 'activation';
+ let best=['other',0]; for(const[k,arr]of Object.entries(RDATA.issueTerms||{})){const hits=rtPhraseHits(raw,arr);let s=hits.length;for(const h of hits)s+=Math.min(norm(h).length/12,1.5);if(s>best[1])best=[k,s]}
+ return best[0]
+}
+function rtRoleBonus(issue,role){
+ const map={
+  media:{maintenance:34,configuration:18,monitoring:5,noc:5},
+  offline:{maintenance:24,configuration:22,monitoring:7,noc:7},
+  hardware:{maintenance:55,local:12,tickets:8},
+  network:{maintenance:26,configuration:20,monitoring:8,noc:6},
+  configuration:{configuration:62,maintenance:10},
+  activation:{activation:65,configuration:15,maintenance:8},
+  ticket:{tickets:65,maintenance:8,noc:6},
+  other:{maintenance:8,local:6,operation:4}
+ };return (map[issue]||map.other)[role]||0
+}
+function rtBuildAssoc(){
+ rtAssocMap=new Map();for(const a of RDATA.assoc||[]){rtAssocMap.set(a.a+'|'+a.b,a);rtAssocMap.set(a.b+'|'+a.a,{...a,a:a.b,b:a.a})}
+ rtProfileMap=new Map((RDATA.profiles||[]).map(p=>[p.i,p]));rtLoadOverrides()
+}
+function rtAssoc(source,target){return rtAssocMap.get(source+'|'+target)||null}
+function rtProfileScore(p,toks){
+ const tm=new Map(p.t||[]);let s=0,matched=[];
+ for(const q of toks){
+  let w=tm.get(q)||0;if(!w&&q.length>=4){for(const[t,v]of p.t||[]){if(t.length>=4&&(t.includes(q)||q.includes(t))){w=Math.max(w,v*.28)}}}
+  if(w){s+=w;matched.push([q,w])}
+ }
+ return {s,matched}
+}
+function rtMessageSupport(toks){
+ const by=new Map(),idf=RDATA.idf||{};
+ if(!toks.length)return by;
+ for(let i=0;i<WA.messages.length;i++){
+  const m=WA.messages[i],hay=norm((m[6]||'')+' '+(m[10]||''));let s=0,hits=0,rare=0;
+  for(const t of toks){if(hay.includes(t)){const w=idf[t]||1.15;s+=w;hits++;if(w>=3)rare++}}
+  if(!hits)continue;
+  if(hits===1&&rare===0&&toks.length>1)continue;
+  if(hits===1&&s<2.2)continue;
+  s+=Math.min(hits-1,3)*1.2;
+  const gi=m[4],arr=by.get(gi)||[];arr.push([s,i,hits]);arr.sort((a,b)=>b[0]-a[0]||b[2]-a[2]);if(arr.length>5)arr.length=5;by.set(gi,arr)
+ }
+ return by
+}
+function rtOverrideBonus(source,toks,target){
+ let best=0,match=null;const S=new Set(toks);
+ for(const r of rtOverrides){if(r.target!==target)continue;if(r.source!==''&&String(r.source)!==String(source))continue;const T=new Set(r.tokens||[]);if(!T.size)continue;let inter=0;for(const t of T)if(S.has(t))inter++;const ratio=inter/Math.max(1,Math.min(S.size,T.size));if(ratio>=.7&&inter>=1){const v=95+ratio*35;if(v>best){best=v;match=r}}}
+ return [best,match]
+}
+function rtFindEntities(raw,toks){
+ const n=norm(raw),c=compact(raw),sal=toks.filter(t=>t.length>=4||/^\d{4,}$/.test(t));
+ let ma=[],po=[];
+ for(let i=0;i<M.length;i++){const m=M[i];let s=0,re=[];if(n.includes(norm(m[0]))&&String(m[0]).length>=4){s+=130;re.push('ID máquina')}if(n.includes(norm(m[1]))&&String(m[1]).length>=4){s+=120;re.push('cód. ponto')}const nm=compact(m[2]||'');if(nm.length>=5&&c.includes(nm)){s+=110;re.push('nome exato')}let h=0;for(const t of sal){if(norm((m[2]||'')+' '+(m[3]||'')+' '+(m[4]||'')+' '+(m[7]||'')).includes(t)){h++;s+=(RDATA.idf?.[t]||1.2)*8}}if(h>=2||s>=100)ma.push([s,i,re])}
+ for(let i=0;i<P.length;i++){const p=P[i];let s=0,re=[];if(n.includes(norm(p[0]))&&String(p[0]).length>=4){s+=125;re.push('ID ponto')}if(n.includes(norm(p[1]))&&String(p[1]).length>=4){s+=120;re.push('código')}const nm=compact(p[2]||'');if(nm.length>=5&&c.includes(nm)){s+=105;re.push('nome exato')}let h=0;for(const t of sal){if(norm((p[2]||'')+' '+(p[3]||'')+' '+(p[4]||'')+' '+(p[10]||'')).includes(t)){h++;s+=(RDATA.idf?.[t]||1.2)*7}}if(h>=2||s>=100)po.push([s,i,re])}
+ ma.sort((a,b)=>b[0]-a[0]);po.sort((a,b)=>b[0]-a[0]);return{m:ma.slice(0,3),p:po.slice(0,3)}
+}
+function rtAnalyze(){
+ const raw=$('routeInput').value.trim();if(!raw){$('routeOutput').innerHTML='<div class="routewarn bad">Cole a ocorrência primeiro.</div>';return}
+ const source=$('routeSource').value===''?'':Number($('routeSource').value),issue=rtDetectIssue(raw,$('routeIssue').value),toks=rtTokens(raw),msgSup=rtMessageSupport(toks),entities=rtFindEntities(raw,toks);
+ let rows=[];
+ for(const p of RDATA.profiles){
+  let score=0,reasons=[],signals=0;const ps=rtProfileScore(p,toks);score+=ps.s;
+  if(ps.s>=12){signals++;reasons.push('vocabulário/local histórico compatível ('+ps.matched.slice(0,4).map(x=>x[0]).join(', ')+')')}
+  const gset=new Set(rtTokens(p.n));let nameHits=toks.filter(t=>gset.has(t));if(nameHits.length){const b=32+nameHits.length*18;score+=b;signals++;reasons.push('termos batem com o nome do grupo')}
+  const rb=rtRoleBonus(issue,p.r);score+=rb;if(rb>=20){signals++;reasons.push('tipo de problema compatível com '+p.c)}
+  let as=null;if(source!==''){as=rtAssoc(source,p.i);if(as){const ab=Math.min(95,as.w*.62);score+=ab;if(ab>=12){signals++;reasons.push('histórico entre grupo de origem e destino ('+as.m+' mídia(s) idêntica(s), '+as.x+' texto(s) distintivo(s))')}}if(p.i===source)score-=18}
+  const ev=msgSup.get(p.i)||[];if(ev.length){let es=Math.min(55,ev.slice(0,3).reduce((a,x)=>a+x[0]*2.8,0));if(ps.s<6&&!nameHits.length&&!as)es*=.45;score+=es;if(ev.length>=2||ev[0][0]>=4.5){signals++;reasons.push(ev.length+' ocorrência(s) histórica(s) semelhante(s)')}}
+  let rule=null;for(const r of RDATA.rules||[]){if(r.target!==p.i)continue;if(r.source?.length&&source!==''&&!r.source.includes(source))continue;if(r.source?.length&&source==='')continue;if(r.any?.length&&!r.any.some(x=>norm(raw).includes(norm(x))))continue;score+=r.bonus;signals+=2;rule=r;reasons.unshift(r.reason)}
+  const [ob,ov]=rtOverrideBonus(source,toks,p.i);if(ob){score+=ob;signals+=2;reasons.unshift('rota confirmada manualmente anteriormente neste navegador')}
+  if(p.s==='FAILED')score-=70;else if(p.s==='NEEDS_REVIEW')score-=28;
+  rows.push({p,score,reasons,signals,ev,assoc:as,rule,override:ov,ps:ps.s,nameHits})
+ }
+ rows.sort((a,b)=>b.score-a.score);const top=rows[0],second=rows[1],margin=top.score-(second?.score||0),ratio=top.score/Math.max(1,second?.score||1);
+ let conf='ambiguous',label='AMBÍGUA';
+ if(top.rule&&((source!==''&&top.rule.source?.includes(source))||top.rule.id==='scirp-general')){conf=source!==''?'confirmed':'high';label=source!==''?'CONFIRMADA':'ALTA'}
+ else if(top.score>=105&&top.signals>=3&&(margin>=20||ratio>=1.3)){conf='high';label='ALTA'}
+ else if(top.score>=60&&top.signals>=2&&margin>=10){conf='medium';label='MÉDIA'}
+ const fieldHits=rtPhraseHits(raw,RDATA.fieldTerms),remoteHits=rtPhraseHits(raw,RDATA.remoteTerms);
+ let actionTitle='',actionBody='';
+ if(issue==='configuration'){actionTitle='Tentar resolver/configurar remotamente';actionBody='Valide acesso à máquina, configuração do player/tela e parâmetros. Se depender de ação física, encaminhe ao grupo indicado.'}
+ else if(issue==='activation'){actionTitle='Encaminhar para ativação/implantação';actionBody='Confirme ponto, máquina/ativo e escopo da instalação antes do envio.'}
+ else if(issue==='ticket'||top.p.r==='tickets'){actionTitle='Abrir ou acompanhar chamado';actionBody='Use o grupo indicado para registrar/acompanhar o chamado e mantenha código do ponto/máquina no texto.'}
+ else if(issue==='hardware'||fieldHits.length>remoteHits.length+1){actionTitle='Encaminhar para manutenção/campo';actionBody='Há sinais de intervenção física. Evite insistir em procedimento remoto quando houver indício de tela, módulo, fonte, cabo, energia ou troca.'}
+ else if(['media','offline','network'].includes(issue)){actionTitle='Tentar validação remota rápida antes';actionBody='Cheque acesso/online, conectividade, player/loop e reinício controlado quando aplicável. Se não normalizar, encaminhe ao grupo indicado com o que já foi testado.'}
+ else {actionTitle=top.p.r==='maintenance'?'Encaminhar para manutenção':'Validar e encaminhar';actionBody='Use as evidências abaixo. Se a confiança não for alta, confirme local/código antes de enviar.'}
+ const evidence=[];const seen=new Set();function addEv(mi,why){if(mi==null||seen.has(mi)||!WA.messages[mi])return;seen.add(mi);evidence.push([mi,why])}
+ for(const x of top.ev.slice(0,4))addEv(x[1],'mensagem semelhante');
+ if(top.assoc)for(const e of top.assoc.e||[]){addEv(e[0],'evidência entre grupos');addEv(e[1],'evidência entre grupos')}
+ if(top.rule)for(const pair of top.rule.e||[])for(const mi of pair)addEv(mi,'regra histórica');
+ rtLast={raw,source,issue,toks,top,second,rows,evidence,entities,conf,label,actionTitle,actionBody,margin};
+ rtRender()
+}
+function rtRenderEntities(ent){
+ let h='';for(const x of ent.m){const m=M[x[1]];h+=`<div class="entityrow"><span class="etype">Máquina</span><span><b>${esc(m[2])}</b><br><span class="muted">ID ${esc(m[0])} • Cod ${esc(m[1])} • ${esc(m[5])} • ${esc(m[6])}</span></span><button onclick="openMachine(${x[1]})">Abrir</button></div>`}
+ for(const x of ent.p){const p=P[x[1]];h+=`<div class="entityrow"><span class="etype">Ponto</span><span><b>${esc(p[2])}</b><br><span class="muted">Cod ${esc(p[1])} • ${esc(p[3])} • ${esc(p[6]||p[5])}</span></span><button onclick="openPoint(${x[1]})">Abrir</button></div>`}
+ return h||'<div class="muted small">Nenhuma entidade identificada com segurança suficiente só pelo texto.</div>'
+}
+function rtRender(){
+ const r=rtLast,t=r.top,src=r.source===''?'Origem não informada':WA.groups[r.source]?.name||'Origem';
+ const safe=r.conf==='confirmed'||r.conf==='high';
+ const warning=safe?`<div class="routewarn ok">Rota com evidência suficiente para uso operacional. Ainda confira o ponto/local antes de enviar.</div>`:
+  r.conf==='medium'?`<div class="routewarn warn"><b>NÃO encaminhe no automático.</b> A rota é provável, mas existe ambiguidade. Confira código/local e as evidências.</div>`:
+  `<div class="routewarn bad"><b>ROTA AMBÍGUA.</b> Não há base suficiente para cravar o grupo. Use as alternativas e peça/ache mais um identificador: código do ponto, máquina, shopping/prédio ou praça.</div>`;
+ const issueLabel={media:'Mídia / conteúdo',offline:'Offline / acesso',hardware:'Hardware / físico',network:'Rede / internet',configuration:'Configuração',activation:'Ativação',ticket:'Chamado / ticket',other:'Não classificado'}[r.issue]||r.issue;
+ let reasons=t.reasons.slice(0,6).map(x=>`<li>${esc(x)}</li>`).join('')||'<li>Sem sinais suficientes.</li>';
+ let alts=r.rows.slice(0,4).map((x,i)=>`<div class="altrow"><span>${i?esc(x.p.n):'<b>'+esc(x.p.n)+'</b>'}<br><span class="muted">${esc(x.p.c)} • ${esc(x.p.s)}</span></span><span class="altscore">${x.score.toFixed(1)}</span><button onclick="rtUseAlt(${x.p.i})">${i?'Usar':'Selecionado'}</button></div>`).join('');
+ let ev=r.evidence.slice(0,8).map(([mi,why])=>{const m=WA.messages[mi],g=WA.groups[m[4]]||{};return `<div class="evidence"><div class="meta">${esc(m[2]||'')} ${esc(m[3]||'')} • ${esc(g.name)} • ${esc(why)}</div><div class="txt">${esc(m[6]||m[10]||'(sem texto)')}</div><div style="margin-top:5px"><button onclick="openMsg(${mi})">Abrir evidência</button></div></div>`}).join('')||'<div class="muted small">Nenhuma mensagem semelhante forte encontrada.</div>';
+ const ready=`Boa tarde, pessoal.\n\n${r.raw.trim()}\n\nPodem verificar, por favor?`;
+ $('routeOutput').innerHTML=`
+ <div class="routestatus">
+  <div class="routeanswer ${r.conf}"><div class="eyebrow">Grupo recomendado • <span class="conf ${r.conf}">${r.label}</span></div><div class="target"><b>${esc(t.p.n)}</b></div><ul class="why">${reasons}</ul>${warning}</div>
+  <div class="actioncard"><h4>AÇÃO AGORA</h4><p><b>${esc(r.actionTitle)}</b></p><p>${esc(r.actionBody)}</p><div class="routertools"><button class="primary" onclick="rtCopyReady()">Copiar mensagem</button><button onclick="rtConfirm()">Confirmar rota correta</button></div></div>
+ </div>
+ <div class="routeflow"><div class="step"><b>1. Origem</b><span>${esc(src)}</span></div><div class="arr">→</div><div class="step"><b>2. Diagnóstico</b><span>${esc(issueLabel)}</span></div><div class="arr">→</div><div class="step"><b>3. Destino</b><span>${esc(t.p.n)}</span></div></div>
+ <div class="routegrid">
+  <div class="routebox"><div class="rh"><strong>Entidades identificadas</strong><span class="muted small">máquina / ponto</span></div><div class="rb">${rtRenderEntities(r.entities)}</div></div>
+  <div class="routebox"><div class="rh"><strong>Alternativas calculadas</strong><span class="muted small">score comparativo</span></div><div class="rb">${alts}</div></div>
+  <div class="routebox"><div class="rh"><strong>Evidências históricas</strong><span class="muted small">${r.evidence.length} localizada(s)</span></div><div class="rb">${ev}</div></div>
+  <div class="routebox"><div class="rh"><strong>Mensagem pronta</strong><span class="muted small">destino: ${esc(t.p.n)}</span></div><div class="rb"><pre style="white-space:pre-wrap;font:11px/1.5 Inter,Segoe UI,Arial;margin:0">${esc(ready)}</pre></div></div>
+ </div>`;
+}
+window.rtUseAlt=gi=>{if(!rtLast)return;const x=rtLast.rows.find(r=>r.p.i===gi);if(!x)return;rtLast.top=x;rtLast.conf='medium';rtLast.label='SELECIONADA MANUALMENTE';rtLast.evidence=(x.ev||[]).slice(0,5).map(v=>[v[1],'mensagem semelhante']);rtRender()}
+window.rtCopyReady=()=>{if(!rtLast)return;const text=`Boa tarde, pessoal.\n\n${rtLast.raw.trim()}\n\nPodem verificar, por favor?`;navigator.clipboard?.writeText(text).then(()=>toast('Mensagem copiada')).catch(()=>prompt('Copie a mensagem:',text))}
+window.rtConfirm=()=>{if(!rtLast)return;rtOverrides.push({source:rtLast.source===''?'':rtLast.source,target:rtLast.top.p.i,tokens:rtLast.toks,query:rtLast.raw,at:new Date().toISOString()});rtSaveOverrides();toast('Rota confirmada e salva localmente.');rtLast.conf='confirmed';rtLast.label='CONFIRMADA POR VOCÊ';rtLast.top.reasons.unshift('rota confirmada manualmente neste navegador');rtRender()}
+function rtInit(){
+ if(!RDATA)return;rtBuildAssoc();const sel=$('routeSource'),arr=[...RDATA.profiles].sort((a,b)=>a.n.localeCompare(b.n,'pt-BR'));sel.innerHTML='<option value="">Grupo onde RECEBI (opcional)</option>'+arr.map(p=>`<option value="${p.i}">${esc(p.n)}</option>`).join('');
+ $('routeAnalyze').onclick=rtAnalyze;$('routeInput').onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')rtAnalyze()};
+ $('routeExample').onclick=()=>{$('routeInput').value='Elevador da Renner sem mídia - SCIRP, quando vai ser reparado?';$('routeSource').value='50';$('routeIssue').value='auto';rtAnalyze()}
+}
+
+function renderDashboard(){const a=WA.audit,b=a.baseAudit;$('dashKpis').innerHTML=`<div class="kpi orange"><b>${fmt(b.machine_count)}</b><span>máquinas preservadas</span></div><div class="kpi"><b>${fmt(b.point_count)}</b><span>registros de pontos</span></div><div class="kpi purple"><b>${fmt(a.messages)}</b><span>mensagens únicas WhatsApp</span></div><div class="kpi"><b>${fmt(a.groupsTotal)}</b><span>grupos inventariados</span></div><div class="kpi blue"><b>${fmt(a.capturedUniqueMediaReferenced)}</b><span>mídias únicas capturadas</span></div><div class="kpi ok"><b>${fmt(a.messagesLinkedAny)}</b><span>mensagens ligadas a entidade</span></div>`;$('diagramWa').textContent=fmt(a.messages)+' mensagens';$('connectedSummary').innerHTML=`<div class="threecol"><div class="box ok"><h4>${fmt(a.messagesLinkedPoint)} mensagens → ponto</h4><p>Somente quando existe evidência suficientemente forte. Códigos ambíguos não são forçados.</p></div><div class="box ok"><h4>${fmt(a.messagesLinkedMachine)} mensagens → máquina</h4><p>Nome exato, ID explícito, IP ou contexto citado. Cada vínculo guarda motivo e confiança.</p></div><div class="box"><h4>${fmt(a.derivedAssets)} ativos + ${fmt(a.derivedTickets)} chamados</h4><p>Registros derivados de rótulos explícitos no texto e sempre conectados à mensagem original.</p></div></div>`;$('coverageSummary').innerHTML=`<div class="threecol"><div class="box ok"><h4>${a.groupsComplete} completos</h4><p>Coleta marcada como completa.</p></div><div class="box warn"><h4>${a.groupsCompleteWithMediaGaps} com gaps de mídia</h4><p>Texto disponível, mas alguns anexos não puderam ser capturados.</p></div><div class="box bad"><h4>${a.groupsNeedsReview+a.groupsFailed} incompletos/revisão</h4><p>${a.groupsNeedsReview} precisam revisão e ${a.groupsFailed} falharam. Ausência de dado não é tratada como ausência de atividade.</p></div></div>`;const ev=Object.entries(a.events).sort((x,y)=>y[1]-x[1]);$('eventSummary').innerHTML=chips(ev.map(([k,v])=>`<span class="chip event">${esc(EVENT_LABEL[k]||k)} • ${fmt(v)}</span>`))}
+function renderEvents(){const ids=[...Array(WA.events.length).keys()].sort((a,b)=>(WA.messages[WA.events[b].m][1]||0)-(WA.messages[WA.events[a].m][1]||0)).slice(0,1000);let h='<div class="tablewrap"><table><thead><tr><th>Data</th><th>Evento</th><th>Grupo</th><th>Mensagem</th><th>Identificadores</th><th></th></tr></thead><tbody>';for(const ei of ids){const e=WA.events[ei],m=WA.messages[e.m],g=WA.groups[m[4]]||{},idsText=[...(e.oldAssets||[]),...(e.newAssets||[]),...(e.outAssets||[]),...(e.inAssets||[]),...(e.assets||[]),...(e.tickets||[])].join(', ');h+=`<tr><td class="nowrap">${esc(m[2])}<br>${esc(m[3])}</td><td>${chips((e.types||[]).map(x=>`<span class="chip event">${esc(EVENT_LABEL[x]||x)}</span>`))}</td><td>${esc(g.name)}</td><td class="msgtext">${esc(m[6])}</td><td class="mono">${esc(idsText)}</td><td><button onclick="openMsg(${e.m})">Evidência</button></td></tr>`}h+='</tbody></table></div>';$('eventsPage').innerHTML=h}
+function renderAssets(){const ai=[...Array(Math.min(WA.assets.length,500)).keys()],ti=[...Array(Math.min(WA.tickets.length,500)).keys()];$('assetCount').textContent=fmt(WA.assets.length)+' únicos';$('ticketCount').textContent=fmt(WA.tickets.length)+' únicos';$('assetPage').innerHTML=renderAssetResults(ai).replace(/^<div class="card section"><div class="shead">.*?<\/div>/,'').replace(/<\/div>$/,'');$('ticketPage').innerHTML=renderTicketResults(ti).replace(/^<div class="card section"><div class="shead">.*?<\/div>/,'').replace(/<\/div>$/,'')}
+function renderGroups(){$('groupPage').innerHTML=WA.groups.map((g,i)=>groupCard(i)).join('')}
+function renderIntegrity(){const a=WA.audit,b=a.baseAudit,failed=WA.groups.filter(g=>g.status==='FAILED'),review=WA.groups.filter(g=>g.status==='NEEDS_REVIEW');$('integrityPage').innerHTML=`<div class="kpis"><div class="kpi ok"><b>${fmt(a.messageIdsUnique)}</b><span>IDs de mensagem únicos</span></div><div class="kpi"><b>${fmt(a.capturedUniqueMediaReferenced)}</b><span>mídias deduplicadas SHA-256</span></div><div class="kpi warn"><b>${fmt(a.unavailableMediaRefs)}</b><span>referências de mídia indisponíveis</span></div><div class="kpi"><b>${fmt(b.machine_complete_duplicates_removed)}</b><span>duplicatas de máquina removidas com validação</span></div><div class="kpi warn"><b>${fmt(b.machine_praca_conflicts_preserved)}</b><span>conflitos de praça preservados</span></div><div class="kpi"><b>${fmt(a.unresolvedPointCodeMentions)}</b><span>códigos ambíguos não forçados</span></div></div><div class="card section"><div class="shead"><h3>Política de integridade</h3><span>evidência ≠ inferência</span></div><div class="body"><div class="threecol"><div class="box ok"><h4>Texto original preservado</h4><p>As 22.754 mensagens entram uma única vez por messageId. A camada de vínculos não altera o texto fonte.</p></div><div class="box ok"><h4>Deduplicação segura</h4><p>messages-since-join não é reimportado porque repete o subconjunto já contido em messages-all-observed. Mídia é única por SHA-256.</p></div><div class="box warn"><h4>Confiança explícita</h4><p>Vínculos altos usam identificadores exatos. Nome distintivo é médio. Continuação curta é contexto e aparece como tal.</p></div></div><div class="box warn" style="margin-top:9px"><h4>Regra permanente</h4><p>O campo “Última Atualização” continua fora da base consolidada de máquinas. “Último reboot” permanece por ser outro dado. Mensagens do WhatsApp são evidência original e não são editadas.</p></div></div></div><div class="twocol"><div class="card section"><div class="shead"><h3>Falhas de coleta (${failed.length})</h3><span>não preenchidas artificialmente</span></div><div class="body">${failed.map(g=>`<div class="box bad" style="margin-bottom:7px"><h4>${esc(g.name)}</h4><p>${esc(g.lastError||'Falha sem detalhe')}</p></div>`).join('')||'<div class="empty">Nenhuma</div>'}</div></div><div class="card section"><div class="shead"><h3>Revisão necessária (${review.length})</h3><span>cobertura incerta</span></div><div class="body">${review.map(g=>`<div class="box warn" style="margin-bottom:7px"><h4>${esc(g.name)}</h4><p>${esc((g.reviewReasons||[]).join(', '))} • ${fmt(g.messagesObserved)} mensagens • ${fmt(g.mediaGaps)} gaps</p></div>`).join('')}</div></div></div><div class="card section"><div class="shead"><h3>Vínculos derivados</h3><span>auditoria por motivo</span></div><div class="body"><div class="threecol"><div class="box ok"><h4>${fmt(a.linkConfidenceBins.high||0)} vínculos altos</h4><p>ID, código, nome/IP exato ou citação de evidência.</p></div><div class="box warn"><h4>${fmt(a.linkConfidenceBins.medium||0)} vínculos médios</h4><p>Nome de ponto por múltiplos tokens distintivos e checagem de unicidade.</p></div><div class="box"><h4>${fmt(a.linkConfidenceBins.context||0)} vínculos de contexto</h4><p>Continuação curta de conversa; sempre marcada como contexto.</p></div></div></div></div>`}
+function renderWhatsappDefault(){const ids=[...Array(WA.messages.length).keys()].sort((a,b)=>(WA.messages[b][1]||0)-(WA.messages[a][1]||0)).slice(0,500);$('waPageCount').textContent=fmt(WA.messages.length)+' mensagens';$('waPage').innerHTML=renderMessageTable(ids)}
+
+function showPage(id){currentPage=id;document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===id));if(id==='router'&&RDATA&&!rtLast){}if(id==='search')renderSearch();if(id==='whatsapp'&&!$('waPage').innerHTML)renderWhatsappDefault();if(id==='events'&&!$('eventsPage').innerHTML)renderEvents();if(id==='assets'&&!$('assetPage').innerHTML)renderAssets();if(id==='groups'&&!$('groupPage').innerHTML)renderGroups();if(id==='integrity'&&!$('integrityPage').innerHTML)renderIntegrity();if((id==='machines'||id==='points')&&$('q').value.trim())renderSearch()}
+function backup(){const obj={version:7,exportedAt:new Date().toISOString(),passes,notes,favorites:favs,messageNotes:msgNotes};const blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='backup_local_central_eletromidia_v7.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function passManager(){let h='<div class="box warn"><h4>Camada local de senhas</h4><p>Senha Padrão = Linux; senha específica = Windows. A fonte planilhada não possui senha, então nada é inventado.</p></div><div class="fieldgrid" style="margin-top:9px">';for(const [id,p] of Object.entries(passes).slice(0,1000))h+=field('Máquina '+id,p);h+='</div>';openDrawer('Senhas locais',Object.keys(passes).length+' cadastrada(s) neste navegador',h)}
+function help(){openDrawer('Sintaxe da busca','A pesquisa simples já funciona; filtros são opcionais',`<div class="fieldgrid">${field('Máquina / ponto','40007 pauliceia')}${field('WhatsApp','grupo:"CHAMADOS SP" offline')}${field('Autor','autor:bressani')}${field('Evento','evento:offline')}${field('Ativo','asset:372799')}${field('Chamado','ticket:1946550')}${field('Sistema','os:linux')}${field('Praça','praca:BA')}${field('IP','ip:179.246')}${field('Mídia','midia:sim')}${field('Vínculo','vinculo:alto')}${field('Fonte','fonte:whatsapp')}</div><div class="box ok" style="margin-top:10px"><p>Você também pode ignorar os filtros e digitar pedaços do que lembra. Termos livres podem estar em qualquer ordem.</p></div>`)}
+let messageIndexById=new Map();
+async function init(){try{$('loadText').textContent='Descompactando catálogo operacional…';if(!window.__PACK_CATALOG__||!window.__PACK_WHATSAPP__||!window.__PACK_ROUTER__)throw new Error('Arquivos catalog.js, whatsapp.js ou router.js ausentes.');C=await unpack(window.__PACK_CATALOG__);M=C.M;P=C.P;MS=C.MS;PS=C.PS;AUD=C.A;$('loadText').textContent='Descompactando histórico do NOC e construindo relações…';WA=await unpack(window.__PACK_WHATSAPP__);$('loadText').textContent='Carregando inteligência de roteamento…';RDATA=await unpack(window.__PACK_ROUTER__);messageIndexById=new Map(WA.messages.map((m,i)=>[m[0],i]));buildRelations();$('navM').textContent=fmt(M.length);$('navP').textContent=fmt(P.length);$('navW').textContent=fmt(WA.messages.length);$('navG').textContent=fmt(WA.groups.length);$('topBadges').innerHTML=`${pill(fmt(M.length)+' máquinas','orange')}${pill(fmt(P.length)+' pontos')}${pill(fmt(WA.messages.length)+' mensagens','purple')}${pill(fmt(WA.audit.capturedUniqueMediaReferenced)+' mídias','blue')}`;renderDashboard();rtInit();$('loading').classList.add('hide');$('status').textContent='Pronto. Digite qualquer pedaço do que procura.';window.__ELETRO_V7_READY__=true}catch(e){console.error(e);document.querySelector('.loadbox').innerHTML=`<h2>Falha ao carregar</h2><p style="color:#ff8c91">${esc(e.message||e)}</p><p>Mantenha index.html, catalog.js, whatsapp.js, router.js, machine_details.js, point_details.js e a pasta media juntos.</p>`}}
+
+document.querySelectorAll('.navbtn[data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));$('drawerClose').onclick=closeDrawer;$('drawerBack').onclick=e=>{if(e.target===$('drawerBack'))closeDrawer()};$('searchBtn').onclick=()=>{showPage('search');renderSearch()};$('clearBtn').onclick=()=>{$('q').value='';$('scope').value='all';renderSearch();$('q').focus()};$('backupBtn').onclick=backup;$('passBtn').onclick=passManager;$('helpBtn').onclick=help;$('scope').onchange=renderSearch;$('limit').onchange=renderSearch;let debounce;$('q').oninput=()=>{clearTimeout(debounce);debounce=setTimeout(()=>{if($('q').value.trim()){if(currentPage==='dashboard')showPage('search');renderSearch()}else if(currentPage==='search')renderSearch()},110)};$('q').onkeydown=e=>{if(e.key==='Enter'){showPage('search');renderSearch()}};
+init();
+</script>
+
+<!-- ELETROMIDIA V8 + V9 ADDONS -->
+<script src="router_v8.js"></script>
+<script src="ux_v9.js"></script>
+<script src="prisma_v10.js"></script>\n<script src="prisma_v11_worker_factory.js"></script>\n<script src="prisma_v11_db.js"></script>\n<script src="prisma_v11_core.js"></script>\n<script src="prisma_v11_flow.js"></script>\n<script src="prisma_v11_data.js"></script>
+</body>
+</html>
