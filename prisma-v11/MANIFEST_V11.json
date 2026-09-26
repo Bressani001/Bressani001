@@ -1,0 +1,41 @@
+{
+  "product": "PRISMA FLOW",
+  "version": "11.0.0",
+  "date": "2026-09-26",
+  "base": "PRISMA V10 + V9 + V8",
+  "contract": "Pesquisar -> Entender -> Agir -> Registrar",
+  "runtime": "offline-first / file:// compatible",
+  "persistence": "IndexedDB + preserved V10 localStorage",
+  "worker": "Blob Worker factory with fallback local search",
+  "imports": "validated local overlays; original static evidence preserved",
+  "files": [
+    "index.html",
+    "prisma_v11_worker_factory.js",
+    "prisma_v11_db.js",
+    "prisma_v11_core.js",
+    "prisma_v11_flow.js",
+    "prisma_v11_data.js"
+  ],
+  "preserved": [
+    "router.js",
+    "router_v8.js",
+    "router_v8_real.js",
+    "ux_v9.js",
+    "prisma_v10.js",
+    "catalog.js",
+    "whatsapp.js",
+    "machine_details.js",
+    "point_details.js",
+    "media/"
+  ],
+  "safety": [
+    "no eval",
+    "escaped imported values",
+    "80MB import limit",
+    "SHA-256 import digest",
+    "diff before confirm",
+    "reversible overlays",
+    "no automatic messaging",
+    "no AI routing or diagnosis"
+  ]
+}
