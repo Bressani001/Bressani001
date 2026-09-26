@@ -251,7 +251,7 @@ function topVersion(){
 
 async function boot(){
  var start=Date.now(),timer=setInterval(async function(){
-  var ok=false;try{ok=window.__ELETRO_V7_READY__===true&&window.PRISMA&&window.PRISMA.version&&window.PRISMA_DB&&typeof P!=='undefined'&&P.length&&typeof M!=='undefined'&&M.length&&window.WA&&Array.isArray(WA.messages)}catch(e){}
+  var ok=false;try{ok=window.__ELETRO_V7_READY__===true&&window.PRISMA&&window.PRISMA.version&&window.PRISMA_DB&&typeof P!=='undefined'&&P.length&&typeof M!=='undefined'&&M.length&&typeof WA!=='undefined'&&WA&&Array.isArray(WA.messages)}catch(e){}
   if(ok){
    clearInterval(timer);
    try{
