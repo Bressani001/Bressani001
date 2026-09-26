@@ -41,15 +41,12 @@ jobs:
           cp prisma-v11/prisma_v11_data.js dist/PRISMA_FLOW_V11_UPDATE/
           cp prisma-v11/MANIFEST_V11.json dist/PRISMA_FLOW_V11_UPDATE/
           cp prisma-v11/LEIA-ME-PRISMA-FLOW-V11.txt dist/PRISMA_FLOW_V11_UPDATE/
-          cd dist
-          zip -r PRISMA_FLOW_V11_UPDATE_FINAL.zip PRISMA_FLOW_V11_UPDATE
-          sha256sum PRISMA_FLOW_V11_UPDATE_FINAL.zip > PRISMA_FLOW_V11_UPDATE_FINAL.sha256
+          cd dist/PRISMA_FLOW_V11_UPDATE
+          sha256sum * > VALIDACAO_SHA256.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PRISMA_FLOW_V11_UPDATE_FINAL
-          path: |
-            dist/PRISMA_FLOW_V11_UPDATE_FINAL.zip
-            dist/PRISMA_FLOW_V11_UPDATE_FINAL.sha256
+          path: dist/PRISMA_FLOW_V11_UPDATE/
           if-no-files-found: error
