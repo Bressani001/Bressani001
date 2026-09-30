@@ -75,6 +75,27 @@ function chooseFile(files,names){
   return files.find(f=>wanted.includes(basename(f)))||null;
 }
 
+function applyImportOverlay(type,obj){
+  const candidates=S.imported.filter(r=>r.kind===type&&r.active!==false&&r.data);
+  const keys=new Set([obj._key,obj.id,obj.code,obj.pointCode,obj.name].filter(Boolean).map(x=>norm(x)));
+  let best=null;
+  for(const r of candidates){
+    const d=r.data||{};
+    const rkeys=[r.entityKey,d.id,d.code,d.pointCode,d.name].filter(Boolean).map(x=>norm(x));
+    if(!rkeys.some(k=>keys.has(k)))continue;
+    if(!best||String(r.importedAt||'')>String(best.importedAt||''))best=r;
+  }
+  if(!best)return obj;
+  const out=Object.assign({},obj);
+  Object.keys(best.data||{}).forEach(k=>{
+    const v=best.data[k];
+    if(v!==''&&v!=null)out[k]=v;
+  });
+  out._overlayImportId=best.importId;
+  out._overlayImportName=best.importName||best.importId;
+  return out;
+}
+
 function pointFrom(i){
   const c=(S.catalog&&S.catalog.P&&S.catalog.P[i])||[];
   const d=(S.pointDetails&&S.pointDetails[i])||[];
@@ -92,7 +113,7 @@ function pointFrom(i){
     cityVisible:text(d[27]),activationDate:text(d[28]),operationsUrl:text(d[29]),
     presentCurrent:d[8]===true||String(d[8]).toLowerCase()==='true'
   };
-  return applyCorrections('point',p._key,p);
+  return applyCorrections('point',p._key,applyImportOverlay('point',p));
 }
 function machineFrom(i){
   const c=(S.catalog&&S.catalog.M&&S.catalog.M[i])||[];
@@ -109,7 +130,7 @@ function machineFrom(i){
     resolution:text(d[20]),processor:text(d[21]),memory:text(d[22]),
     manufacturer:text(d[23]),model:text(d[24]),diskStatus:text(d[25]),lastReboot:text(d[26])
   };
-  return applyCorrections('machine',m._key,m);
+  return applyCorrections('machine',m._key,applyImportOverlay('machine',m));
 }
 function applyCorrections(type,key,obj){
   const out=Object.assign({},obj);
