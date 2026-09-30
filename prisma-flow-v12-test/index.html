@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PRISMA FLOW V12 • TESTE ISOLADO</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="bootError" class="boot-error hidden"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">P</div>
+        <div>
+          <strong>PRISMA <b>FLOW</b></strong>
+          <small>V12 • TESTE ISOLADO</small>
+        </div>
+      </div>
+
+      <button class="nav active" data-page="home">Início</button>
+      <button class="nav" data-page="search">Buscar</button>
+      <button class="nav" data-page="map">Mapa</button>
+      <button class="nav" data-page="imports">Importar</button>
+      <button class="nav" data-page="corrections">Correções</button>
+      <button class="nav" data-page="sources">Fontes</button>
+
+      <div class="side-spacer"></div>
+      <div class="safe-box">
+        <b>Modo seguro</b>
+        <span>A V12 não altera sua pasta V11.</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Início</h1>
+          <p id="pageSub">Conecte a pasta atual do PRISMA e teste tudo sem substituir arquivo nenhum.</p>
+        </div>
+        <div class="top-actions">
+          <span id="baseStatus" class="status-pill warn">Base não conectada</span>
+          <button id="connectBtn" class="primary">Conectar pasta V11</button>
+          <input id="folderInput" type="file" webkitdirectory multiple hidden>
+        </div>
+      </header>
+
+      <section id="page-home" class="page active"></section>
+      <section id="page-search" class="page"></section>
+      <section id="page-map" class="page"></section>
+      <section id="page-imports" class="page"></section>
+      <section id="page-corrections" class="page"></section>
+      <section id="page-sources" class="page"></section>
+    </main>
+  </div>
+
+  <div id="drawerBack" class="drawer-back hidden">
+    <aside id="drawer" class="drawer">
+      <button id="drawerClose" class="icon-btn">✕</button>
+      <div id="drawerBody"></div>
+    </aside>
+  </div>
+
+  <div id="modalBack" class="modal-back hidden">
+    <div id="modal" class="modal"></div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="./db.js"></script>
+  <script src="./core.js"></script>
+  <script src="./importer.js"></script>
+  <script src="./map.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
