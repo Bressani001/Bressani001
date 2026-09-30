@@ -1,0 +1,269 @@
+(function(){
+'use strict';
+
+const S={
+  connected:false,
+  files:new Map(),
+  catalog:null, WA:null, pointDetails:null, machineDetails:null,
+  points:[], machines:[], messages:[], groups:[], tickets:[], assets:[],
+  corrections:new Map(),
+  imported:[],
+  pointByKey:new Map(),
+  machineByKey:new Map(),
+  machinePoint:new Map(),
+  lastSearch:[],
+  sourceFolderName:'',
+  loadMeta:{}
+};
+
+function norm(v){
+  return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+}
+function compact(v){return norm(v).replace(/[^a-z0-9]+/g,'');}
+function num(v){
+  if(v==null||v==='') return null;
+  const n=Number(String(v).replace(',','.'));
+  return Number.isFinite(n)?n:null;
+}
+function text(v){return v==null?'':String(v).trim();}
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+function fmt(n){return Number(n||0).toLocaleString('pt-BR');}
+function toast(msg){
+  const el=document.getElementById('toast'); if(!el)return;
+  el.textContent=String(msg||'');el.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1900);
+}
+
+function b64ToBytes(b64){
+  const raw=atob(b64),out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function gunzipBase64(b64){
+  if(typeof DecompressionStream==='undefined') throw new Error('Seu navegador não oferece DecompressionStream. Use Chrome/Edge atualizado.');
+  const ds=new DecompressionStream('gzip');
+  const stream=new Blob([b64ToBytes(b64)]).stream().pipeThrough(ds);
+  return new Response(stream).text();
+}
+function extractAssignment(src,varName){
+  const marker='window.'+varName+'=';
+  const pos=src.indexOf(marker);
+  if(pos<0)throw new Error('Pacote '+varName+' não encontrado no arquivo.');
+  let i=pos+marker.length;
+  while(/\s/.test(src[i]||''))i++;
+  const quote=src[i];
+  if(quote!=='"'&&quote!=="'")throw new Error('Formato inesperado em '+varName+'.');
+  i++;
+  let out='';
+  for(;i<src.length;i++){
+    const c=src[i];
+    if(c===quote&&src[i-1]!=='\\')break;
+    out+=c;
+  }
+  if(!out)throw new Error('Conteúdo vazio em '+varName+'.');
+  return out.replace(/\\(["'\\])/g,'$1');
+}
+async function unpackFile(file,varName){
+  const src=await file.text();
+  const packed=extractAssignment(src,varName);
+  const raw=await gunzipBase64(packed);
+  return JSON.parse(raw);
+}
+function basename(file){return String(file.webkitRelativePath||file.name||'').split('/').pop().toLowerCase();}
+function chooseFile(files,names){
+  const wanted=names.map(x=>x.toLowerCase());
+  return files.find(f=>wanted.includes(basename(f)))||null;
+}
+
+function pointFrom(i){
+  const c=(S.catalog&&S.catalog.P&&S.catalog.P[i])||[];
+  const d=(S.pointDetails&&S.pointDetails[i])||[];
+  const key=text(d[0]||c[0]||c[1]||i);
+  const p={
+    _index:i,_key:key,_source:'base',
+    id:text(d[0]||c[0]),code:text(d[1]||c[1]),
+    name:text(d[3]||d[2]||c[2]),originalName:text(d[2]||c[2]),
+    address:text(d[12]||d[4]||c[3]),addressCsv:text(d[4]||c[3]),
+    neighborhood:text(d[13]),city:text(d[14]),state:text(d[15]||d[7]||c[5]),
+    square:text(d[16]||d[6]||c[6]),cep:text(d[17]),
+    lat:num(d[18]),lng:num(d[19]),area:text(d[20]||d[5]||c[10]),
+    environment:text(d[21]),establishment:text(d[22]),equipmentType:text(d[23]),
+    monitors:text(d[24]),status:text(d[25]||c[7]),commercialized:text(d[26]),
+    cityVisible:text(d[27]),activationDate:text(d[28]),operationsUrl:text(d[29]),
+    presentCurrent:d[8]===true||String(d[8]).toLowerCase()==='true'
+  };
+  return applyCorrections('point',p._key,p);
+}
+function machineFrom(i){
+  const c=(S.catalog&&S.catalog.M&&S.catalog.M[i])||[];
+  const d=(S.machineDetails&&S.machineDetails[i])||[];
+  const key=text(d[0]||c[0]||i);
+  const m={
+    _index:i,_key:key,_source:'base',
+    id:text(d[0]||c[0]),pointCode:text(d[1]||c[1]),
+    pointName:text(d[2]||c[3]),name:text(d[7]||c[2]),
+    address:text(d[3]||c[4]),cep:text(d[4]),square:text(d[5]||c[5]),
+    area:text(d[6]),systemName:text(d[9]),os:text(d[11]||c[6]),
+    ip:text(d[13]||c[7]),provider:text(d[14]||c[8]),installationType:text(d[16]),
+    systemVersion:text(d[17]),monitors:text(d[18]),location:text(d[19]),
+    resolution:text(d[20]),processor:text(d[21]),memory:text(d[22]),
+    manufacturer:text(d[23]),model:text(d[24]),diskStatus:text(d[25]),lastReboot:text(d[26])
+  };
+  return applyCorrections('machine',m._key,m);
+}
+function applyCorrections(type,key,obj){
+  const out=Object.assign({},obj);
+  const prefix=type+':'+key+':';
+  S.corrections.forEach((c,id)=>{
+    if(id.startsWith(prefix)&&c.active!==false) out[c.field]=c.newValue;
+  });
+  return out;
+}
+
+function rebuild(){
+  S.points=[];S.machines=[];S.pointByKey.clear();S.machineByKey.clear();S.machinePoint.clear();
+  const pc=(S.catalog&&S.catalog.P||[]).length;
+  const mc=(S.catalog&&S.catalog.M||[]).length;
+  for(let i=0;i<pc;i++){const p=pointFrom(i);S.points.push(p);S.pointByKey.set(p._key,p);if(p.code)S.pointByKey.set('code:'+norm(p.code),p);}
+  for(let i=0;i<mc;i++){const m=machineFrom(i);S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);}
+  const sqMap=new Map();
+  S.points.forEach(p=>{if(p.code){const k=norm(p.code)+'|'+norm(p.square);if(!sqMap.has(k))sqMap.set(k,p);}});
+  S.machines.forEach(m=>{
+    let p=sqMap.get(norm(m.pointCode)+'|'+norm(m.square));
+    if(!p&&m.pointCode)p=S.pointByKey.get('code:'+norm(m.pointCode));
+    if(p)S.machinePoint.set(m._key,p._key);
+  });
+  S.groups=(S.WA&&S.WA.groups)||[];
+  S.messages=(S.WA&&S.WA.messages)||[];
+  S.tickets=(S.WA&&S.WA.tickets)||[];
+  S.assets=(S.WA&&S.WA.assets)||[];
+}
+
+async function refreshLocal(){
+  if(!window.PrismaDB)return;
+  const [corr,recs]=await Promise.all([PrismaDB.all('corrections'),PrismaDB.all('importRecords')]);
+  S.corrections=new Map((corr||[]).map(x=>[x.id,x]));
+  S.imported=(recs||[]).filter(x=>x.active!==false);
+  if(S.connected)rebuild();
+}
+
+async function connectFolder(fileList){
+  const files=Array.from(fileList||[]);
+  if(!files.length)throw new Error('Nenhum arquivo foi selecionado.');
+  const catalog=chooseFile(files,['catalog.js','catalog(1).js']);
+  const whatsapp=chooseFile(files,['whatsapp.js','whatsapp(1).js']);
+  const pd=chooseFile(files,['point_details.js','point_details(1).js']);
+  const md=chooseFile(files,['machine_details.js','machine_details(1).js']);
+  if(!catalog)throw new Error('catalog.js não encontrado na pasta selecionada.');
+  if(!whatsapp)throw new Error('whatsapp.js não encontrado na pasta selecionada.');
+
+  S.files=new Map(files.map(f=>[basename(f),f]));
+  S.sourceFolderName=(files[0].webkitRelativePath||'').split('/')[0]||'Pasta selecionada';
+  toast('Lendo base. Pode levar alguns segundos…');
+
+  const jobs=[
+    unpackFile(catalog,'__PACK_CATALOG__'),
+    unpackFile(whatsapp,'__PACK_WHATSAPP__'),
+    pd?unpackFile(pd,'__PACK_POINT_DETAILS__'):Promise.resolve(null),
+    md?unpackFile(md,'__PACK_MACHINE_DETAILS__'):Promise.resolve(null)
+  ];
+  const [C,WA,PD,MD]=await Promise.all(jobs);
+  S.catalog=C;S.WA=WA;S.pointDetails=PD;S.machineDetails=MD;
+  S.connected=true;
+  S.loadMeta={
+    folder:S.sourceFolderName,
+    catalog:basename(catalog),whatsapp:basename(whatsapp),
+    pointDetails:pd?basename(pd):null,machineDetails:md?basename(md):null,
+    connectedAt:new Date().toISOString()
+  };
+  await refreshLocal();
+  await PrismaDB.put('sources',{id:'v11_folder',kind:'folder',name:S.sourceFolderName,meta:S.loadMeta,updatedAt:new Date().toISOString()});
+  await PrismaDB.audit('fonte','Pasta V11 conectada','',S.loadMeta);
+  return stats();
+}
+
+function stats(){
+  return {
+    points:S.points.length,machines:S.machines.length,messages:S.messages.length,
+    groups:S.groups.length,tickets:S.tickets.length,assets:S.assets.length,
+    imported:S.imported.length,corrections:S.corrections.size,
+    withCoords:S.points.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng)).length
+  };
+}
+
+function words(q){return norm(q).split(/\s+/).filter(Boolean);}
+function scoreBlob(blob,q,tokens,boost){
+  const n=norm(blob);if(!n)return -1;
+  let s=0;
+  if(n===norm(q))s+=10000;
+  if(n.startsWith(norm(q)))s+=1800;
+  if(n.includes(norm(q)))s+=900;
+  for(const t of tokens){if(!n.includes(t))return -1;s+=t.length*3;}
+  return s+(boost||0);
+}
+function pointBlob(p){return [p.id,p.code,p.name,p.originalName,p.address,p.neighborhood,p.city,p.state,p.square,p.cep,p.area,p.status,p.establishment,p.equipmentType].join(' ');}
+function machineBlob(m){return [m.id,m.name,m.pointCode,m.pointName,m.address,m.square,m.area,m.os,m.ip,m.provider,m.location,m.model].join(' ');}
+function importedBlob(r){return [r.entityKey,r.kind,r.label,JSON.stringify(r.data||{}),JSON.stringify(r.raw||{})].join(' ');}
+
+async function search(q,limit,type){
+  q=text(q);limit=limit||80;type=type||'all';
+  if(!q)return [];
+  const t=words(q),rows=[];
+  if(type==='all'||type==='point'){
+    for(const p of S.points){const s=scoreBlob(pointBlob(p),q,t,p.code===q?5000:0);if(s>=0)rows.push({type:'point',score:s,key:p._key,title:(p.code?p.code+' • ':'')+(p.name||'Ponto'),sub:[p.address,p.city,p.square].filter(Boolean).join(' • '),entity:p});}
+  }
+  if(type==='all'||type==='machine'){
+    for(const m of S.machines){const s=scoreBlob(machineBlob(m),q,t,m.id===q?5000:0);if(s>=0)rows.push({type:'machine',score:s,key:m._key,title:'['+(m.id||'')+'] '+(m.name||'Máquina'),sub:[m.pointCode,m.pointName,m.square,m.ip].filter(Boolean).join(' • '),entity:m});}
+  }
+  if((type==='all'||type==='message')&&S.messages.length){
+    for(let i=0;i<S.messages.length;i++){
+      const m=S.messages[i]||[],g=S.groups[m[4]]||{},blob=[g.name,m[5],m[2],m[3],m[6],m[10]].join(' ');
+      const s=scoreBlob(blob,q,t,0);if(s>=0)rows.push({type:'message',score:s,key:String(m[0]||i),title:g.name||'Mensagem',sub:[m[2],m[3],m[5],String(m[6]||m[10]||'').slice(0,130)].filter(Boolean).join(' • '),entity:{index:i,row:m,group:g}});
+    }
+  }
+  for(const r of S.imported){
+    const s=scoreBlob(importedBlob(r),q,t,150);if(s>=0)rows.push({type:r.kind||'imported',score:s,key:r.entityKey||r.id,title:(r.label||r.entityKey||'Importado')+' • importado',sub:'Fonte: '+(r.importName||r.importId||'importação'),entity:r,imported:true});
+  }
+  rows.sort((a,b)=>b.score-a.score||String(a.title).localeCompare(String(b.title),'pt-BR'));
+  S.lastSearch=rows.slice(0,limit);
+  try{await PrismaDB.audit('busca','Busca: '+q,'',{query:q,count:S.lastSearch.length});}catch(e){}
+  return S.lastSearch;
+}
+
+async function saveCorrection(type,key,field,newValue,reason){
+  if(!type||!key||!field)throw new Error('Correção incompleta.');
+  let current=null;
+  if(type==='point')current=S.pointByKey.get(key);
+  if(type==='machine')current=S.machineByKey.get(key);
+  const oldValue=current?current[field]:null;
+  const id=type+':'+key+':'+field;
+  const row={id,entityType:type,entityKey:key,field,oldValue:oldValue,newValue:newValue,reason:text(reason),active:true,updatedAt:new Date().toISOString()};
+  await PrismaDB.put('corrections',row);
+  await PrismaDB.audit('correcao','Corrigiu '+type+' '+key+' • '+field,key,row);
+  await refreshLocal();
+  return row;
+}
+async function removeCorrection(id){
+  const c=await PrismaDB.get('corrections',id);
+  if(c)await PrismaDB.audit('correcao_removida','Removeu correção '+id,c.entityKey||'',c);
+  await PrismaDB.delete('corrections',id);
+  await refreshLocal();
+}
+function pointForMachine(m){const k=S.machinePoint.get(m._key);return k?S.pointByKey.get(k)||null:null;}
+function machinesForPoint(p){
+  const out=[];S.machines.forEach(m=>{if(S.machinePoint.get(m._key)===p._key)out.push(m);});return out;
+}
+function mapsUrl(p){
+  if(Number.isFinite(p.lat)&&Number.isFinite(p.lng))return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
+  const q=[p.address,p.city,p.state,p.cep].filter(Boolean).join(', ');
+  return q?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q):'';
+}
+
+window.PrismaCore={
+  S,norm,compact,num,text,esc,fmt,toast,connectFolder,refreshLocal,rebuild,stats,search,
+  pointForMachine,machinesForPoint,mapsUrl,saveCorrection,removeCorrection,
+  getPoint:key=>S.pointByKey.get(key)||S.pointByKey.get('code:'+norm(key))||null,
+  getMachine:key=>S.machineByKey.get(key)||S.machineByKey.get('id:'+norm(key))||null
+};
+
+})();
