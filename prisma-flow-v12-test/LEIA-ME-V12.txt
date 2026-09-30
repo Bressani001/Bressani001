@@ -1,0 +1,74 @@
+PRISMA FLOW V12 - TESTE ISOLADO
+================================
+
+ESTA PASTA NÃO SUBSTITUI A V11.
+
+Objetivo desta build:
+- rodar como uma aplicação separada;
+- ler a pasta V11 somente quando você selecioná-la;
+- nunca gravar arquivos dentro da pasta V11;
+- guardar correções/importações em IndexedDB próprio: prisma_flow_v12_test.
+
+COMO TESTAR
+1. Baixe a branch prisma-flow-v12-test.
+2. Entre na pasta prisma-flow-v12-test.
+3. Abra index.html no Chrome/Edge atualizado.
+4. Clique em "Conectar pasta V11".
+5. Selecione a pasta que hoje contém index.html, catalog.js, whatsapp.js,
+   machine_details.js e point_details.js.
+6. Aguarde o carregamento.
+7. Use Busca, Mapa, Importar e Correções.
+
+O QUE JÁ EXISTE NESTA BUILD
+- layout novo e responsivo;
+- aplicação isolada;
+- leitura dos pacotes compactados da V11;
+- busca única de pontos, máquinas, WhatsApp e registros importados;
+- Ponto 360 simplificado;
+- detalhes de máquina;
+- correção manual reversível e auditável;
+- importador adaptativo XLSX/XLS/CSV/JSON;
+- inferência por nome de coluna + amostra de conteúdo;
+- aprendizado local do mapeamento de cabeçalhos;
+- overlays de importação aplicados sobre a base operacional;
+- mapa navegável via Leaflet/OpenStreetMap;
+- pins dos pontos com Latitude/Longitude;
+- pesquisa dentro do mapa;
+- botão para abrir Google Maps;
+- área de Fontes já preparada para Slack.
+
+IMPORTANTE
+- Mensagens originais de WhatsApp não são editadas.
+- A pasta V11 não é modificada.
+- Excluir uma importação V12 não apaga arquivo original.
+- Desfazer uma correção retorna ao valor anterior da base/overlay.
+
+DEPENDÊNCIAS ONLINE DA PRIMEIRA BUILD
+- Leaflet/OpenStreetMap para o mapa.
+- SheetJS (XLSX) para ler .xlsx/.xls.
+
+CSV/JSON e o núcleo da V12 continuam sendo arquivos locais.
+Uma etapa posterior pode empacotar também essas bibliotecas na pasta para reduzir
+dependências externas.
+
+MAPEAMENTO DE PLANILHA
+A V12 tenta reconhecer exemplos como:
+"Cod. Local"       -> Código do ponto
+"Nome instalação"  -> Nome do ponto
+"Logradouro"       -> Endereço
+"Máq"              -> Máquina
+"Pat."             -> Ativo
+"UF"               -> Estado
+"Latitude"          -> Latitude
+"Longitude"         -> Longitude
+
+Antes de gravar, o usuário vê e pode alterar cada associação. O mapeamento
+corrigido fica salvo localmente para arquivos futuros.
+
+SLACK
+A tela Fontes já reserva o Slack como uma fonte futura. A integração prevista é:
+Slack canal/thread/mensagem -> mensagem normalizada -> vínculo com
+Ponto/Máquina/Chamado/Ativo -> mesma timeline operacional.
+
+STATUS
+Build inicial V12 isolada para teste funcional.
