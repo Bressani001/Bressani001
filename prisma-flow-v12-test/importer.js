@@ -31,31 +31,51 @@ let pending=null;
 
 function n(v){return C().norm(v)}
 function c(v){return C().compact(v)}
+function headerRowScore(row){
+  const cells=(row||[]).map(x=>String(x??'').trim()).filter(Boolean);
+  if(cells.length<2)return -999;
+  let aliases=0;
+  for(const cell of cells){
+    let best=0;
+    for(const sem of SEMANTICS.filter(x=>x.id!=='ignore'))best=Math.max(best,aliasScore(cell,sem));
+    if(best>=75)aliases++;
+  }
+  const unique=new Set(cells.map(c)).size;
+  return cells.length*2+aliases*14+unique*.5;
+}
+function matrixToObjects(matrix){
+  matrix=(matrix||[]).filter(r=>Array.isArray(r)&&r.some(v=>String(v??'').trim()!==''));
+  if(!matrix.length)return [];
+  let best=0,bestScore=-Infinity;
+  for(let i=0;i<Math.min(25,matrix.length);i++){
+    const s=headerRowScore(matrix[i]);
+    if(s>bestScore){bestScore=s;best=i;}
+  }
+  const rawHeaders=(matrix[best]||[]).map((h,i)=>String(h??'').trim()||('Coluna '+(i+1)));
+  const seen={};
+  const headers=rawHeaders.map((h,i)=>{const base=h||('Coluna '+(i+1));seen[base]=(seen[base]||0)+1;return seen[base]===1?base:(base+' '+seen[base]);});
+  const out=[];
+  for(let ri=best+1;ri<matrix.length;ri++){
+    const row=matrix[ri]||[];if(!row.some(v=>String(v??'').trim()!==''))continue;
+    const o={};headers.forEach((h,i)=>o[h]=row[i]==null?'':row[i]);out.push(o);
+  }
+  return out;
+}
 function parseCSV(text){
   text=String(text||'').replace(/^\uFEFF/,'');
   const first=(text.split(/\r?\n/).find(x=>x.trim())||'');
   const counts={';':(first.match(/;/g)||[]).length,',':(first.match(/,/g)||[]).length,'\t':(first.match(/\t/g)||[]).length};
   const delimiter=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0]||';';
-  const rows=[];let row=[],cell='',quote=false;
+  const matrix=[];let row=[],cell='',quote=false;
   for(let i=0;i<text.length;i++){
     const ch=text[i],nx=text[i+1];
-    if(ch==='"'){
-      if(quote&&nx==='"'){cell+='"';i++;continue;}
-      quote=!quote;continue;
-    }
+    if(ch==='"'){if(quote&&nx==='"'){cell+='"';i++;continue;}quote=!quote;continue;}
     if(!quote&&ch===delimiter){row.push(cell);cell='';continue;}
-    if(!quote&&(ch==='\n'||ch==='\r')){
-      if(ch==='\r'&&nx==='\n')i++;
-      row.push(cell);cell='';
-      if(row.some(v=>String(v).trim()!==''))rows.push(row);
-      row=[];continue;
-    }
+    if(!quote&&(ch==='\n'||ch==='\r')){if(ch==='\r'&&nx==='\n')i++;row.push(cell);cell='';if(row.some(v=>String(v).trim()!==''))matrix.push(row);row=[];continue;}
     cell+=ch;
   }
-  row.push(cell);if(row.some(v=>String(v).trim()!==''))rows.push(row);
-  if(!rows.length)return [];
-  const headers=rows.shift().map((h,i)=>String(h||'').trim()||('Coluna '+(i+1)));
-  return rows.map(r=>{const o={};headers.forEach((h,i)=>o[h]=r[i]==null?'':r[i]);return o;});
+  row.push(cell);if(row.some(v=>String(v).trim()!==''))matrix.push(row);
+  return matrixToObjects(matrix);
 }
 async function parseFile(file){
   const ext=(file.name.split('.').pop()||'').toLowerCase();
@@ -70,8 +90,18 @@ async function parseFile(file){
   if(ext==='xlsx'||ext==='xls'){
     if(!window.XLSX)throw new Error('Leitor XLSX não carregou. Conecte à internet nesta primeira versão ou salve como CSV.');
     const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
-    const sheet=wb.Sheets[wb.SheetNames[0]];
-    return XLSX.utils.sheet_to_json(sheet,{defval:'',raw:false});
+    let bestRows=[],bestScore=-1;
+    for(const name of wb.SheetNames){
+      const matrix=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:'',raw:false,blankrows:false});
+      const rows=matrixToObjects(matrix);
+      if(!rows.length)continue;
+      const sample=rows.slice(0,20),headers=Object.keys(rows[0]||{});
+      let semanticHits=0;for(const h of headers){for(const sem of SEMANTICS.filter(x=>x.id!=='ignore')){if(aliasScore(h,sem)>=75){semanticHits++;break;}}}
+      const score=semanticHits*100+Math.min(rows.length,5000)+headers.length;
+      if(score>bestScore){bestScore=score;bestRows=rows;}
+    }
+    if(!bestRows.length)throw new Error('Nenhuma aba da planilha contém uma tabela utilizável.');
+    return bestRows;
   }
   throw new Error('Formato não suportado: .'+ext);
 }
