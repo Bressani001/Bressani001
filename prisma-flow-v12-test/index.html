@@ -13,33 +13,38 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">P</div>
-        <div>
-          <strong>PRISMA <b>FLOW</b></strong>
-          <small>V12 • TESTE ISOLADO</small>
-        </div>
+        <div><strong>PRISMA <b>FLOW</b></strong><small>V12 • TESTE ISOLADO</small></div>
       </div>
 
+      <div class="nav-section">PRINCIPAL</div>
       <button class="nav active" data-page="home">Início</button>
       <button class="nav" data-page="search">Buscar</button>
+      <button class="nav" data-page="today">Meu Turno</button>
+      <button class="nav" data-page="flow360">Ponto 360º</button>
       <button class="nav" data-page="map">Mapa</button>
+
+      <div class="nav-section">ROTEAMENTO</div>
+      <button class="nav" data-page="pointgroup">Ponto → Grupo</button>
+      <button class="nav" data-page="router">Roteador NOC</button>
       <button class="nav" data-page="routes">Rotas WhatsApp</button>
+      <button class="nav" data-page="groups">Grupos</button>
+      <button class="nav" data-page="messages">Mensagens</button>
+      <button class="nav" data-page="relations">Relações</button>
+
+      <div class="nav-section">DADOS</div>
       <button class="nav" data-page="imports">Importar</button>
       <button class="nav" data-page="corrections">Correções</button>
+      <button class="nav" data-page="health">Saúde das bases</button>
+      <button class="nav" data-page="backup">Backup</button>
       <button class="nav" data-page="sources">Fontes</button>
 
       <div class="side-spacer"></div>
-      <div class="safe-box">
-        <b>Modo seguro</b>
-        <span>A V12 não altera sua pasta V11.</span>
-      </div>
+      <div class="safe-box"><b>Modo seguro</b><span>A V12 não altera sua pasta V11.</span></div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Início</h1>
-          <p id="pageSub">Conecte a pasta atual do PRISMA e teste tudo sem substituir arquivo nenhum.</p>
-        </div>
+        <div><h1 id="pageTitle">Início</h1><p id="pageSub">Conecte a pasta atual do PRISMA e teste tudo sem substituir arquivo nenhum.</p></div>
         <div class="top-actions">
           <span id="baseStatus" class="status-pill warn">Base não conectada</span>
           <button id="connectBtn" class="primary">Conectar pasta V11</button>
@@ -49,25 +54,27 @@
 
       <section id="page-home" class="page active"></section>
       <section id="page-search" class="page"></section>
+      <section id="page-today" class="page"></section>
+      <section id="page-flow360" class="page"></section>
       <section id="page-map" class="page"></section>
+      <section id="page-pointgroup" class="page"></section>
+      <section id="page-router" class="page"></section>
       <section id="page-routes" class="page"></section>
+      <section id="page-groups" class="page"></section>
+      <section id="page-messages" class="page"></section>
+      <section id="page-relations" class="page"></section>
       <section id="page-imports" class="page"></section>
       <section id="page-corrections" class="page"></section>
+      <section id="page-health" class="page"></section>
+      <section id="page-backup" class="page"></section>
       <section id="page-sources" class="page"></section>
     </main>
   </div>
 
   <div id="drawerBack" class="drawer-back hidden">
-    <aside id="drawer" class="drawer">
-      <button id="drawerClose" class="icon-btn">✕</button>
-      <div id="drawerBody"></div>
-    </aside>
+    <aside id="drawer" class="drawer"><button id="drawerClose" class="icon-btn">✕</button><div id="drawerBody"></div></aside>
   </div>
-
-  <div id="modalBack" class="modal-back hidden">
-    <div id="modal" class="modal"></div>
-  </div>
-
+  <div id="modalBack" class="modal-back hidden"><div id="modal" class="modal"></div></div>
   <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -78,6 +85,10 @@
   <script src="./importer.js"></script>
   <script src="./map.js"></script>
   <script src="./routes.js"></script>
+  <script src="./groups.js"></script>
+  <script src="./router_noc.js"></script>
+  <script src="./messages.js"></script>
+  <script src="./flow.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
