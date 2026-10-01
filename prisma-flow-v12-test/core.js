@@ -237,6 +237,12 @@ async function search(q,limit,type){
   if(type==='all'||type==='machine'){
     for(const m of S.machines){const s=scoreBlob(m._search||machineBlob(m),q,t,m.id===q?5000:0,!!m._search);if(s>=0)rows.push({type:'machine',score:s,key:m._key,title:'['+(m.id||'')+'] '+(m.name||'Máquina'),sub:[m.pointCode,m.pointName,m.square,m.ip].filter(Boolean).join(' • '),entity:m});}
   }
+  if(type==='all'||type==='group'){
+    for(let i=0;i<S.groups.length;i++){
+      const g=S.groups[i]||{},blob=[g.name,g.category,(g.regionHints||[]).join(' ')].join(' ');
+      const s=scoreBlob(blob,q,t,0);if(s>=0)rows.push({type:'group',score:s,key:String(i),title:g.name||('Grupo '+i),sub:[g.category,(g.regionHints||[]).join(', '),((g.messagesObserved||0)+' mensagens')].filter(Boolean).join(' • '),entity:{index:i,row:g}});
+    }
+  }
   if((type==='all'||type==='message')&&S.messages.length){
     for(let i=0;i<S.messages.length;i++){
       const m=S.messages[i]||[],g=S.groups[m[4]]||{},blob=[g.name,m[5],m[2],m[3],m[6],m[10]].join(' ');
@@ -287,6 +293,32 @@ function pointForMachine(m){const k=S.machinePoint.get(m._key);return k?S.pointB
 function machinesForPoint(p){
   const out=[];S.machines.forEach(m=>{if(S.machinePoint.get(m._key)===p._key)out.push(m);});return out;
 }
+function messagesForPoint(p){
+  if(!p)return [];const pi=Number(p._index),out=[];
+  for(let i=0;i<S.messages.length;i++){const m=S.messages[i]||[];for(const x of (m[17]||[])){if(Number(x&&x[0])===pi){out.push({index:i,confidence:Number(x[1]||0),reasons:x[2]||[],message:m,group:S.groups[m[4]]||{}});break;}}}
+  return out;
+}
+function messagesForMachine(mach){
+  if(!mach)return [];const mi=Number(mach._index),out=[];
+  for(let i=0;i<S.messages.length;i++){const m=S.messages[i]||[];for(const x of (m[18]||[])){if(Number(x&&x[0])===mi){out.push({index:i,confidence:Number(x[1]||0),reasons:x[2]||[],message:m,group:S.groups[m[4]]||{}});break;}}}
+  return out;
+}
+function groupStatsForPoint(p){
+  const map=new Map();messagesForPoint(p).forEach(r=>{const gi=Number(r.message[4]);let s=map.get(gi);if(!s){s={group:gi,count:0,strong:0,medium:0,maxConfidence:0,lastTs:0};map.set(gi,s)}s.count++;s.maxConfidence=Math.max(s.maxConfidence,r.confidence);if(r.confidence>=.9)s.strong++;else if(r.confidence>=.7)s.medium++;s.lastTs=Math.max(s.lastTs,Number(r.message[1]||0));});
+  return [...map.values()].sort((a,b)=>b.strong-a.strong||b.count-a.count||b.maxConfidence-a.maxConfidence||b.lastTs-a.lastTs);
+}
+function groupStatsForMachine(mach){
+  const map=new Map();messagesForMachine(mach).forEach(r=>{const gi=Number(r.message[4]);let s=map.get(gi);if(!s){s={group:gi,count:0,strong:0,medium:0,maxConfidence:0,lastTs:0};map.set(gi,s)}s.count++;s.maxConfidence=Math.max(s.maxConfidence,r.confidence);if(r.confidence>=.9)s.strong++;else if(r.confidence>=.7)s.medium++;s.lastTs=Math.max(s.lastTs,Number(r.message[1]||0));});
+  return [...map.values()].sort((a,b)=>b.strong-a.strong||b.count-a.count||b.maxConfidence-a.maxConfidence||b.lastTs-a.lastTs);
+}
+function ticketsForPoint(p){
+  if(!p)return [];const pi=Number(p._index),out=[];(S.tickets||[]).forEach((r,i)=>{if((r[2]||[]).some(x=>Number(x&&x[0])===pi))out.push({index:i,row:r,id:String(r[0]||'')})});return out;
+}
+function assetsForPoint(p){
+  if(!p)return [];const pi=Number(p._index),out=[];(S.assets||[]).forEach((r,i)=>{if((r[2]||[]).some(x=>Number(x&&x[0])===pi))out.push({index:i,row:r,id:String(r[0]||'')})});return out;
+}
+function operationsPointUrl(p){return p&&p.id?'https://operacoes.eletromidia.com.br/places/'+encodeURIComponent(p.id):'https://operacoes.eletromidia.com.br/places';}
+function operationsMachineUrl(m){return m&&m.id?'https://operacoes.eletromidia.com.br/legacy/machines/'+encodeURIComponent(m.id)+'/edit':'https://operacoes.eletromidia.com.br/legacy/machines';}
 function mapsUrl(p){
   if(Number.isFinite(p.lat)&&Number.isFinite(p.lng))return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
   const q=[p.address,p.city,p.state,p.cep].filter(Boolean).join(', ');
@@ -295,7 +327,7 @@ function mapsUrl(p){
 
 window.PrismaCore={
   S,norm,compact,num,text,esc,fmt,toast,connectFolder,refreshLocal,rebuild,stats,search,
-  pointForMachine,machinesForPoint,mapsUrl,saveCorrection,removeCorrection,
+  pointForMachine,machinesForPoint,messagesForPoint,messagesForMachine,groupStatsForPoint,groupStatsForMachine,ticketsForPoint,assetsForPoint,operationsPointUrl,operationsMachineUrl,mapsUrl,saveCorrection,removeCorrection,
   getPoint:key=>S.pointByKey.get(key)||S.pointByKey.get('code:'+norm(key))||null,
   getMachine:key=>S.machineByKey.get(key)||S.machineByKey.get('id:'+norm(key))||null
 };
