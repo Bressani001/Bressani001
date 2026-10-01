@@ -3,7 +3,7 @@
 
 const S={
   connected:false,
-  files:new Map(),
+  files:new Map(),mediaUrls:new Map(),
   catalog:null, WA:null, routerData:null, pointDetails:null, machineDetails:null,
   points:[], machines:[], messages:[], groups:[], tickets:[], assets:[],
   corrections:new Map(),
@@ -179,6 +179,7 @@ async function connectFolder(fileList){
   if(!catalog)throw new Error('catalog.js não encontrado na pasta selecionada.');
   if(!whatsapp)throw new Error('whatsapp.js não encontrado na pasta selecionada.');
 
+  S.mediaUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});S.mediaUrls.clear();
   S.files=new Map(files.map(f=>[basename(f),f]));
   S.sourceFolderName=(files[0].webkitRelativePath||'').split('/')[0]||'Pasta selecionada';
   toast('Lendo base. Pode levar alguns segundos…');
@@ -321,6 +322,12 @@ function assetsForPoint(p){
 }
 function operationsPointUrl(p){return p&&p.id?'https://operacoes.eletromidia.com.br/places/'+encodeURIComponent(p.id):'https://operacoes.eletromidia.com.br/places';}
 function operationsMachineUrl(m){return m&&m.id?'https://operacoes.eletromidia.com.br/legacy/machines/'+encodeURIComponent(m.id)+'/edit':'https://operacoes.eletromidia.com.br/legacy/machines';}
+function sourceFileUrl(name){
+  const k=String(name||'').split('/').pop().toLowerCase();if(!k)return '';
+  if(S.mediaUrls.has(k))return S.mediaUrls.get(k);
+  const f=S.files.get(k);if(!f)return '';
+  try{const u=URL.createObjectURL(f);S.mediaUrls.set(k,u);return u}catch(e){return ''}
+}
 function mapsUrl(p){
   if(Number.isFinite(p.lat)&&Number.isFinite(p.lng))return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
   const q=[p.address,p.city,p.state,p.cep].filter(Boolean).join(', ');
@@ -329,7 +336,7 @@ function mapsUrl(p){
 
 window.PrismaCore={
   S,norm,compact,num,text,esc,fmt,toast,connectFolder,refreshLocal,rebuild,stats,search,
-  pointForMachine,machinesForPoint,messagesForPoint,messagesForMachine,groupStatsForPoint,groupStatsForMachine,ticketsForPoint,assetsForPoint,operationsPointUrl,operationsMachineUrl,mapsUrl,saveCorrection,removeCorrection,
+  pointForMachine,machinesForPoint,messagesForPoint,messagesForMachine,groupStatsForPoint,groupStatsForMachine,ticketsForPoint,assetsForPoint,operationsPointUrl,operationsMachineUrl,sourceFileUrl,mapsUrl,saveCorrection,removeCorrection,
   getPoint:key=>S.pointByKey.get(key)||S.pointByKey.get('code:'+norm(key))||null,
   getMachine:key=>S.machineByKey.get(key)||S.machineByKey.get('id:'+norm(key))||null
 };
