@@ -156,3 +156,12 @@ body.newbie .newbie-only{display:block}.newbie-only{display:none}
 .route-proof-head small{grid-column:1/-1;color:var(--muted);font-size:8px}
 @media(max-width:1000px){.route-filterbar{grid-template-columns:1fr 1fr}.route-proof-head{grid-template-columns:1fr}.route-proof-head>span{display:none}}
 @media(max-width:650px){.route-filterbar{grid-template-columns:1fr}.route-row{flex-direction:column}.route-actions{justify-content:flex-start}}
+
+.top-search{display:flex;gap:5px;min-width:min(470px,34vw)}
+.top-search input{min-width:0;flex:1}
+.quick-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quick-add-grid button{text-align:left;padding:12px}
+.quick-add-grid b,.quick-add-grid small{display:block}
+.quick-add-grid small{color:var(--muted);font-size:8.5px;margin-top:3px}
+@media(max-width:1200px){.top-search{min-width:260px}.topbar{align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}}
+@media(max-width:800px){.top-search{width:100%;min-width:0}.quick-add-grid{grid-template-columns:1fr}}
