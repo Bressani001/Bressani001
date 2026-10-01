@@ -4,7 +4,7 @@ const DB=()=>window.PrismaDB;
 function read(key,fallback){try{const v=localStorage.getItem(key);return v==null?fallback:JSON.parse(v)}catch(e){return fallback}}
 async function migrate(){
   if(!window.PrismaDB)return;
-  if(await DB().setting('legacy_migrated_v12',false))return;
+  if(await DB().setting('legacy_migrated_v12_v2',false))return;
   const now=new Date().toISOString();
 
   const tpl=read('prisma_templates_v10',null);
@@ -35,7 +35,7 @@ async function migrate(){
   const notes=read('eletromidia_notes_v5',{});
   if(notes&&typeof notes==='object'&&!Array.isArray(notes)){const rows=[];Object.entries(notes).forEach(([id,value])=>rows.push({id:String(id),value:String(value||''),updatedAt:now}));if(rows.length)await DB().bulkPut('notes',rows,300);}
   const msgNotes=read('eletromidia_message_notes_v6',{});
-  if(msgNotes&&typeof msgNotes==='object'&&!Array.isArray(msgNotes)){const rows=[];Object.entries(msgNotes).forEach(([id,value])=>rows.push({id:'message:'+id,value:String(value||''),updatedAt:now}));if(rows.length)await DB().bulkPut('notes',rows,300);}
+  if(msgNotes&&typeof msgNotes==='object'&&!Array.isArray(msgNotes)){const rows=[];Object.entries(msgNotes).forEach(([id,value])=>{const clean=String(id).replace(/^msg:/,'').replace(/^message:/,'');rows.push({id:'message:'+clean,value:String(value||''),updatedAt:now})});if(rows.length)await DB().bulkPut('notes',rows,300);}
 
   const pass=read('eletromidia_password_overlay_v2',{});
   if(pass&&typeof pass==='object'&&!Array.isArray(pass)){const rows=[];Object.entries(pass).forEach(([id,value])=>rows.push({id:String(id),value:String(value||''),updatedAt:now}));if(rows.length)await DB().bulkPut('passwords',rows,300);}
@@ -48,7 +48,7 @@ async function migrate(){
     const flat={};Object.keys(oldFeedback.positive||{}).forEach(k=>flat[k]='positive');Object.keys(oldFeedback.negative||{}).forEach(k=>flat[k]='negative');try{localStorage.setItem('prisma_v12_route_feedback',JSON.stringify(flat))}catch(e){}
   }
 
-  await DB().setSetting('legacy_migrated_v12',true);
+  await DB().setSetting('legacy_migrated_v12_v2',true);
   await DB().audit('migracao','Configurações locais V7–V11 preservadas na V12','',{at:now});
 }
 window.PrismaLegacy={migrate};
