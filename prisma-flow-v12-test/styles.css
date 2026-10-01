@@ -81,3 +81,48 @@ input:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 
 .route-row small{display:block;color:var(--muted);font-size:8.5px;margin-top:3px;line-height:1.35}
 .route-row>span:last-child{text-align:right;flex:0 0 auto}
 @media(max-width:1100px){.route-center{grid-template-columns:1fr}.route-selected{order:-1}}
+
+/* V12 restored operational modules */
+.nav-section{font-size:8px;letter-spacing:.14em;color:#666f79;margin:14px 10px 5px;text-transform:uppercase}
+.muted{color:var(--muted);font-size:10px;line-height:1.45}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px}
+.tabs button.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.group-card,.relation-row,.timeline-row{width:100%;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;text-align:left;background:#0e1217;border:1px solid #2b3139;border-radius:9px;padding:9px 10px}
+.group-card:hover,.relation-row:hover,.timeline-row:hover{border-color:#ff5a13}
+.group-card b,.relation-row b{display:block;font-size:10.5px}
+.group-card small,.relation-row small{display:block;color:var(--muted);font-size:8.5px;margin-top:3px;line-height:1.35}
+.timeline{display:flex;flex-direction:column;gap:7px}
+.timeline-row{display:block}
+.timeline-row .meta{font-size:8px;color:#7e8792;margin-bottom:5px}
+.timeline-row>div:last-child{font-size:10px;line-height:1.45;white-space:pre-wrap}
+.message-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(360px,.95fr);gap:12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.form-grid .full{grid-column:1/-1}
+.form-grid label{font-size:9px;color:#aeb5bd}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;margin-top:4px}
+.relative{position:relative}
+.suggest{display:none;position:absolute;z-index:100;left:0;right:0;top:100%;max-height:300px;overflow:auto;background:#0d1014;border:1px solid #3a414a;border-radius:8px;box-shadow:0 18px 50px #000}
+.suggest.open{display:block}
+.suggest button{width:100%;display:block;text-align:left;border:0;border-bottom:1px solid #242a31;border-radius:0;background:#0d1014;padding:8px}
+.suggest button b,.suggest button small{display:block}
+.suggest button small{font-size:8px;color:var(--muted);margin-top:2px}
+.context-box{border:1px solid #30363e;background:#0d1014;border-radius:8px;padding:9px;margin-top:10px}
+.context-box b,.context-box small{display:block}.context-box small{color:var(--muted);font-size:8.5px;margin-top:3px}
+.task-list{display:flex;flex-direction:column;gap:8px}
+.task-card{border:1px solid #2d333b;background:#0d1014;border-radius:10px;padding:10px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.task-card b,.task-card small{display:block}.task-card small{color:var(--muted);font-size:8.5px;margin-top:4px}
+.task-meta{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+.flow360-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.flow360-head h2{margin:3px 0;font-size:23px}.flow360-head p{margin:0}
+.mini-stat{border:1px solid #30363e;background:#0d1014;border-radius:8px;padding:9px;text-align:center}
+.mini-stat b,.mini-stat span{display:block}.mini-stat b{font-size:16px}.mini-stat span{font-size:8px;color:var(--muted);margin-top:2px}
+.relation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.route-warn{border:1px solid #30363e;border-radius:8px;padding:8px;margin-top:9px;font-size:9px;line-height:1.4}
+.route-warn.ok{border-color:#2d7046;background:#10241a}.route-warn.warn{border-color:#806420;background:#2a220d}.route-warn.danger{border-color:#7d3131;background:#2a1010}
+.route-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:center;margin-top:12px}
+.route-flow>div{border:1px solid #30363e;background:#0d1014;border-radius:9px;padding:10px}.route-flow b,.route-flow span{display:block}.route-flow span{font-size:9px;color:var(--muted);margin-top:3px}
+.router-reasons{font-size:9px;line-height:1.5;padding-left:18px}
+.chip.danger{border-color:#7d3131;color:#ff9c9c;background:#251010}
+body.newbie .newbie-only{display:block}.newbie-only{display:none}
+@media(max-width:1100px){.message-grid,.relation-grid,.group-grid{grid-template-columns:1fr}.flow360-head{flex-direction:column}.route-flow{grid-template-columns:1fr}.route-flow>b{display:none}}
