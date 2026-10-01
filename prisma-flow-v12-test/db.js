@@ -165,8 +165,11 @@
   }
 
   async function exportAll() {
-    const data={product:'PRISMA FLOW',version:12,db:DB_NAME,exportedAt:new Date().toISOString(),stores:{}};
+    const data={product:'PRISMA FLOW',version:12,db:DB_NAME,exportedAt:new Date().toISOString(),stores:{},localStorage:{}};
     for(const name of Object.keys(STORES)) data.stores[name]=await all(name);
+    for(const key of ['prisma_v12_router_overrides','prisma_v12_route_feedback']){
+      try{const v=localStorage.getItem(key);if(v!=null)data.localStorage[key]=v}catch(e){}
+    }
     return data;
   }
   async function importAll(data,replace) {
@@ -175,6 +178,13 @@
       if(replace)await clear(name);
       const rows=Array.isArray(data.stores[name])?data.stores[name]:[];
       if(rows.length)await bulkPut(name,rows,500);
+    }
+    if(data.localStorage&&typeof data.localStorage==='object'){
+      for(const key of ['prisma_v12_router_overrides','prisma_v12_route_feedback']){
+        if(Object.prototype.hasOwnProperty.call(data.localStorage,key)){
+          try{localStorage.setItem(key,String(data.localStorage[key]))}catch(e){}
+        }
+      }
     }
     return true;
   }
