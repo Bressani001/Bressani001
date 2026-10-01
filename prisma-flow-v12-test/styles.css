@@ -165,3 +165,6 @@ body.newbie .newbie-only{display:block}.newbie-only{display:none}
 .quick-add-grid small{color:var(--muted);font-size:8.5px;margin-top:3px}
 @media(max-width:1200px){.top-search{min-width:260px}.topbar{align-items:flex-start}.top-actions{flex-wrap:wrap;justify-content:flex-end}}
 @media(max-width:800px){.top-search{width:100%;min-width:0}.quick-add-grid{grid-template-columns:1fr}}
+
+.map-view-label{display:flex;align-items:center;gap:6px;font-size:8.5px;color:var(--muted);white-space:nowrap}
+.map-view-label select{min-width:110px}
