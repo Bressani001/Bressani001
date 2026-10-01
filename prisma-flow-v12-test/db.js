@@ -163,6 +163,21 @@
     return true;
   }
 
+  async function exportAll() {
+    const data={product:'PRISMA FLOW',version:12,db:DB_NAME,exportedAt:new Date().toISOString(),stores:{}};
+    for(const name of Object.keys(STORES)) data.stores[name]=await all(name);
+    return data;
+  }
+  async function importAll(data,replace) {
+    if(!data||data.product!=='PRISMA FLOW'||!data.stores)throw new Error('Backup PRISMA FLOW inválido.');
+    for(const name of Object.keys(STORES)){
+      if(replace)await clear(name);
+      const rows=Array.isArray(data.stores[name])?data.stores[name]:[];
+      if(rows.length)await bulkPut(name,rows,500);
+    }
+    return true;
+  }
+
   window.PrismaDB = {
     name: DB_NAME,
     version: DB_VERSION,
@@ -178,6 +193,8 @@
     setting: setting,
     setSetting: setSetting,
     audit: audit,
-    removeImport: removeImport
+    removeImport: removeImport,
+    exportAll: exportAll,
+    importAll: importAll
   };
 })();
