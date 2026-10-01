@@ -2,7 +2,7 @@
   'use strict';
 
   const DB_NAME = 'prisma_flow_v12_test';
-  const DB_VERSION = 2;
+  const DB_VERSION = 3;
   const STORES = {
     corrections: { keyPath: 'id' },
     imports: { keyPath: 'id', indexes: [['importedAt', 'importedAt'], ['active', 'active']] },
@@ -17,7 +17,8 @@
     destinations: { keyPath: 'id', indexes: [['kind','kind'],['name','name']] },
     contacts: { keyPath: 'id' },
     ticketMap: { keyPath: 'id' },
-    notes: { keyPath: 'id' }
+    notes: { keyPath: 'id' },
+    passwords: { keyPath: 'id' }
   };
 
   let dbPromise = null;
