@@ -87,7 +87,7 @@ function applyImportOverlay(type,obj){
         if(d.square&&obj.square)match=norm(d.square)===norm(obj.square);
         else match=(S.pointCodeCounts.get(norm(d.code))||0)===1;
       }
-      else if(!d.id&&!d.code&&d.name&&obj.name)match=norm(d.name)===norm(obj.name);
+      else if(!d.id&&!d.code&&d.name&&obj.name)match=false; // nome sozinho não sobrescreve cadastro existente
     }else if(type==='machine'){
       if(d.id&&obj.id)match=norm(d.id)===norm(obj.id);
       else if(!d.id&&d.name&&obj.name&&d.pointCode&&obj.pointCode){
