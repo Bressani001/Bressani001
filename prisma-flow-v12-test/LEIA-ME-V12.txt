@@ -50,7 +50,8 @@ IMPORTADOR
 MAPA
 A build atual NÃO usa mais diretamente o servidor comunitário
 tile.openstreetmap.org que retornou 403 no teste anterior.
-O fundo usa CARTO/Leaflet com dados do OpenStreetMap.
+O fundo usa Leaflet com camadas públicas da Esri, sem API key.
+No canto do mapa você pode trocar entre Ruas, Satélite e Claro.
 Google Maps continua disponível nos pontos.
 
 WHATSAPP
