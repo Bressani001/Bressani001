@@ -16,7 +16,17 @@ function importedPoints(){
 }
 function allPoints(){
   const base=(core().S.points||[]).filter(validCoord);
-  return base.concat(importedPoints());
+  const known=new Set();
+  for(const p of (core().S.points||[])){
+    if(p.id)known.add('id:'+String(p.id).trim().toLowerCase());
+    if(p.code)known.add('code:'+String(p.code).trim().toLowerCase());
+  }
+  const extra=importedPoints().filter(p=>{
+    const id=p.id?'id:'+String(p.id).trim().toLowerCase():'';
+    const code=p.code?'code:'+String(p.code).trim().toLowerCase():'';
+    return !(id&&known.has(id))&&!(code&&known.has(code));
+  });
+  return base.concat(extra);
 }
 function mapsUrl(p){
   if(p._source==='import')return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
