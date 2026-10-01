@@ -5,6 +5,7 @@ const K=()=>window.PrismaCore;
 const PAGE_META={
  home:['Início','Visão geral do PRISMA FLOW V12 isolado.'],
  search:['Buscar','Procure ponto, máquina, grupo, chamado, ativo, mensagem ou dado importado.'],
+ explore:['Explorar','Pontos, máquinas, WhatsApp, eventos, ativos e chamados em uma área única.'],
  today:['Meu Turno','Pendências, favoritos, captura rápida e atividade.'],
  flow360:['Ponto 360º','Tudo relacionado ao ponto em uma tela operacional.'],
  map:['Mapa','Navegue geograficamente pelos pontos com coordenadas.'],
@@ -32,6 +33,7 @@ function activate(id){
   qs('#pageTitle').textContent=meta[0];qs('#pageSub').textContent=meta[1];
   if(id==='home')renderHome();
   else if(id==='search')renderSearchPage();
+  else if(id==='explore')PrismaExplore.renderPage();
   else if(id==='today')PrismaFlow.renderToday();
   else if(id==='flow360')PrismaFlow.render360();
   else if(id==='map')PrismaMap.renderPage();
