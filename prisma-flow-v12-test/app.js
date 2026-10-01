@@ -6,6 +6,7 @@ const PAGE_META={
  home:['Início','Visão geral segura da V12. Nada aqui altera sua pasta V11.'],
  search:['Buscar','Procure ponto, máquina, mensagem ou dado importado em uma busca só.'],
  map:['Mapa','Navegue geograficamente pelos pontos com coordenadas.'],
+ routes:['Rotas WhatsApp','Veja de onde chega e para onde vai cada fluxo entre grupos, com evidência histórica.'],
  imports:['Importar','Suba XLSX, CSV ou JSON mesmo fora do padrão antigo.'],
  corrections:['Correções','Revise e desfaça qualquer correção local da V12.'],
  sources:['Fontes','Controle as fontes conectadas. Slack entra aqui depois.']
@@ -21,6 +22,7 @@ function activate(id){
   if(id==='home')renderHome();
   if(id==='search')renderSearchPage();
   if(id==='map')PrismaMap.renderPage();
+  if(id==='routes')PrismaRoutes.renderPage();
   if(id==='imports')renderImports();
   if(id==='corrections')renderCorrections();
   if(id==='sources')renderSources();
@@ -175,6 +177,7 @@ async function connect(files){
   try{
     qs('#connectBtn').disabled=true;qs('#connectBtn').textContent='Conectando…';
     await K().connectFolder(files);
+    if(window.PrismaRoutes)PrismaRoutes.invalidate();
     status();renderHome();K().toast('Base conectada com sucesso');
   }catch(e){
     console.error(e);K().toast(e.message||e);
