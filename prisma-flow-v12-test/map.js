@@ -5,7 +5,7 @@ let map=null,markers=null,currentPoints=[],lastMode='all';
 const MAX_VISIBLE_MARKERS=1800;
 
 function core(){return window.PrismaCore}
-function validCoord(p){return Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))&&Number(p.lat)>=-90&&Number(p.lat)<=90&&Number(p.lng)>=-180&&Number(p.lng)<=180}
+function validCoord(p){if(!p||p.lat==null||p.lng==null||String(p.lat).trim()===''||String(p.lng).trim()==='')return false;const lat=Number(p.lat),lng=Number(p.lng);return Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180}
 function importedPoints(){
   return (core().S.imported||[]).filter(r=>r.kind==='point'&&r.data&&validCoord(r.data)).map(r=>({
     _key:'import:'+r.id,_source:'import',_record:r,
