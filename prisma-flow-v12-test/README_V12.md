@@ -115,7 +115,7 @@ Mensagens de WhatsApp continuam imutáveis; nelas a V12 permite nota local, não
 - limite visual de 1.800 markers por viewport para não travar o navegador;
 - pontos continuam na busca mesmo quando nem todos são desenhados simultaneamente.
 
-O fundo usa Leaflet + CARTO com dados © OpenStreetMap contributors. A troca foi feita para evitar o bloqueio 403 do endpoint comunitário de tiles do OSM que apareceu na build anterior.
+O fundo usa Leaflet com camadas públicas da Esri sem API key: Ruas, Satélite e Claro. O seletor fica no canto superior direito do mapa. A troca elimina tanto o 403 do endpoint anterior quanto o watermark "API KEY REQUIRED" do CARTO.
 
 ## Slack
 
@@ -143,7 +143,7 @@ O núcleo e a leitura da V11 são locais.
 
 Nesta build de teste:
 - Leaflet é carregado por CDN;
-- o fundo do mapa usa tiles online;
+- o fundo do mapa usa tiles online da Esri;
 - SheetJS é carregado por CDN para XLS/XLSX.
 
 CSV/JSON e o restante do núcleo não dependem do SheetJS.
