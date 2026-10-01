@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 
-let map=null,markers=null,currentPoints=[],lastMode='all';
+let map=null,markers=null,baseControl=null,currentPoints=[],lastMode='all';
 const MAX_VISIBLE_MARKERS=1800;
 
 function core(){return window.PrismaCore}
@@ -44,12 +44,32 @@ function popup(p){
 function ensure(){
   const host=document.getElementById('mapCanvas');if(!host)return false;
   if(!window.L){
-    host.innerHTML='<div class="empty">O mapa usa Leaflet + OpenStreetMap. O carregamento da biblioteca falhou. Verifique a internet e recarregue.</div>';
+    host.innerHTML='<div class="empty">O mapa usa Leaflet. O carregamento da biblioteca falhou. Verifique a internet e recarregue.</div>';
     return false;
   }
   if(map)return true;
   map=L.map(host,{preferCanvas:true,zoomControl:true}).setView([-23.5505,-46.6333],11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(map);
+
+  const streets=L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,attribution:'Tiles &copy; Esri'}
+  );
+  const satellite=L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:19,attribution:'Tiles &copy; Esri'}
+  );
+  const light=L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    {maxZoom:16,attribution:'Tiles &copy; Esri'}
+  );
+
+  streets.addTo(map);
+  baseControl=L.control.layers(
+    {'Ruas':streets,'Satélite':satellite,'Claro':light},
+    null,
+    {position:'topright',collapsed:false}
+  ).addTo(map);
+
   markers=L.layerGroup().addTo(map);
   map.on('moveend zoomend',drawViewport);
   return true;
@@ -99,6 +119,7 @@ function searchAndRender(q){
 }
 function renderPage(){
   const host=document.getElementById('page-map');if(!host)return;
+  if(map){try{map.remove()}catch(e){}map=null;markers=null;baseControl=null;}
   host.innerHTML=
     '<div class="map-toolbar">'+
       '<input id="mapQuery" placeholder="Pesquisar ponto, endereço, cidade, praça…">'+
@@ -109,7 +130,7 @@ function renderPage(){
     '</div>'+
     '<div class="map-wrap"><div id="mapCanvas"></div></div>'+
     '<div class="card" style="margin-top:8px"><small>O mapa mantém todos os pontos na busca, mas desenha no máximo '+MAX_VISIBLE_MARKERS.toLocaleString('pt-BR')+' pins por área visível para não travar o navegador. Dê zoom para detalhar.</small></div>';
-  map=null;markers=null;currentPoints=[];
+  currentPoints=[];
   document.getElementById('mapSearch').onclick=()=>searchAndRender(document.getElementById('mapQuery').value);
   document.getElementById('mapAll').onclick=()=>{document.getElementById('mapQuery').value='';searchAndRender('');};
   document.getElementById('mapQuery').onkeydown=e=>{if(e.key==='Enter')searchAndRender(e.target.value);};
