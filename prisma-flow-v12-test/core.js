@@ -145,8 +145,8 @@ function rebuild(){
   S.points=[];S.machines=[];S.pointByKey.clear();S.machineByKey.clear();S.machinePoint.clear();
   const pc=(S.catalog&&S.catalog.P||[]).length;
   const mc=(S.catalog&&S.catalog.M||[]).length;
-  for(let i=0;i<pc;i++){const p=pointFrom(i);S.points.push(p);S.pointByKey.set(p._key,p);if(p.code)S.pointByKey.set('code:'+norm(p.code),p);}
-  for(let i=0;i<mc;i++){const m=machineFrom(i);S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);}
+  for(let i=0;i<pc;i++){const p=pointFrom(i);p._search=norm(pointBlob(p));S.points.push(p);S.pointByKey.set(p._key,p);if(p.code)S.pointByKey.set('code:'+norm(p.code),p);}
+  for(let i=0;i<mc;i++){const m=machineFrom(i);m._search=norm(machineBlob(m));S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);}
   const sqMap=new Map();
   S.points.forEach(p=>{if(p.code){const k=norm(p.code)+'|'+norm(p.square);if(!sqMap.has(k))sqMap.set(k,p);}});
   S.machines.forEach(m=>{
@@ -213,12 +213,13 @@ function stats(){
 }
 
 function words(q){return norm(q).split(/\s+/).filter(Boolean);}
-function scoreBlob(blob,q,tokens,boost){
-  const n=norm(blob);if(!n)return -1;
+function scoreBlob(blob,q,tokens,boost,alreadyNorm){
+  const n=alreadyNorm?String(blob||''):norm(blob);if(!n)return -1;
+  const nq=norm(q);
   let s=0;
-  if(n===norm(q))s+=10000;
-  if(n.startsWith(norm(q)))s+=1800;
-  if(n.includes(norm(q)))s+=900;
+  if(n===nq)s+=10000;
+  if(n.startsWith(nq))s+=1800;
+  if(n.includes(nq))s+=900;
   for(const t of tokens){if(!n.includes(t))return -1;s+=t.length*3;}
   return s+(boost||0);
 }
@@ -231,15 +232,27 @@ async function search(q,limit,type){
   if(!q)return [];
   const t=words(q),rows=[];
   if(type==='all'||type==='point'){
-    for(const p of S.points){const s=scoreBlob(pointBlob(p),q,t,p.code===q?5000:0);if(s>=0)rows.push({type:'point',score:s,key:p._key,title:(p.code?p.code+' • ':'')+(p.name||'Ponto'),sub:[p.address,p.city,p.square].filter(Boolean).join(' • '),entity:p});}
+    for(const p of S.points){const s=scoreBlob(p._search||pointBlob(p),q,t,p.code===q?5000:0,!!p._search);if(s>=0)rows.push({type:'point',score:s,key:p._key,title:(p.code?p.code+' • ':'')+(p.name||'Ponto'),sub:[p.address,p.city,p.square].filter(Boolean).join(' • '),entity:p});}
   }
   if(type==='all'||type==='machine'){
-    for(const m of S.machines){const s=scoreBlob(machineBlob(m),q,t,m.id===q?5000:0);if(s>=0)rows.push({type:'machine',score:s,key:m._key,title:'['+(m.id||'')+'] '+(m.name||'Máquina'),sub:[m.pointCode,m.pointName,m.square,m.ip].filter(Boolean).join(' • '),entity:m});}
+    for(const m of S.machines){const s=scoreBlob(m._search||machineBlob(m),q,t,m.id===q?5000:0,!!m._search);if(s>=0)rows.push({type:'machine',score:s,key:m._key,title:'['+(m.id||'')+'] '+(m.name||'Máquina'),sub:[m.pointCode,m.pointName,m.square,m.ip].filter(Boolean).join(' • '),entity:m});}
   }
   if((type==='all'||type==='message')&&S.messages.length){
     for(let i=0;i<S.messages.length;i++){
       const m=S.messages[i]||[],g=S.groups[m[4]]||{},blob=[g.name,m[5],m[2],m[3],m[6],m[10]].join(' ');
       const s=scoreBlob(blob,q,t,0);if(s>=0)rows.push({type:'message',score:s,key:String(m[0]||i),title:g.name||'Mensagem',sub:[m[2],m[3],m[5],String(m[6]||m[10]||'').slice(0,130)].filter(Boolean).join(' • '),entity:{index:i,row:m,group:g}});
+    }
+  }
+  if((type==='all'||type==='ticket')&&S.tickets.length){
+    for(let i=0;i<S.tickets.length;i++){
+      const r=S.tickets[i]||[],id=String(r[0]||''),blob=[id,JSON.stringify(r.slice(1,5))].join(' ');
+      const s=scoreBlob(blob,q,t,id===q?4000:0);if(s>=0)rows.push({type:'ticket',score:s,key:id||String(i),title:'Chamado '+(id||i),sub:((r[1]||[]).length||0)+' ocorrência(s)',entity:{index:i,row:r}});
+    }
+  }
+  if((type==='all'||type==='asset')&&S.assets.length){
+    for(let i=0;i<S.assets.length;i++){
+      const r=S.assets[i]||[],id=String(r[0]||''),blob=[id,JSON.stringify(r.slice(1,5))].join(' ');
+      const s=scoreBlob(blob,q,t,id===q?4000:0);if(s>=0)rows.push({type:'asset',score:s,key:id||String(i),title:'Ativo '+(id||i),sub:((r[1]||[]).length||0)+' ocorrência(s)',entity:{index:i,row:r}});
     }
   }
   for(const r of S.imported){
