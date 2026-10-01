@@ -4,7 +4,7 @@
 const R={
   engine:null,promise:null,selected:null,
   feedbackKey:'prisma_v12_route_feedback',
-  builtIn:[['elt rp','manutencao iguatemi elt']]
+  builtIn:[['elt rp','manutencao iguatemi elt'],['manutencao iguatemi elt','elt rp']]
 };
 const CORE=()=>window.PrismaCore;
 const S=()=>CORE().S;
