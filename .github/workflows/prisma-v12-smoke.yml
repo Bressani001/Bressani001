@@ -1,9 +1,8 @@
-name: PRISMA V12 smoke
+name: PRISMA V12 Smoke
 
 on:
   push:
-    branches:
-      - prisma-flow-v12-test
+    branches: [prisma-flow-v12-test]
   workflow_dispatch:
 
 jobs:
@@ -14,12 +13,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: JavaScript syntax
+      - name: Syntax check
         run: |
           node --check prisma-flow-v12-test/db.js
           node --check prisma-flow-v12-test/core.js
           node --check prisma-flow-v12-test/importer.js
           node --check prisma-flow-v12-test/map.js
           node --check prisma-flow-v12-test/app.js
-      - name: Static integration smoke
+      - name: Static smoke
         run: node prisma-flow-v12-test/smoke.mjs
