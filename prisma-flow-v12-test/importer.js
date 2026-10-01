@@ -29,6 +29,12 @@ const SEMANTICS=[
 
 let pending=null;
 
+async function sha256File(file){
+  if(!window.crypto||!crypto.subtle)return '';
+  const hash=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
 function n(v){return C().norm(v)}
 function c(v){return C().compact(v)}
 function headerRowScore(row){
@@ -153,19 +159,72 @@ async function infer(rows){
 function semanticOptions(selected){
   return SEMANTICS.map(s=>'<option value="'+s.id+'" '+(s.id===selected?'selected':'')+'>'+C().esc(s.label)+'</option>').join('');
 }
+function coreKeyMap(kind){
+  const map=new Map();
+  if(kind==='point'){
+    for(const p of (C().S.points||[])){if(p.id)map.set('id:'+n(p.id),p);if(p.code)map.set('code:'+n(p.code),p);}
+  }else if(kind==='machine'){
+    for(const m of (C().S.machines||[])){if(m.id)map.set('id:'+n(m.id),m);if(m.name)map.set('name:'+n(m.name),m);}
+  }else if(kind==='asset'){
+    for(const r of (C().S.assets||[])){if(r&&r[0]!=null)map.set('id:'+n(r[0]),{id:String(r[0])});}
+  }else if(kind==='ticket'){
+    for(const r of (C().S.tickets||[])){if(r&&r[0]!=null)map.set('id:'+n(r[0]),{id:String(r[0])});}
+  }
+  return map;
+}
+function diffSummary(kind,map){
+  const base=coreKeyMap(kind),seen=new Set();let valid=0,invalid=0,duplicates=0,added=0,changed=0,same=0;
+  for(let i=0;i<pending.rows.length;i++){
+    const data=normalizeRow(pending.rows[i],map,kind),key=String(entityKey(kind,data,i)||'').trim();
+    if(!key||key.startsWith('row:')){if(kind==='generic')valid++;else invalid++;continue;}
+    const nk=n(key);if(seen.has(nk)){duplicates++;continue;}seen.add(nk);valid++;
+    let old=null;
+    if(kind==='point')old=(data.id&&base.get('id:'+n(data.id)))||(data.code&&base.get('code:'+n(data.code)));
+    else if(kind==='machine')old=(data.id&&base.get('id:'+n(data.id)))||(data.name&&base.get('name:'+n(data.name)));
+    else old=base.get('id:'+n(data.id||key));
+    if(!old){added++;continue;}
+    if(kind==='asset'||kind==='ticket'){same++;continue;}
+    let differs=false,compared=0;
+    for(const [k,v] of Object.entries(data)){
+      if(v==null||v==='')continue;if(k==='notes')continue;compared++;
+      const ov=old[k];if(n(ov)!==n(v)){differs=true;break;}
+    }
+    if(differs)changed++;else same++;
+  }
+  return {valid,invalid,duplicates,added,changed,same};
+}
+function updatePreviewStats(){
+  if(!pending)return;const el=document.getElementById('importDiffStats');if(!el)return;
+  const map=fieldMap(),forced=document.getElementById('importKind')?.value||'auto',kind=guessKind(map,forced),s=diffSummary(kind,map);
+  el.innerHTML='<div class="grid4">'+
+    '<div class="mini-stat"><b>'+C().esc(kind)+'</b><span>Tipo detectado</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.valid)+'</b><span>Válidos</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.added)+'</b><span>Novos</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.changed)+'</b><span>Alterados</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.same)+'</b><span>Iguais</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.duplicates)+'</b><span>Duplicados</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(s.invalid)+'</b><span>Inválidos</span></div>'+
+    '<div class="mini-stat"><b>'+C().fmt(pending.rows.length)+'</b><span>Linhas lidas</span></div>'+
+  '</div>';
+}
 function renderMapping(){
   const host=document.getElementById('importPreview');if(!host||!pending)return;
   const rows=pending.rows,m=pending.mapping;
   host.innerHTML=
     '<div class="card result-section"><div class="card-head"><h3>PRISMA entendeu a planilha assim</h3><small>'+C().fmt(rows.length)+' linha(s)</small></div><div class="card-body">'+
     '<div class="actions" style="margin-bottom:10px"><label style="min-width:220px">Tipo principal<select id="importKind"><option value="auto">Detectar automaticamente</option><option value="point">Pontos</option><option value="machine">Máquinas</option><option value="asset">Ativos</option><option value="ticket">Chamados</option></select></label><button id="confirmImport" class="primary">Confirmar importação</button><button id="cancelImport">Cancelar</button></div>'+
-    '<table class="mapping-table"><thead><tr><th>Coluna recebida</th><th>Interpretar como</th><th>Confiança</th><th>Amostra</th></tr></thead><tbody>'+
+    '<div id="importDiffStats"></div>'+
+    '<div class="context-box"><b>Integridade do arquivo</b><small>SHA-256: '+C().esc(pending.digest||'indisponível')+' • '+C().fmt(pending.file.size)+' bytes. Fórmulas/scripts não são executados pelo PRISMA.</small></div>'+
+    '<div class="tablewrap" style="margin-top:10px"><table class="mapping-table"><thead><tr><th>Coluna recebida</th><th>Interpretar como</th><th>Confiança</th><th>Amostra</th></tr></thead><tbody>'+
     m.map((x,i)=>'<tr><td><b>'+C().esc(x.header)+'</b></td><td><select data-map-index="'+i+'">'+semanticOptions(x.semantic)+'</select></td><td><span class="chip '+(x.confidence>=80?'ok':x.confidence>=50?'warn':'')+'">'+x.confidence+'%</span></td><td>'+C().esc(x.sample.join(' | '))+'</td></tr>').join('')+
-    '</tbody></table></div></div>';
-  host.querySelectorAll('[data-map-index]').forEach(sel=>sel.onchange=function(){pending.mapping[Number(sel.dataset.mapIndex)].semantic=sel.value;});
+    '</tbody></table></div></div></div>';
+  host.querySelectorAll('[data-map-index]').forEach(sel=>sel.onchange=function(){pending.mapping[Number(sel.dataset.mapIndex)].semantic=sel.value;updatePreviewStats();});
+  document.getElementById('importKind').onchange=updatePreviewStats;
   document.getElementById('confirmImport').onclick=commit;
   document.getElementById('cancelImport').onclick=function(){pending=null;host.innerHTML='';};
+  updatePreviewStats();
 }
+
 function fieldMap(){const out={};(pending.mapping||[]).forEach(x=>{if(x.semantic&&x.semantic!=='ignore')out[x.semantic]=x.header;});return out;}
 function get(row,map,id){const h=map[id];return h==null?'':String(row[h]??'').trim();}
 function guessKind(map,forced){
@@ -224,9 +283,10 @@ async function commit(){
   if(window.PrismaApp){PrismaApp.renderImports();PrismaApp.renderHome();}
 }
 async function analyze(file){
-  const rows=await parseFile(file);
+  if(file.size>80*1024*1024)throw new Error('Arquivo maior que 80 MB. Divida a importação para manter a validação segura.');
+  const [rows,digest]=await Promise.all([parseFile(file),sha256File(file)]);
   if(!rows.length)throw new Error('Arquivo sem linhas utilizáveis.');
-  pending={file,rows,mapping:await infer(rows)};
+  pending={file,rows,digest,mapping:await infer(rows)};
   renderMapping();
 }
 
