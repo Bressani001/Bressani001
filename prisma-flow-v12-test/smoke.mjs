@@ -33,8 +33,9 @@ for(const ext of ['xlsx','xls','csv','json'])if(!importer.includes(ext))throw ne
 for(const fn of ['matrixToObjects','headerRowScore','infer'])if(!importer.includes(fn))throw new Error('Importador adaptativo incompleto: '+fn);
 const map=fs.readFileSync(root+'/map.js','utf8');
 if(!map.includes('Google Maps'))throw new Error('Google Maps ausente');
-if(!map.includes('basemaps.cartocdn.com'))throw new Error('Tile provider corrigido não encontrado');
-if(map.includes("https://tile.openstreetmap.org/{z}/{x}/{y}.png"))throw new Error('Endpoint OSM voluntário bloqueável ainda ativo');
+if(!map.includes('server.arcgisonline.com'))throw new Error('Tile provider sem chave não encontrado');
+if(map.includes('basemaps.cartocdn.com'))throw new Error('CARTO com API key ainda ativo');
+if(!map.includes('World_Street_Map')||!map.includes('World_Imagery')||!map.includes('World_Light_Gray_Base'))throw new Error('Camadas de mapa incompletas');
 const routes=fs.readFileSync(root+'/routes.js','utf8');
 for(const x of ['quote_cross_group','same_media','same_ticket','same_asset','same_machine_topic','same_point_topic','near_text'])if(!routes.includes(x))throw new Error('Sinal de rota ausente: '+x);
 const router=fs.readFileSync(root+'/router_noc.js','utf8');
