@@ -22,6 +22,19 @@ const SEMANTICS=[
  {id:'ip',label:'Máquina • IP',aliases:['ip','ip maquina','ip máquina','endereco ip','endereço ip']},
  {id:'os',label:'Máquina • Sistema operacional',aliases:['sistema operacional','so','os','sistema']},
  {id:'provider',label:'Máquina • Provedor',aliases:['provedor','operadora','provider']},
+ {id:'environment',label:'Ponto • Ambiente',aliases:['ambiente','environment']},
+ {id:'establishment',label:'Ponto • Tipo estabelecimento',aliases:['tipo estabelecimento','tipo de estabelecimento','estabelecimento tipo']},
+ {id:'equipmentType',label:'Ponto • Tipo equipamento',aliases:['tipo equipamento','tipo de equipamento']},
+ {id:'monitors',label:'Equipamento • Monitores',aliases:['monitores','quantidade monitores','qtd monitores','telas']},
+ {id:'activationDate',label:'Ponto • Data ativação/cadastro',aliases:['data ativacao','data ativação','data cadastro','ativado em']},
+ {id:'commercialized',label:'Ponto • Comercializado',aliases:['comercializado','comercializada']},
+ {id:'operationsUrl',label:'Ponto • Link Operações',aliases:['link operacoes','link operações','url operacoes','url operações']},
+ {id:'machineLocation',label:'Máquina • Localização física',aliases:['localizacao maquina','localização máquina','posicao maquina','posição máquina']},
+ {id:'model',label:'Máquina • Modelo',aliases:['modelo','modelo maquina','modelo máquina']},
+ {id:'manufacturer',label:'Máquina • Fabricante',aliases:['fabricante','manufacturer']},
+ {id:'resolution',label:'Máquina • Resolução',aliases:['resolucao','resolução','resolution']},
+ {id:'lastReboot',label:'Máquina • Último reboot',aliases:['ultimo reboot','último reboot','last reboot']},
+ {id:'systemVersion',label:'Máquina • Versão sistema',aliases:['versao sistema','versão sistema','system version']},
  {id:'assetId',label:'Ativo • Patrimônio',aliases:['ativo','patrimonio','patrimônio','asset','numero ativo','número ativo','pat']},
  {id:'ticketId',label:'Chamado • ID',aliases:['chamado','ticket','sync id','protocolo','elt']},
  {id:'notes',label:'Observação',aliases:['observacao','observação','obs','notas','nota','comentario','comentário']}
@@ -235,16 +248,21 @@ function guessKind(map,forced){
   if(map.ticketId)return 'ticket';
   return 'generic';
 }
+function extraFields(row,map){
+  const used=new Set(Object.values(map||{}).filter(Boolean)),extra={};
+  Object.keys(row||{}).forEach(h=>{if(used.has(h))return;const v=row[h];if(v==null||String(v).trim()==='')return;extra[h]=v;});
+  return extra;
+}
 function normalizeRow(row,map,kind){
-  const common={notes:get(row,map,'notes')};
+  const common={notes:get(row,map,'notes'),extra:extraFields(row,map)};
   if(kind==='point')return Object.assign(common,{
     id:get(row,map,'pointId'),code:get(row,map,'pointCode'),name:get(row,map,'pointName'),address:get(row,map,'address'),
     neighborhood:get(row,map,'neighborhood'),city:get(row,map,'city'),state:get(row,map,'state'),square:get(row,map,'square'),
-    cep:get(row,map,'cep'),lat:C().num(get(row,map,'lat')),lng:C().num(get(row,map,'lng')),area:get(row,map,'area'),status:get(row,map,'status')
+    cep:get(row,map,'cep'),lat:C().num(get(row,map,'lat')),lng:C().num(get(row,map,'lng')),area:get(row,map,'area'),status:get(row,map,'status'),environment:get(row,map,'environment'),establishment:get(row,map,'establishment'),equipmentType:get(row,map,'equipmentType'),monitors:get(row,map,'monitors'),activationDate:get(row,map,'activationDate'),commercialized:get(row,map,'commercialized'),operationsUrl:get(row,map,'operationsUrl')
   });
   if(kind==='machine')return Object.assign(common,{
     id:get(row,map,'machineId'),name:get(row,map,'machineName'),pointCode:get(row,map,'pointCode'),pointName:get(row,map,'pointName'),
-    address:get(row,map,'address'),square:get(row,map,'square'),ip:get(row,map,'ip'),os:get(row,map,'os'),provider:get(row,map,'provider')
+    address:get(row,map,'address'),square:get(row,map,'square'),ip:get(row,map,'ip'),os:get(row,map,'os'),provider:get(row,map,'provider'),location:get(row,map,'machineLocation'),model:get(row,map,'model'),manufacturer:get(row,map,'manufacturer'),resolution:get(row,map,'resolution'),lastReboot:get(row,map,'lastReboot'),systemVersion:get(row,map,'systemVersion'),monitors:get(row,map,'monitors')
   });
   if(kind==='asset')return Object.assign(common,{id:get(row,map,'assetId'),pointCode:get(row,map,'pointCode'),pointName:get(row,map,'pointName')});
   if(kind==='ticket')return Object.assign(common,{id:get(row,map,'ticketId'),pointCode:get(row,map,'pointCode'),pointName:get(row,map,'pointName'),status:get(row,map,'status')});
