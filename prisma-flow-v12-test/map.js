@@ -39,7 +39,7 @@ function ensure(){
   }
   if(map)return true;
   map=L.map(host,{preferCanvas:true,zoomControl:true}).setView([-23.5505,-46.6333],11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
   markers=L.layerGroup().addTo(map);
   map.on('moveend zoomend',drawViewport);
   return true;
