@@ -1,74 +1,67 @@
 PRISMA FLOW V12 - TESTE ISOLADO
 ================================
 
-ESTA PASTA NÃO SUBSTITUI A V11.
+NÃO SUBSTITUA SUA V11.
 
-Objetivo desta build:
-- rodar como uma aplicação separada;
-- ler a pasta V11 somente quando você selecioná-la;
-- nunca gravar arquivos dentro da pasta V11;
-- guardar correções/importações em IndexedDB próprio: prisma_flow_v12_test.
-
-COMO TESTAR
-1. Baixe a branch prisma-flow-v12-test.
-2. Entre na pasta prisma-flow-v12-test.
-3. Abra index.html no Chrome/Edge atualizado.
+1. Baixe a branch prisma-flow-v12-test novamente.
+2. Extraia o ZIP.
+3. Abra prisma-flow-v12-test/index.html no Chrome ou Edge.
 4. Clique em "Conectar pasta V11".
-5. Selecione a pasta que hoje contém index.html, catalog.js, whatsapp.js,
-   machine_details.js e point_details.js.
-6. Aguarde o carregamento.
-7. Use Busca, Mapa, Importar e Correções.
+5. Selecione a pasta COMPLETA da V11.
+6. A V12 lê catalog.js, whatsapp.js, point_details.js,
+   machine_details.js, router.js/router_v7.js e media/ quando existir.
+7. Nada é salvo de volta nesses arquivos.
 
-O QUE JÁ EXISTE NESTA BUILD
-- layout novo e responsivo;
-- aplicação isolada;
-- leitura dos pacotes compactados da V11;
-- busca única de pontos, máquinas, WhatsApp e registros importados;
-- Ponto 360 simplificado;
-- detalhes de máquina;
-- correção manual reversível e auditável;
-- importador adaptativo XLSX/XLS/CSV/JSON;
-- inferência por nome de coluna + amostra de conteúdo;
-- aprendizado local do mapeamento de cabeçalhos;
-- overlays de importação aplicados sobre a base operacional;
-- mapa navegável via Leaflet/OpenStreetMap;
-- pins dos pontos com Latitude/Longitude;
-- pesquisa dentro do mapa;
-- botão para abrir Google Maps;
-- área de Fontes já preparada para Slack.
+BANCO LOCAL DA V12
+prisma_flow_v12_test
 
-IMPORTANTE
-- Mensagens originais de WhatsApp não são editadas.
-- A pasta V11 não é modificada.
-- Excluir uma importação V12 não apaga arquivo original.
-- Desfazer uma correção retorna ao valor anterior da base/overlay.
+PRINCIPAIS MÓDULOS
+- Busca única
+- Explorar
+- Meu Turno
+- Ponto 360º
+- Mapa
+- Ponto -> Grupo
+- Roteador NOC
+- Rotas WhatsApp
+- Grupos
+- Mensagens PRISMA
+- Relações
+- Importador adaptativo
+- Correções
+- Saúde das bases
+- Operações
+- Dados locais
+- Backup
+- Fontes
 
-DEPENDÊNCIAS ONLINE DA PRIMEIRA BUILD
-- Leaflet/OpenStreetMap para o mapa.
-- SheetJS (XLSX) para ler .xlsx/.xls.
+IMPORTADOR
+- XLSX / XLS / CSV / TXT / JSON
+- detecta cabeçalho mesmo após linhas de título
+- escolhe a melhor aba de Excel
+- tenta entender coluna por nome + conteúdo
+- permite corrigir o mapeamento
+- aprende o mapeamento corrigido
+- SHA-256
+- prévia de diff
+- overlay local
+- pausar / reativar / excluir
 
-CSV/JSON e o núcleo da V12 continuam sendo arquivos locais.
-Uma etapa posterior pode empacotar também essas bibliotecas na pasta para reduzir
-dependências externas.
+MAPA
+A build atual NÃO usa mais diretamente o servidor comunitário
+tile.openstreetmap.org que retornou 403 no teste anterior.
+O fundo usa CARTO/Leaflet com dados do OpenStreetMap.
+Google Maps continua disponível nos pontos.
 
-MAPEAMENTO DE PLANILHA
-A V12 tenta reconhecer exemplos como:
-"Cod. Local"       -> Código do ponto
-"Nome instalação"  -> Nome do ponto
-"Logradouro"       -> Endereço
-"Máq"              -> Máquina
-"Pat."             -> Ativo
-"UF"               -> Estado
-"Latitude"          -> Latitude
-"Longitude"         -> Longitude
-
-Antes de gravar, o usuário vê e pode alterar cada associação. O mapeamento
-corrigido fica salvo localmente para arquivos futuros.
+WHATSAPP
+Mensagens originais não são editadas.
+Grupos, rotas, roteador, mídias, evidências e vínculos foram restaurados.
 
 SLACK
-A tela Fontes já reserva o Slack como uma fonte futura. A integração prevista é:
-Slack canal/thread/mensagem -> mensagem normalizada -> vínculo com
-Ponto/Máquina/Chamado/Ativo -> mesma timeline operacional.
+A estrutura está pronta, mas o parser definitivo do histórico será feito em cima
+dos arquivos reais do Slack quando eles forem enviados.
 
-STATUS
-Build inicial V12 isolada para teste funcional.
+IMPORTANTE
+Se você já tinha baixado uma versão anterior da V12, apague aquela pasta de teste
+ou simplesmente extraia esta versão em OUTRA pasta. Não misture os arquivos das
+duas builds.
