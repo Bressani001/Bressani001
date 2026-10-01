@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 
-let map=null,markers=null,baseControl=null,currentPoints=[],lastMode='all';
+let map=null,markers=null,baseControl=null,baseLayers={},activeBase=null,tileErrors=0,currentPoints=[],lastMode='all';
 const MAX_VISIBLE_MARKERS=1800;
 
 function core(){return window.PrismaCore}
@@ -41,6 +41,27 @@ function popup(p){
   const gm='<a class="btn primary" target="_blank" rel="noopener" href="'+e(mapsUrl(p))+'">Google Maps ↗</a>';
   return '<div style="min-width:230px"><b>'+title+'</b><div style="font-size:11px;margin:5px 0 8px;color:#555">'+sub+'</div><div style="display:flex;gap:5px;flex-wrap:wrap">'+btn+ops+gm+'</div></div>';
 }
+function setBasemap(name){
+  if(!map)return;
+  if(activeBase){try{map.removeLayer(activeBase)}catch(e){}}
+  activeBase=baseLayers[name]||baseLayers.none;
+  tileErrors=0;
+  if(activeBase)activeBase.addTo(map);
+  const sel=document.getElementById('mapBasemapSelect');if(sel&&sel.value!==name)sel.value=name;
+  try{localStorage.setItem('prisma_v12_basemap',name)}catch(e){}
+}
+function tileLayer(url,opts){
+  const layer=L.tileLayer(url,opts);
+  layer.on('tileerror',()=>{
+    tileErrors++;
+    if(tileErrors===12){
+      const el=document.getElementById('mapTileStatus');
+      if(el)el.innerHTML='<span class="chip warn">Fundo indisponível. Troque a visualização.</span>';
+    }
+  });
+  layer.on('load',()=>{const el=document.getElementById('mapTileStatus');if(el)el.innerHTML='';});
+  return layer;
+}
 function ensure(){
   const host=document.getElementById('mapCanvas');if(!host)return false;
   if(!window.L){
@@ -50,25 +71,25 @@ function ensure(){
   if(map)return true;
   map=L.map(host,{preferCanvas:true,zoomControl:true}).setView([-23.5505,-46.6333],11);
 
-  const streets=L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-    {maxZoom:19,attribution:'Tiles &copy; Esri'}
-  );
-  const satellite=L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {maxZoom:19,attribution:'Tiles &copy; Esri'}
-  );
-  const light=L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    {maxZoom:16,attribution:'Tiles &copy; Esri'}
-  );
+  baseLayers={
+    streets:tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:19,attribution:'Tiles &copy; Esri'}
+    ),
+    satellite:tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:19,attribution:'Tiles &copy; Esri'}
+    ),
+    light:tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:16,attribution:'Tiles &copy; Esri'}
+    ),
+    none:L.layerGroup()
+  };
 
-  streets.addTo(map);
-  baseControl=L.control.layers(
-    {'Ruas':streets,'Satélite':satellite,'Claro':light},
-    null,
-    {position:'topright',collapsed:false}
-  ).addTo(map);
+  let initial='streets';try{initial=localStorage.getItem('prisma_v12_basemap')||'streets'}catch(e){}
+  if(!baseLayers[initial])initial='streets';
+  setBasemap(initial);
 
   markers=L.layerGroup().addTo(map);
   map.on('moveend zoomend',drawViewport);
@@ -119,12 +140,14 @@ function searchAndRender(q){
 }
 function renderPage(){
   const host=document.getElementById('page-map');if(!host)return;
-  if(map){try{map.remove()}catch(e){}map=null;markers=null;baseControl=null;}
+  if(map){try{map.remove()}catch(e){}map=null;markers=null;baseControl=null;baseLayers={};activeBase=null;tileErrors=0;}
   host.innerHTML=
     '<div class="map-toolbar">'+
       '<input id="mapQuery" placeholder="Pesquisar ponto, endereço, cidade, praça…">'+
       '<button id="mapSearch" class="primary">Pesquisar no mapa</button>'+
       '<button id="mapAll">Mostrar todos</button>'+
+      '<label class="map-view-label">Visualização<select id="mapBasemapSelect"><option value="streets">Ruas</option><option value="satellite">Satélite</option><option value="light">Claro</option><option value="none">Sem fundo</option></select></label>'+
+      '<span id="mapTileStatus"></span>'+
       '<span id="mapTotalCount" class="chip blue"></span>'+
       '<span id="mapVisibleCount" class="chip"></span>'+
     '</div>'+
@@ -134,6 +157,8 @@ function renderPage(){
   document.getElementById('mapSearch').onclick=()=>searchAndRender(document.getElementById('mapQuery').value);
   document.getElementById('mapAll').onclick=()=>{document.getElementById('mapQuery').value='';searchAndRender('');};
   document.getElementById('mapQuery').onkeydown=e=>{if(e.key==='Enter')searchAndRender(e.target.value);};
+  const saved=(()=>{try{return localStorage.getItem('prisma_v12_basemap')||'streets'}catch(e){return 'streets'}})();document.getElementById('mapBasemapSelect').value=saved;
+  document.getElementById('mapBasemapSelect').onchange=e=>setBasemap(e.target.value);
   render(allPoints(),true);
 }
 function renderSearchPoints(points){
