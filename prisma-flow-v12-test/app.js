@@ -174,8 +174,23 @@ function openAsset(i){
   qs('#drawerBody').querySelectorAll('[data-asset-point]').forEach(b=>b.onclick=()=>openPoint(b.dataset.assetPoint));qs('#drawerBody').querySelectorAll('[data-asset-machine]').forEach(b=>b.onclick=()=>openMachine(b.dataset.assetMachine));qs('#drawerBody').querySelectorAll('[data-asset-msg]').forEach(b=>b.onclick=()=>openMessage(Number(b.dataset.assetMsg)));
 }
 async function openImport(id){
-  const r=await PrismaDB.get('importRecords',id);if(!r){K().toast('Registro importado não encontrado');return}const d=r.data||{};
-  openDrawer('<h2>'+K().esc(r.label||r.entityKey)+'</h2><div class="sub">Importado • '+K().esc(r.importName||r.importId)+'</div><div class="section-title">Dados normalizados</div><div class="field-grid">'+Object.keys(d).map(k=>field(k,d[k])).join('')+'</div><div class="section-title">Linha original</div><div class="audit-row"><pre style="white-space:pre-wrap;font-size:10px">'+K().esc(JSON.stringify(r.raw||{},null,2))+'</pre></div>');
+  const r=await PrismaDB.get('importRecords',id);if(!r){K().toast('Registro importado não encontrado');return}
+  const d=r.data||{};
+  openDrawer('<h2>'+K().esc(r.label||r.entityKey)+'</h2><div class="sub">Importado • '+K().esc(r.importName||r.importId)+'</div><div class="section-title">Dados normalizados</div><div class="field-grid">'+Object.keys(d).map(k=>field(k,d[k],k)).join('')+'</div><div class="section-title">Linha original preservada</div><div class="audit-row"><pre style="white-space:pre-wrap;font-size:10px">'+K().esc(JSON.stringify(r.raw||{},null,2))+'</pre></div><div class="audit-row"><b>Regra</b><small>Editar aqui altera somente o dado normalizado deste overlay. A linha original acima nunca é modificada.</small></div>');
+  qs('#drawerBody').querySelectorAll('.edit-field').forEach(b=>b.onclick=()=>editImportedField(id,b.dataset.field,(r.data||{})[b.dataset.field]));
+}
+function editImportedField(id,fieldName,current){
+  showModal('<h3 style="margin-top:0">Corrigir registro importado</h3><p class="muted">A linha original continuará preservada para auditoria.</p><div class="field"><label>Campo</label><div>'+K().esc(fieldName)+'</div></div><label style="display:block;margin-top:10px">Valor normalizado atual<input disabled value="'+K().esc(current==null?'':current)+'"></label><label style="display:block;margin-top:10px">Novo valor<input id="impCorrNew" value="'+K().esc(current==null?'':current)+'"></label><label style="display:block;margin-top:10px">Motivo<textarea id="impCorrReason" placeholder="Ex.: campo interpretado errado / valor validado manualmente"></textarea></label><div class="actions" style="margin-top:12px"><button id="impCorrCancel">Cancelar</button><button id="impCorrSave" class="primary">Salvar correção</button></div>');
+  qs('#impCorrCancel').onclick=closeModal;
+  qs('#impCorrSave').onclick=async()=>{
+    const row=await PrismaDB.get('importRecords',id);if(!row)return;
+    const oldValue=(row.data||{})[fieldName],raw=qs('#impCorrNew').value;
+    let value=raw;if(fieldName==='lat'||fieldName==='lng')value=K().num(raw);
+    row.data=Object.assign({},row.data||{});row.data[fieldName]=value;row.updatedAt=new Date().toISOString();
+    await PrismaDB.put('importRecords',row);
+    await PrismaDB.audit('correcao_importada','Corrigiu registro importado '+(row.label||row.entityKey)+' • '+fieldName,row.entityKey||row.id,{importId:row.importId,field:fieldName,oldValue,newValue:value,reason:qs('#impCorrReason').value});
+    await K().refreshLocal();closeModal();K().toast('Registro importado corrigido');openImport(id);
+  };
 }
 function correctionModal(type,key,fieldName,current){
   showModal('<h3 style="margin-top:0">Corrigir informação</h3><p class="muted">A base original não será alterada. A correção vale somente na V12 e pode ser desfeita.</p><div class="field"><label>Campo</label><div>'+K().esc(fieldName)+'</div></div><label style="display:block;margin-top:10px">Valor atual<input disabled value="'+K().esc(current==null?'':current)+'"></label><label style="display:block;margin-top:10px">Novo valor<input id="corrNew" value="'+K().esc(current==null?'':current)+'"></label><label style="display:block;margin-top:10px">Motivo<textarea id="corrReason" placeholder="Ex.: cadastro incorreto / validado no local"></textarea></label><div class="actions" style="margin-top:12px"><button id="corrCancel">Cancelar</button><button id="corrSave" class="primary">Salvar correção</button></div>');
