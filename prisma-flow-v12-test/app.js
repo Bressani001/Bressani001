@@ -252,7 +252,12 @@ async function connect(files){
 async function boot(){
   try{
     await PrismaDB.open();await PrismaLegacy.migrate();await K().refreshLocal();await PrismaMessages.ensureDefaults();await PrismaFlow.applySettings();
-    qsa('.nav').forEach(b=>b.onclick=()=>activate(b.dataset.page));qs('#connectBtn').onclick=()=>qs('#folderInput').click();qs('#folderInput').onchange=e=>connect(e.target.files);qs('#drawerClose').onclick=closeDrawer;qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
+    qsa('.nav').forEach(b=>b.onclick=()=>activate(b.dataset.page));
+    const runTopSearch=()=>{const q=qs('#topQuickSearch').value.trim();activate('search');setTimeout(()=>{const x=qs('#globalSearch');if(x){x.value=q;if(q)qs('#doSearch')?.click();else x.focus();}},20)};
+    qs('#topQuickSearchBtn').onclick=runTopSearch;qs('#topQuickSearch').onkeydown=e=>{if(e.key==='Enter')runTopSearch()};
+    qs('#quickAddBtn').onclick=()=>showModal('<h3 style="margin-top:0">Adicionar</h3><div class="quick-add-grid"><button data-quick-go="imports"><b>Importar arquivo</b><small>XLSX, CSV, JSON…</small></button><button data-quick-go="today" data-new-task><b>Nova tarefa</b><small>Meu Turno</small></button><button data-quick-go="messages"><b>Nova mensagem</b><small>WhatsApp / Slack</small></button><button data-quick-go="search"><b>Corrigir cadastro</b><small>Busque o ponto ou máquina e clique em ✎</small></button></div>');
+    document.addEventListener('click',e=>{const b=e.target.closest('[data-quick-go]');if(!b)return;const page=b.dataset.quickGo,newTask=b.hasAttribute('data-new-task');closeModal();activate(page);if(newTask)setTimeout(()=>PrismaFlow.taskEditor(null,{}),20);});
+    qs('#connectBtn').onclick=()=>qs('#folderInput').click();qs('#folderInput').onchange=e=>connect(e.target.files);qs('#drawerClose').onclick=closeDrawer;qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
     document.addEventListener('keydown',e=>{const tag=(document.activeElement?.tagName||'').toLowerCase();if(e.key==='Escape'){closeDrawer();closeModal()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}});
     status();renderHome();
   }catch(e){console.error(e);qs('#bootError').textContent='Falha ao iniciar a V12: '+(e.message||e);qs('#bootError').classList.remove('hidden');}
