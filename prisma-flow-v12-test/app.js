@@ -123,31 +123,41 @@ function closeDrawer(){qs('#drawerBack').classList.add('hidden')}
 function showModal(html){qs('#modal').innerHTML=html;qs('#modalBack').classList.remove('hidden')}
 function closeModal(){qs('#modalBack').classList.add('hidden')}
 function field(label,value,editable){const v=value==null||value===''?'—':String(value);return '<div class="field"><label>'+K().esc(label)+'</label><div>'+K().esc(v)+(editable?' <button class="edit-field" data-field="'+K().esc(editable)+'" style="float:right;padding:3px 6px">✎</button>':'')+'</div></div>'}
-function openPoint(key){
+async function openPoint(key){
   const p=K().getPoint(key);if(!p){K().toast('Ponto não encontrado');return}
-  const machines=K().machinesForPoint(p),groups=K().groupStatsForPoint(p),maps=K().mapsUrl(p);PrismaFlow.setCurrentPoint(p._key);
+  const machines=K().machinesForPoint(p),groups=K().groupStatsForPoint(p),maps=K().mapsUrl(p),noteKey='p:'+String(p.id||p._key),note=await PrismaDB.get('notes',noteKey);PrismaFlow.setCurrentPoint(p._key);
   openDrawer('<h2>'+K().esc((p.code?p.code+' • ':'')+(p.name||'Ponto'))+'</h2><div class="sub">'+K().esc([p.city,p.square,p.state].filter(Boolean).join(' • '))+'</div>'+
     '<div class="actions" style="margin-top:10px">'+(maps?'<a class="btn" target="_blank" rel="noopener" href="'+K().esc(maps)+'">Google Maps ↗</a>':'')+'<a class="btn" target="_blank" rel="noopener" href="'+K().esc(K().operationsPointUrl(p))+'">Operações ↗</a><button id="point360" class="primary">Ponto 360º</button><button id="pointGroups">Ponto → Grupo</button><button id="pointMessage">Mensagem</button><button id="pointOnMap">Mapa</button></div>'+
     '<div class="section-title">Cadastro efetivo V12</div><div class="field-grid">'+field('ID DB',p.id)+field('Código',p.code,'code')+field('Nome',p.name,'name')+field('Endereço',p.address,'address')+field('Bairro',p.neighborhood,'neighborhood')+field('Cidade',p.city,'city')+field('Estado',p.state,'state')+field('Praça',p.square,'square')+field('CEP',p.cep,'cep')+field('Latitude',p.lat,'lat')+field('Longitude',p.lng,'lng')+field('Área',p.area,'area')+field('Status',p.status,'status')+field('Ambiente',p.environment,'environment')+field('Tipo estabelecimento',p.establishment,'establishment')+'</div>'+
-    '<div class="section-title">Relações</div><div class="card-body" style="padding:0"><div class="audit-row"><b>'+K().fmt(machines.length)+' máquina(s)</b><small>'+K().esc(machines.slice(0,10).map(m=>'['+m.id+'] '+m.name).join(' • ')||'Nenhuma relacionada')+'</small></div><div class="audit-row"><b>'+K().fmt(groups.length)+' grupo(s)</b><small>'+K().esc(groups.slice(0,5).map(g=>K().S.groups[g.group]?.name||'').join(' • ')||'Nenhum sustentado')+'</small></div>'+(p._overlayImportName?'<div class="audit-row"><b>Overlay ativo</b><small>'+K().esc(p._overlayImportName)+'</small></div>':'')+'</div>');
+    '<div class="section-title">Relações</div><div class="card-body" style="padding:0"><div class="audit-row"><b>'+K().fmt(machines.length)+' máquina(s)</b><small>'+K().esc(machines.slice(0,10).map(m=>'['+m.id+'] '+m.name).join(' • ')||'Nenhuma relacionada')+'</small></div><div class="audit-row"><b>'+K().fmt(groups.length)+' grupo(s)</b><small>'+K().esc(groups.slice(0,5).map(g=>K().S.groups[g.group]?.name||'').join(' • ')||'Nenhum sustentado')+'</small></div>'+(p._overlayImportName?'<div class="audit-row"><b>Overlay ativo</b><small>'+K().esc(p._overlayImportName)+'</small></div>':'')+'</div>'+
+    '<div class="section-title">Nota local</div><textarea id="pointLocalNote" style="min-height:90px" placeholder="Anotação operacional local…">'+K().esc(note?.value||'')+'</textarea><div class="actions" style="margin-top:6px"><button id="savePointNote">Salvar nota</button></div>');
   qs('#drawerBody').querySelectorAll('.edit-field').forEach(b=>b.onclick=()=>correctionModal('point',p._key,b.dataset.field,p[b.dataset.field]));
   qs('#pointOnMap').onclick=()=>{closeDrawer();activate('map');setTimeout(()=>PrismaMap.render([p],true),80)};
   qs('#point360').onclick=()=>{closeDrawer();activate('flow360')};
   qs('#pointGroups').onclick=()=>{closeDrawer();PrismaGroups.openPointGroups(p._key)};
   qs('#pointMessage').onclick=()=>{closeDrawer();activate('messages');setTimeout(()=>PrismaMessages.prefill({pointKey:p._key,group:groups[0]?.group}),30)};
+  qs('#savePointNote').onclick=async()=>{await PrismaDB.put('notes',{id:noteKey,value:qs('#pointLocalNote').value,updatedAt:new Date().toISOString()});K().toast('Nota salva')};
   PrismaDB.audit('abrir_ponto','Abriu ponto '+(p.code||p.name),p._key,{}).catch(()=>{});
 }
-function openMachine(key){
+async function openMachine(key){
   const m=K().getMachine(key);if(!m){K().toast('Máquina não encontrada');return}
-  const p=K().pointForMachine(m),groups=K().groupStatsForMachine(m);
+  const p=K().pointForMachine(m),groups=K().groupStatsForMachine(m),noteKey='m:'+String(m.id||m._key),note=await PrismaDB.get('notes',noteKey),pass=await PrismaDB.get('passwords',String(m.id||m._key));
   openDrawer('<h2>'+K().esc('['+(m.id||'')+'] '+(m.name||'Máquina'))+'</h2><div class="sub">'+K().esc([m.pointCode,m.pointName,m.square].filter(Boolean).join(' • '))+'</div>'+
     '<div class="actions" style="margin-top:10px">'+(p?'<button id="machinePoint" class="primary">Abrir ponto '+K().esc(p.code)+'</button>':'')+'<a class="btn" target="_blank" rel="noopener" href="'+K().esc(K().operationsMachineUrl(m))+'">Operações ↗</a><button id="machineMessage">Mensagem</button></div>'+
-    '<div class="section-title">Cadastro efetivo V12</div><div class="field-grid">'+field('ID Máquina',m.id,'id')+field('Nome',m.name,'name')+field('Código ponto',m.pointCode,'pointCode')+field('Ponto',m.pointName,'pointName')+field('Endereço',m.address,'address')+field('Praça',m.square,'square')+field('Sistema',m.os,'os')+field('IP',m.ip,'ip')+field('Provedor',m.provider,'provider')+field('Localização',m.location,'location')+field('Modelo',m.model,'model')+field('Último reboot',m.lastReboot,'lastReboot')+'</div>');
+    '<div class="section-title">Cadastro efetivo V12</div><div class="field-grid">'+field('ID Máquina',m.id,'id')+field('Nome',m.name,'name')+field('Código ponto',m.pointCode,'pointCode')+field('Ponto',m.pointName,'pointName')+field('Endereço',m.address,'address')+field('Praça',m.square,'square')+field('Sistema',m.os,'os')+field('IP',m.ip,'ip')+field('Provedor',m.provider,'provider')+field('Localização',m.location,'location')+field('Modelo',m.model,'model')+field('Último reboot',m.lastReboot,'lastReboot')+'</div>'+
+    '<div class="section-title">Senha local</div><div class="actions"><input id="machineLocalPass" type="password" value="'+K().esc(pass?.value||'')+'" placeholder="Senha Padrão ou senha Windows" style="flex:1"><button id="showMachinePass">Mostrar</button><button id="saveMachinePass">Salvar</button><button id="linuxMachinePass">Senha Padrão</button><button id="clearMachinePass">Remover</button></div>'+
+    '<div class="section-title">Nota local</div><textarea id="machineLocalNote" style="min-height:90px" placeholder="Anotação operacional local…">'+K().esc(note?.value||'')+'</textarea><div class="actions" style="margin-top:6px"><button id="saveMachineNote">Salvar nota</button></div>');
   qs('#drawerBody').querySelectorAll('.edit-field').forEach(b=>b.onclick=()=>correctionModal('machine',m._key,b.dataset.field,m[b.dataset.field]));
   if(p)qs('#machinePoint').onclick=()=>openPoint(p._key);
   qs('#machineMessage').onclick=()=>{closeDrawer();activate('messages');setTimeout(()=>PrismaMessages.prefill({machineKey:m._key,pointKey:p?._key,group:groups[0]?.group}),30)};
+  qs('#showMachinePass').onclick=()=>{const x=qs('#machineLocalPass');x.type=x.type==='password'?'text':'password';qs('#showMachinePass').textContent=x.type==='password'?'Mostrar':'Ocultar'};
+  qs('#saveMachinePass').onclick=async()=>{const value=qs('#machineLocalPass').value;if(value)await PrismaDB.put('passwords',{id:String(m.id||m._key),value,updatedAt:new Date().toISOString()});else await PrismaDB.delete('passwords',String(m.id||m._key));K().toast('Senha local salva')};
+  qs('#linuxMachinePass').onclick=()=>{qs('#machineLocalPass').value='Senha Padrão'};
+  qs('#clearMachinePass').onclick=async()=>{qs('#machineLocalPass').value='';await PrismaDB.delete('passwords',String(m.id||m._key));K().toast('Senha local removida')};
+  qs('#saveMachineNote').onclick=async()=>{await PrismaDB.put('notes',{id:noteKey,value:qs('#machineLocalNote').value,updatedAt:new Date().toISOString()});K().toast('Nota salva')};
   PrismaDB.audit('abrir_maquina','Abriu máquina '+m.id,m._key,{}).catch(()=>{});
 }
+
 async function openMessage(i){
   const m=K().S.messages[i]||[],g=K().S.groups[m[4]]||{},pts=m[17]||[],macs=m[18]||[],med=m[14]||[],noteKey='message:'+String(m[0]||i),note=await PrismaDB.get('notes',noteKey);
   let mediaHtml='';
