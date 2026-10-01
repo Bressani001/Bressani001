@@ -17,6 +17,8 @@ const PAGE_META={
  imports:['Importar','Suba XLSX, CSV ou JSON mesmo fora do padrão antigo.'],
  corrections:['Correções','Revise e desfaça qualquer correção local da V12.'],
  health:['Saúde das bases','Cobertura, integridade e fontes carregadas.'],
+ operations:['Operações','Atalhos seguros para ponto, máquina e chamado.'],
+ local:['Dados locais','Senhas e notas operacionais preservadas localmente.'],
  backup:['Backup','Exportação e restauração dos dados locais da V12.'],
  sources:['Fontes','Base V11, WhatsApp, planilhas e preparação para Slack.']
 };
@@ -42,6 +44,8 @@ function activate(id){
   else if(id==='imports')renderImports();
   else if(id==='corrections')renderCorrections();
   else if(id==='health')PrismaFlow.renderHealth();
+  else if(id==='operations')PrismaAccess.renderOperations();
+  else if(id==='local')PrismaAccess.renderLocal();
   else if(id==='backup')PrismaFlow.renderBackup();
   else if(id==='sources')renderSources();
 }
@@ -195,7 +199,7 @@ async function connect(files){
 }
 async function boot(){
   try{
-    await PrismaDB.open();await K().refreshLocal();await PrismaMessages.ensureDefaults();await PrismaFlow.applySettings();
+    await PrismaDB.open();await PrismaLegacy.migrate();await K().refreshLocal();await PrismaMessages.ensureDefaults();await PrismaFlow.applySettings();
     qsa('.nav').forEach(b=>b.onclick=()=>activate(b.dataset.page));qs('#connectBtn').onclick=()=>qs('#folderInput').click();qs('#folderInput').onchange=e=>connect(e.target.files);qs('#drawerClose').onclick=closeDrawer;qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
     document.addEventListener('keydown',e=>{const tag=(document.activeElement?.tagName||'').toLowerCase();if(e.key==='Escape'){closeDrawer();closeModal()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}});
     status();renderHome();
