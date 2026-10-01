@@ -10,6 +10,7 @@ const S={
   imported:[],
   pointByKey:new Map(),
   machineByKey:new Map(),
+  pointCodeCounts:new Map(),
   machinePoint:new Map(),
   lastSearch:[],
   sourceFolderName:'',
@@ -82,13 +83,15 @@ function applyImportOverlay(type,obj){
     const d=r.data||{};let match=false;
     if(type==='point'){
       if(d.id&&obj.id)match=norm(d.id)===norm(obj.id);
-      else if(d.code&&obj.code)match=norm(d.code)===norm(obj.code);
+      else if(d.code&&obj.code&&norm(d.code)===norm(obj.code)){
+        if(d.square&&obj.square)match=norm(d.square)===norm(obj.square);
+        else match=(S.pointCodeCounts.get(norm(d.code))||0)===1;
+      }
       else if(!d.id&&!d.code&&d.name&&obj.name)match=norm(d.name)===norm(obj.name);
     }else if(type==='machine'){
       if(d.id&&obj.id)match=norm(d.id)===norm(obj.id);
-      else if(!d.id&&d.name&&obj.name){
-        match=norm(d.name)===norm(obj.name);
-        if(match&&d.pointCode&&obj.pointCode)match=norm(d.pointCode)===norm(obj.pointCode);
+      else if(!d.id&&d.name&&obj.name&&d.pointCode&&obj.pointCode){
+        match=norm(d.name)===norm(obj.name)&&norm(d.pointCode)===norm(obj.pointCode);
       }
     }else{
       const keys=new Set([obj._key,obj.id,obj.code,obj.pointCode].filter(Boolean).map(x=>norm(x)));
@@ -158,15 +161,17 @@ function rebuild(){
   S.points=[];S.machines=[];S.pointByKey.clear();S.machineByKey.clear();S.machinePoint.clear();
   const pc=(S.catalog&&S.catalog.P||[]).length;
   const mc=(S.catalog&&S.catalog.M||[]).length;
+  S.pointCodeCounts=new Map();
+  for(const raw of (S.catalog&&S.catalog.P||[])){const code=norm((raw||[])[1]||'');if(code)S.pointCodeCounts.set(code,(S.pointCodeCounts.get(code)||0)+1);}
   const codeCounts=new Map();
   for(let i=0;i<pc;i++){const p=pointFrom(i);p._search=norm(pointBlob(p));S.points.push(p);S.pointByKey.set(p._key,p);if(p.code){const k=norm(p.code);codeCounts.set(k,(codeCounts.get(k)||0)+1);}}
-  S.points.forEach(p=>{if(p.code&&codeCounts.get(norm(p.code))===1)S.pointByKey.set('code:'+norm(p.code),p);});
+  S.points.forEach(p=>{if(p.code&&S.pointCodeCounts.get(norm(p.code))===1)S.pointByKey.set('code:'+norm(p.code),p);});
   for(let i=0;i<mc;i++){const m=machineFrom(i);m._search=norm(machineBlob(m));S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);}
   const sqMap=new Map();
   S.points.forEach(p=>{if(p.code){const k=norm(p.code)+'|'+norm(p.square);if(!sqMap.has(k))sqMap.set(k,p);}});
   S.machines.forEach(m=>{
     let p=sqMap.get(norm(m.pointCode)+'|'+norm(m.square));
-    if(!p&&m.pointCode&&codeCounts.get(norm(m.pointCode))===1)p=S.pointByKey.get('code:'+norm(m.pointCode));
+    if(!p&&m.pointCode&&S.pointCodeCounts.get(norm(m.pointCode))===1)p=S.pointByKey.get('code:'+norm(m.pointCode));
     if(p)S.machinePoint.set(m._key,p._key);
   });
   S.groups=(S.WA&&S.WA.groups)||[];
