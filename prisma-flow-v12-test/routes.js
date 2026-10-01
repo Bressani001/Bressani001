@@ -2,7 +2,7 @@
 'use strict';
 
 const R={
-  engine:null,promise:null,selected:null,
+  engine:null,promise:null,selected:null,confFilter:'ALL',topicFilter:'ALL',
   feedbackKey:'prisma_v12_route_feedback',
   builtIn:[['elt rp','manutencao iguatemi elt'],['manutencao iguatemi elt','elt rp']]
 };
@@ -102,21 +102,55 @@ async function build(){
 function ensure(){if(R.engine)return Promise.resolve(R.engine);if(R.promise)return R.promise;R.promise=build().finally(()=>{R.promise=null});return R.promise;}
 function groupName(i){return S().groups[i]?.name||('Grupo '+i);}
 function levelClass(c){return c==='CONFIRMADA'?'ok':c==='ALTA'?'blue':c==='MEDIA'?'warn':'muted';}
+function confRank(c){return c==='CONFIRMADA'?4:c==='ALTA'?3:c==='MEDIA'?2:1}
+function routePass(r){
+  if(!r||r.suppressed)return false;
+  if(R.confFilter==='HIGH'&&confRank(r.confidence)<3)return false;
+  if(R.confFilter==='MEDIUM'&&confRank(r.confidence)<2)return false;
+  if(R.topicFilter!=='ALL'&&!r.topics[R.topicFilter])return false;
+  return true;
+}
+function setFeedbackRoute(sg,dg,type){
+  const f=feedback(),key=sg+'>'+dg;
+  if(type==='clear')delete f[key];else f[key]=type;
+  try{localStorage.setItem(R.feedbackKey,JSON.stringify(f))}catch(e){}
+  if(R.engine){finalize(R.engine);renderSelected(R.selected);}
+}
+function proofRoute(sg,dg){
+  if(!R.engine)return;const route=R.engine.routes.get(sg+'>'+dg);if(!route)return;
+  const rows=route.occurrences.slice(0,20).map(p=>{
+    const a=R.engine.metas[p.src],b=R.engine.metas[p.dst],ma=S().messages[p.src]||[],mb=S().messages[p.dst]||[];
+    return '<div class="route-proof"><div class="route-proof-head"><b>'+esc(groupName(a.g))+'</b><span>→</span><b>'+esc(groupName(b.g))+'</b><small>'+esc(p.reasons.map(x=>reasonLabel[x]||x).join(' • '))+' • score '+Math.round(p.score)+'</small></div><div class="grid2"><button class="timeline-row" data-proof-msg="'+p.src+'"><div class="meta">'+esc([ma[2],ma[3],ma[5]].filter(Boolean).join(' • '))+'</div><div>'+esc(ma[6]||ma[10]||'(sem texto)')+'</div></button><button class="timeline-row" data-proof-msg="'+p.dst+'"><div class="meta">'+esc([mb[2],mb[3],mb[5]].filter(Boolean).join(' • '))+'</div><div>'+esc(mb[6]||mb[10]||'(sem texto)')+'</div></button></div></div>';
+  }).join('')||'<div class="empty">Rota confirmada por regra/operador, sem par histórico armazenado nesta rota.</div>';
+  PrismaApp.openDrawer('<h2>'+esc(groupName(sg))+' → '+esc(groupName(dg))+'</h2><div class="sub">'+esc(route.confidence)+' • '+fmt(route.cases)+' caso(s) • média '+Math.round(route.avgScore||0)+'</div><div class="section-title">Evidências cruzadas</div>'+rows);
+  document.querySelectorAll('#drawerBody [data-proof-msg]').forEach(b=>b.onclick=()=>PrismaApp.openMessage(Number(b.dataset.proofMsg)));
+}
 function routeRows(arr,dir){
-  if(!arr||!arr.length)return '<div class="empty">Nenhuma rota sustentada na base atual.</div>';
-  return arr.filter(r=>!r.suppressed).slice(0,40).map(r=>{const other=dir==='out'?r.dg:r.sg;const reasons=Object.entries(r.reasons).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>(reasonLabel[x[0]]||x[0])+' ('+x[1]+')').join(' • ');return '<button class="route-row" data-route-peer="'+other+'"><span><b>'+esc(groupName(other))+'</b><small>'+esc(reasons||'evidência histórica')+'</small></span><span><span class="chip '+levelClass(r.confidence)+'">'+esc(r.confidence)+'</span><small>'+fmt(r.cases)+' caso(s)</small></span></button>';}).join('');
+  const rows=(arr||[]).filter(routePass).slice(0,40);
+  if(!rows.length)return '<div class="empty">Nenhuma rota para os filtros atuais.</div>';
+  const fb=feedback();
+  return rows.map(r=>{const other=dir==='out'?r.dg:r.sg,key=r.sg+'>'+r.dg,reasons=Object.entries(r.reasons).sort((a,b)=>b[1]-a[1]).slice(0,4).map(x=>(reasonLabel[x[0]]||x[0])+' ('+x[1]+')').join(' • '),mark=fb[key]||'';
+    return '<div class="route-row"><button class="route-main" data-route-peer="'+other+'"><span><b>'+esc(groupName(other))+'</b><small>'+esc(reasons||'evidência histórica')+'</small></span><span><span class="chip '+levelClass(r.confidence)+'">'+esc(r.confidence)+'</span><small>'+fmt(r.cases)+' caso(s)</small></span></button><div class="route-actions"><button data-route-proof="'+r.sg+'|'+r.dg+'">Evidências</button><button class="'+(mark==='positive'?'primary':'')+'" data-route-feedback="positive" data-route-sg="'+r.sg+'" data-route-dg="'+r.dg+'">✓</button><button class="'+(mark==='negative'?'danger':'')+'" data-route-feedback="negative" data-route-sg="'+r.sg+'" data-route-dg="'+r.dg+'">✕</button>'+(mark?'<button data-route-feedback="clear" data-route-sg="'+r.sg+'" data-route-dg="'+r.dg+'">limpar</button>':'')+'</div></div>';
+  }).join('');
 }
 function renderSelected(gi){
-  R.selected=gi;const host=document.getElementById('routeResults');if(!host||!R.engine)return;const out=R.engine.outByGroup.get(gi)||[],inc=R.engine.inByGroup.get(gi)||[];
-  host.innerHTML='<div class="route-center"><div class="card"><div class="card-head"><h3>CHEGA NESTE GRUPO ←</h3><small>'+fmt(inc.filter(r=>!r.suppressed).length)+' rota(s)</small></div><div class="card-body route-list">'+routeRows(inc,'in')+'</div></div><div class="card route-selected"><div class="card-head"><h3>'+esc(groupName(gi))+'</h3><small>grupo selecionado</small></div><div class="card-body"><div class="audit-row"><b>Mensagens observadas</b><small>'+fmt(S().groups[gi]?.messagesObserved||0)+'</small></div><div class="audit-row"><b>Rotas saindo</b><small>'+fmt(out.filter(r=>!r.suppressed).length)+'</small></div><div class="audit-row"><b>Rotas chegando</b><small>'+fmt(inc.filter(r=>!r.suppressed).length)+'</small></div></div></div><div class="card"><div class="card-head"><h3>→ ENVIA PARA</h3><small>'+fmt(out.filter(r=>!r.suppressed).length)+' rota(s)</small></div><div class="card-body route-list">'+routeRows(out,'out')+'</div></div></div>';
+  R.selected=gi;const host=document.getElementById('routeResults');if(!host||!R.engine)return;const out=R.engine.outByGroup.get(gi)||[],inc=R.engine.inByGroup.get(gi)||[],fo=out.filter(routePass),fi=inc.filter(routePass);
+  host.innerHTML='<div class="route-center"><div class="card"><div class="card-head"><h3>CHEGA NESTE GRUPO ←</h3><small>'+fmt(fi.length)+' rota(s)</small></div><div class="card-body route-list">'+routeRows(inc,'in')+'</div></div><div class="card route-selected"><div class="card-head"><h3>'+esc(groupName(gi))+'</h3><small>grupo selecionado</small></div><div class="card-body"><div class="audit-row"><b>Mensagens observadas</b><small>'+fmt(S().groups[gi]?.messagesObserved||0)+'</small></div><div class="audit-row"><b>Rotas saindo</b><small>'+fmt(fo.length)+'</small></div><div class="audit-row"><b>Rotas chegando</b><small>'+fmt(fi.length)+'</small></div><div class="audit-row"><b>Feedback local</b><small>✓ confirma uma rota; ✕ suprime. Você pode limpar depois.</small></div></div></div><div class="card"><div class="card-head"><h3>→ ENVIA PARA</h3><small>'+fmt(fo.length)+' rota(s)</small></div><div class="card-body route-list">'+routeRows(out,'out')+'</div></div></div>';
   host.querySelectorAll('[data-route-peer]').forEach(b=>b.onclick=()=>{const v=Number(b.dataset.routePeer);document.getElementById('routeGroupSearch').value=groupName(v);renderSelected(v)});
+  host.querySelectorAll('[data-route-proof]').forEach(b=>b.onclick=()=>{const x=b.dataset.routeProof.split('|').map(Number);proofRoute(x[0],x[1])});
+  host.querySelectorAll('[data-route-feedback]').forEach(b=>b.onclick=()=>setFeedbackRoute(Number(b.dataset.routeSg),Number(b.dataset.routeDg),b.dataset.routeFeedback));
 }
 function renderPage(){
   const host=document.getElementById('page-routes');if(!host)return;
   if(!S().connected){host.innerHTML='<div class="card empty">Conecte a pasta V11 para reconstruir as rotas históricas do WhatsApp.</div>';return;}
-  host.innerHTML='<div class="hero"><h2>ROTAS DOS <b>GRUPOS</b></h2><p>Reconstrução direcional baseada no histórico: citação entre grupos, mesma mídia, chamado, ativo, texto, ponto/máquina + tipo de problema e similaridade. Evidência original permanece intacta.</p></div><div class="card"><div class="card-body"><div class="search-row"><input id="routeGroupSearch" placeholder="Digite qualquer grupo: ELT-RP, Manutenção, Shopping…"><button id="routeBuild" class="primary">Analisar rotas</button></div><div id="routeBuildStatus" style="margin-top:8px"><small>O cálculo roda localmente sobre as mensagens carregadas.</small></div></div></div><div id="routeResults"></div>';
+  const topicOptions=[['ALL','Todos os problemas'],['MIDIA_CONTEUDO','Mídia / conteúdo'],['OFFLINE_DESLIGADO','Offline / desligado'],['HARDWARE_TELA','Hardware / tela'],['ENERGIA','Energia'],['REDE_CONECTIVIDADE','Rede / conectividade'],['ACESSO','Acesso'],['ATIVACAO','Ativação'],['CONFIGURACAO','Configuração'],['ATIVO_TROCA','Ativo / troca'],['CHAMADO','Chamado'],['MANUTENCAO','Manutenção'],['OUTROS','Outros']];
+  host.innerHTML='<div class="hero"><h2>ROTAS DOS <b>GRUPOS</b></h2><p>Reconstrução direcional baseada no histórico: citação entre grupos, mesma mídia, chamado, ativo, texto, ponto/máquina + tipo de problema e similaridade. Evidência original permanece intacta.</p></div><div class="card"><div class="card-body"><div class="route-filterbar"><input id="routeGroupSearch" placeholder="Digite qualquer grupo: ELT-RP, Manutenção, Shopping…"><select id="routeConfFilter"><option value="ALL">Todas as evidências</option><option value="HIGH">Confirmada + Alta</option><option value="MEDIUM">Média ou melhor</option></select><select id="routeTopicFilter">'+topicOptions.map(x=>'<option value="'+x[0]+'">'+x[1]+'</option>').join('')+'</select><button id="routeBuild" class="primary">Analisar rotas</button></div><div id="routeBuildStatus" style="margin-top:8px"><small>O cálculo roda localmente sobre as mensagens carregadas.</small></div></div></div><div id="routeResults"></div>';
+  document.getElementById('routeConfFilter').value=R.confFilter;document.getElementById('routeTopicFilter').value=R.topicFilter;
   const run=async()=>{const st=document.getElementById('routeBuildStatus');st.innerHTML='<small>Construindo mapa histórico de rotas…</small>';try{const E=await ensure();st.innerHTML='<small>'+fmt(E.pairs.size)+' pares de evidência • '+fmt(E.routeList.filter(r=>!r.suppressed).length)+' rotas direcionais.</small>';const q=norm(document.getElementById('routeGroupSearch').value),gs=S().groups.map((g,i)=>({i,n:groupName(i),s:norm(groupName(i))})).filter(x=>!q||x.s.includes(q)).sort((a,b)=>a.n.localeCompare(b.n,'pt-BR'));if(!gs.length){document.getElementById('routeResults').innerHTML='<div class="card empty">Grupo não encontrado.</div>';return;}renderSelected(gs[0].i);}catch(e){st.innerHTML='<small style="color:#ff8f95">Falha: '+esc(e.message||e)+'</small>';}};
-  document.getElementById('routeBuild').onclick=run;document.getElementById('routeGroupSearch').onkeydown=e=>{if(e.key==='Enter')run()};if(R.engine){const first=R.selected!=null?R.selected:0;renderSelected(first);}
+  document.getElementById('routeBuild').onclick=run;document.getElementById('routeGroupSearch').onkeydown=e=>{if(e.key==='Enter')run()};
+  document.getElementById('routeConfFilter').onchange=e=>{R.confFilter=e.target.value;if(R.engine&&R.selected!=null)renderSelected(R.selected)};
+  document.getElementById('routeTopicFilter').onchange=e=>{R.topicFilter=e.target.value;if(R.engine&&R.selected!=null)renderSelected(R.selected)};
+  if(R.engine){const first=R.selected!=null?R.selected:0;renderSelected(first);}
 }
 function invalidate(){R.engine=null;R.promise=null;R.selected=null;}
 window.PrismaRoutes={renderPage,ensure,invalidate,selectGroup:function(gi){R.selected=Number(gi);if(document.getElementById('routeGroupSearch'))document.getElementById('routeGroupSearch').value=groupName(Number(gi));if(R.engine)renderSelected(Number(gi));else ensure().then(()=>renderSelected(Number(gi))).catch(()=>{});},get engine(){return R.engine}};
