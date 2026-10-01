@@ -79,7 +79,7 @@ async function review(kind){
     const g=Number.isInteger(state.group)?S().groups[state.group]:null;targetName=g?.name||'WhatsApp Web';
     const all=await destinations('whatsapp'),d=all.find(x=>Number(x.groupIndex)===Number(state.group)||norm(x.name)===norm(g?.name||''));url=d?.url||'https://web.whatsapp.com/';
   }else{
-    const id=document.getElementById('msgSlack').value,all=await destinations('slack'),d=all.find(x=>x.id===id);targetName=d?.name||'Slack';url=d?.url||'';
+    const id=document.getElementById('msgSlack').value,all=await destinations('slack'),d=all.find(x=>x.id===id);targetName=d?.name||'Slack';const raw=String(d?.url||'').trim();url=raw?( /^https?:\/\//i.test(raw)?raw:'https://slack.com/app_redirect?channel='+encodeURIComponent(raw) ):'https://app.slack.com/client';
   }
   PrismaApp.showModal('<h3 style="margin-top:0">Revisão obrigatória</h3><p class="muted">Nada será enviado automaticamente. Confira o texto e o destino.</p><div class="field"><label>Destino</label><div>'+esc(targetName)+'</div></div><textarea id="reviewText" style="min-height:240px;margin-top:10px">'+esc(text)+'</textarea><div class="actions" style="margin-top:10px"><button data-modal-close>Cancelar</button><button id="reviewCopy">Copiar</button><button id="reviewOpen" class="primary">Copiar e abrir '+esc(kind==='whatsapp'?'WhatsApp':'Slack')+'</button></div>');
   document.getElementById('reviewCopy').onclick=()=>copyText(document.getElementById('reviewText').value,'Mensagem copiada');
@@ -93,8 +93,8 @@ async function renderCompose(host){
 }
 async function renderTemplates(host){
   const ts=await templates();
-  host.innerHTML='<div class="card"><div class="card-head"><h3>Modelos</h3><button id="newTemplate" class="primary">Novo modelo</button></div><div class="card-body">'+ts.map(t=>'<div class="source-row"><div><b>'+esc(t.title)+'</b><small>'+esc(t.body.slice(0,150))+'</small></div><div class="actions"><button data-edit-template="'+esc(t.id)+'">Editar</button><button data-dup-template="'+esc(t.id)+'">Duplicar</button><button class="danger" data-del-template="'+esc(t.id)+'">Excluir</button></div></div>').join('')+'</div></div>';
-  document.getElementById('newTemplate').onclick=()=>editTemplate(null);
+  host.innerHTML='<div class="card"><div class="card-head"><h3>Modelos</h3><div class="actions"><button id="restoreTemplates">Restaurar padrões</button><button id="newTemplate" class="primary">Novo modelo</button></div></div><div class="card-body">'+ts.map(t=>'<div class="source-row"><div><b>'+esc(t.title)+'</b><small>'+esc(t.body.slice(0,150))+'</small></div><div class="actions"><button data-edit-template="'+esc(t.id)+'">Editar</button><button data-dup-template="'+esc(t.id)+'">Duplicar</button><button class="danger" data-del-template="'+esc(t.id)+'">Excluir</button></div></div>').join('')+'</div></div>';
+  document.getElementById('newTemplate').onclick=()=>editTemplate(null);document.getElementById('restoreTemplates').onclick=async()=>{if(!confirm('Restaurar os modelos padrão? Os modelos atuais serão substituídos.'))return;await DB().clear('templates');await DB().bulkPut('templates',DEFAULTS.map(x=>Object.assign({},x,{updatedAt:new Date().toISOString()})),50);state.template='verificacao';C().toast('Modelos padrão restaurados');renderTemplates(host)};
   host.querySelectorAll('[data-edit-template]').forEach(b=>b.onclick=()=>editTemplate(b.dataset.editTemplate));
   host.querySelectorAll('[data-dup-template]').forEach(b=>b.onclick=async()=>{const t=await DB().get('templates',b.dataset.dupTemplate);if(t){t.id=DB().uid('tpl');t.title+=' (cópia)';await DB().put('templates',t);renderTemplates(host)}});
   host.querySelectorAll('[data-del-template]').forEach(b=>b.onclick=async()=>{if(confirm('Excluir este modelo?')){await DB().delete('templates',b.dataset.delTemplate);renderTemplates(host)}});
