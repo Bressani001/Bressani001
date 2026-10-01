@@ -119,5 +119,5 @@ function renderPage(){
   document.getElementById('routeBuild').onclick=run;document.getElementById('routeGroupSearch').onkeydown=e=>{if(e.key==='Enter')run()};if(R.engine){const first=R.selected!=null?R.selected:0;renderSelected(first);}
 }
 function invalidate(){R.engine=null;R.promise=null;R.selected=null;}
-window.PrismaRoutes={renderPage,ensure,invalidate,get engine(){return R.engine}};
+window.PrismaRoutes={renderPage,ensure,invalidate,selectGroup:function(gi){R.selected=Number(gi);if(document.getElementById('routeGroupSearch'))document.getElementById('routeGroupSearch').value=groupName(Number(gi));if(R.engine)renderSelected(Number(gi));else ensure().then(()=>renderSelected(Number(gi))).catch(()=>{});},get engine(){return R.engine}};
 })();
