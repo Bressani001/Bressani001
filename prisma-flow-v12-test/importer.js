@@ -273,7 +273,7 @@ async function commit(){
     const data=normalizeRow(row,map,kind),key=entityKey(kind,data,i);
     return {id:id+':'+i,importId:id,importName:pending.file.name,kind,entityKey:String(key),label:label(kind,data,key),data,raw:row,active:true,importedAt:at};
   });
-  await PrismaDB.put('imports',{id,name:pending.file.name,kind,rows:records.length,active:true,importedAt:at,mapping:pending.mapping});
+  await PrismaDB.put('imports',{id,name:pending.file.name,kind,rows:records.length,active:true,importedAt:at,digest:pending.digest||'',mapping:pending.mapping});
   await PrismaDB.bulkPut('importRecords',records);
   for(const x of pending.mapping.filter(x=>x.semantic!=='ignore')){
     await PrismaDB.put('mappings',{id:'header:'+c(x.header),header:x.header,semantic:x.semantic,updatedAt:at});
