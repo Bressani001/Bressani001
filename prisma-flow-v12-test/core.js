@@ -4,7 +4,7 @@
 const S={
   connected:false,
   files:new Map(),
-  catalog:null, WA:null, pointDetails:null, machineDetails:null,
+  catalog:null, WA:null, routerData:null, pointDetails:null, machineDetails:null,
   points:[], machines:[], messages:[], groups:[], tickets:[], assets:[],
   corrections:new Map(),
   imported:[],
@@ -175,6 +175,7 @@ async function connectFolder(fileList){
   const whatsapp=chooseFile(files,['whatsapp.js','whatsapp(1).js']);
   const pd=chooseFile(files,['point_details.js','point_details(1).js']);
   const md=chooseFile(files,['machine_details.js','machine_details(1).js']);
+  const router=chooseFile(files,['router.js','router(1).js','router_v7.js','router_v7(1).js']);
   if(!catalog)throw new Error('catalog.js não encontrado na pasta selecionada.');
   if(!whatsapp)throw new Error('whatsapp.js não encontrado na pasta selecionada.');
 
@@ -186,15 +187,16 @@ async function connectFolder(fileList){
     unpackFile(catalog,'__PACK_CATALOG__'),
     unpackFile(whatsapp,'__PACK_WHATSAPP__'),
     pd?unpackFile(pd,'__PACK_POINT_DETAILS__'):Promise.resolve(null),
-    md?unpackFile(md,'__PACK_MACHINE_DETAILS__'):Promise.resolve(null)
+    md?unpackFile(md,'__PACK_MACHINE_DETAILS__'):Promise.resolve(null),
+    router?unpackFile(router,'__PACK_ROUTER__'):Promise.resolve(null)
   ];
-  const [C,WA,PD,MD]=await Promise.all(jobs);
-  S.catalog=C;S.WA=WA;S.pointDetails=PD;S.machineDetails=MD;
+  const [C,WA,PD,MD,RD]=await Promise.all(jobs);
+  S.catalog=C;S.WA=WA;S.routerData=RD;S.pointDetails=PD;S.machineDetails=MD;
   S.connected=true;
   S.loadMeta={
     folder:S.sourceFolderName,
     catalog:basename(catalog),whatsapp:basename(whatsapp),
-    pointDetails:pd?basename(pd):null,machineDetails:md?basename(md):null,
+    pointDetails:pd?basename(pd):null,machineDetails:md?basename(md):null,router:router?basename(router):null,
     connectedAt:new Date().toISOString()
   };
   await refreshLocal();
