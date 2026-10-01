@@ -1,7 +1,8 @@
 (function(){
 'use strict';
 
-let map=null,markers=null,lastMode='all';
+let map=null,markers=null,currentPoints=[],lastMode='all';
+const MAX_VISIBLE_MARKERS=1800;
 
 function core(){return window.PrismaCore}
 function validCoord(p){return Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))&&Number(p.lat)>=-90&&Number(p.lat)<=90&&Number(p.lng)>=-180&&Number(p.lng)<=180}
@@ -18,9 +19,7 @@ function allPoints(){
   return base.concat(importedPoints());
 }
 function mapsUrl(p){
-  if(p._source==='import'){
-    return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
-  }
+  if(p._source==='import')return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
   return core().mapsUrl(p);
 }
 function popup(p){
@@ -39,42 +38,54 @@ function ensure(){
     return false;
   }
   if(map)return true;
-  map=L.map(host,{preferCanvas:true}).setView([-23.5505,-46.6333],11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19,attribution:'&copy; OpenStreetMap'
-  }).addTo(map);
+  map=L.map(host,{preferCanvas:true,zoomControl:true}).setView([-23.5505,-46.6333],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);
   markers=L.layerGroup().addTo(map);
-  map.on('moveend',updateVisibleCount);
+  map.on('moveend zoomend',drawViewport);
   return true;
 }
-function updateVisibleCount(){
-  const el=document.getElementById('mapVisibleCount');if(!el||!map||!markers)return;
-  let n=0;const b=map.getBounds();
-  markers.eachLayer(m=>{if(m.getLatLng&&b.contains(m.getLatLng()))n++;});
-  el.textContent=n.toLocaleString('pt-BR')+' ponto(s) visíveis';
+function boundsFor(points){
+  const pts=(points||[]).filter(validCoord);
+  if(!pts.length)return null;
+  return L.latLngBounds(pts.map(p=>[Number(p.lat),Number(p.lng)]));
+}
+function drawViewport(){
+  if(!map||!markers)return;
+  markers.clearLayers();
+  const bounds=map.getBounds().pad(.12);
+  const visible=[];
+  for(const p of currentPoints){
+    if(bounds.contains([Number(p.lat),Number(p.lng)]))visible.push(p);
+  }
+  const limited=visible.slice(0,MAX_VISIBLE_MARKERS);
+  for(const p of limited){
+    L.circleMarker([Number(p.lat),Number(p.lng)],{
+      radius:5,weight:1,fillOpacity:.85
+    }).bindPopup(popup(p),{maxWidth:360}).addTo(markers);
+  }
+  const el=document.getElementById('mapVisibleCount');
+  if(el)el.textContent=visible.length.toLocaleString('pt-BR')+' visível(is)'+(visible.length>MAX_VISIBLE_MARKERS?' • '+MAX_VISIBLE_MARKERS.toLocaleString('pt-BR')+' desenhados':'');
 }
 function render(points,fit){
   if(!ensure())return;
-  markers.clearLayers();
-  const arr=(points||[]).filter(validCoord);
-  const clusterBounds=[];
-  arr.forEach(p=>{
-    const marker=L.marker([Number(p.lat),Number(p.lng)]).bindPopup(popup(p),{maxWidth:360});
-    marker.addTo(markers);clusterBounds.push([Number(p.lat),Number(p.lng)]);
-  });
-  if(fit!==false&&clusterBounds.length){
-    if(clusterBounds.length===1)map.setView(clusterBounds[0],16);
-    else map.fitBounds(clusterBounds,{padding:[30,30],maxZoom:15});
-  }
-  updateVisibleCount();
-  const total=document.getElementById('mapTotalCount');if(total)total.textContent=arr.length.toLocaleString('pt-BR')+' marcado(s)';
-  setTimeout(()=>map.invalidateSize(),40);
+  currentPoints=(points||[]).filter(validCoord);
+  const total=document.getElementById('mapTotalCount');
+  if(total)total.textContent=currentPoints.length.toLocaleString('pt-BR')+' marcado(s)';
+  if(fit!==false&&currentPoints.length){
+    const b=boundsFor(currentPoints);
+    if(currentPoints.length===1)map.setView([currentPoints[0].lat,currentPoints[0].lng],16);
+    else map.fitBounds(b,{padding:[25,25],maxZoom:14});
+  }else drawViewport();
+  setTimeout(function(){map.invalidateSize();drawViewport();},50);
 }
 function searchAndRender(q){
   q=String(q||'').trim();
   if(!q){lastMode='all';render(allPoints(),true);return Promise.resolve();}
   lastMode='search';
-  return core().search(q,500,'point').then(rows=>render(rows.filter(r=>r.type==='point').map(r=>r.entity).filter(validCoord),true));
+  return core().search(q,1200,'point').then(rows=>{
+    const pts=rows.filter(r=>r.type==='point').map(r=>r.entity).filter(validCoord);
+    render(pts,true);
+  });
 }
 function renderPage(){
   const host=document.getElementById('page-map');if(!host)return;
@@ -86,8 +97,9 @@ function renderPage(){
       '<span id="mapTotalCount" class="chip blue"></span>'+
       '<span id="mapVisibleCount" class="chip"></span>'+
     '</div>'+
-    '<div class="map-wrap"><div id="mapCanvas"></div></div>';
-  map=null;markers=null;
+    '<div class="map-wrap"><div id="mapCanvas"></div></div>'+
+    '<div class="card" style="margin-top:8px"><small>O mapa mantém todos os pontos na busca, mas desenha no máximo '+MAX_VISIBLE_MARKERS.toLocaleString('pt-BR')+' pins por área visível para não travar o navegador. Dê zoom para detalhar.</small></div>';
+  map=null;markers=null;currentPoints=[];
   document.getElementById('mapSearch').onclick=()=>searchAndRender(document.getElementById('mapQuery').value);
   document.getElementById('mapAll').onclick=()=>{document.getElementById('mapQuery').value='';searchAndRender('');};
   document.getElementById('mapQuery').onkeydown=e=>{if(e.key==='Enter')searchAndRender(e.target.value);};
