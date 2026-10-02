@@ -3,7 +3,7 @@
 
 const S={
   connected:false,
-  files:new Map(),mediaUrls:new Map(),
+  files:new Map(),mediaUrls:new Map(),autoMediaMap:new Map(),sourceMode:'manual',
   catalog:null, WA:null, routerData:null, pointDetails:null, machineDetails:null,
   points:[], machines:[], messages:[], groups:[], tickets:[], assets:[],
   corrections:new Map(),
@@ -76,6 +76,55 @@ function chooseFile(files,names){
   return files.find(f=>wanted.includes(basename(f)))||null;
 }
 
+async function unpackGlobal(varName){
+  const packed=window[varName];
+  if(typeof packed!=='string'||!packed)throw new Error('Pacote '+varName+' não foi carregado.');
+  const raw=await gunzipBase64(packed);
+  return JSON.parse(raw);
+}
+function loadScriptPath(path,varName){
+  return new Promise((resolve,reject)=>{
+    if(!path){resolve(false);return;}
+    if(varName)try{delete window[varName]}catch(e){window[varName]=undefined}
+    const s=document.createElement('script');
+    s.src=String(path)+(String(path).includes('?')?'&':'?')+'v='+Date.now();
+    s.async=false;
+    s.onload=()=>{s.remove();resolve(true)};
+    s.onerror=()=>{s.remove();reject(new Error('Não foi possível carregar '+path));};
+    document.head.appendChild(s);
+  });
+}
+async function connectManifest(manifest){
+  if(!manifest||!manifest.files)throw new Error('Manifesto automático da base inválido.');
+  const f=manifest.files||{};
+  if(!f.catalog||!f.whatsapp)throw new Error('BASE_PRISMA não contém um conjunto válido com catalog.js + whatsapp.js.');
+
+  S.mediaUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});S.mediaUrls.clear();
+  S.files=new Map();S.autoMediaMap=new Map(Object.entries(manifest.media||{}).map(([k,v])=>[String(k).toLowerCase(),String(v)]));
+  S.sourceMode='auto';S.sourceFolderName=manifest.sourceRoot||'BASE_PRISMA automático';
+  toast('Carregando BASE_PRISMA automaticamente…');
+
+  await loadScriptPath(f.catalog,'__PACK_CATALOG__');
+  const C=await unpackGlobal('__PACK_CATALOG__');
+  await loadScriptPath(f.whatsapp,'__PACK_WHATSAPP__');
+  const WA=await unpackGlobal('__PACK_WHATSAPP__');
+
+  let PD=null,MD=null,RD=null;
+  if(f.pointDetails){await loadScriptPath(f.pointDetails,'__PACK_POINT_DETAILS__');PD=await unpackGlobal('__PACK_POINT_DETAILS__');}
+  if(f.machineDetails){await loadScriptPath(f.machineDetails,'__PACK_MACHINE_DETAILS__');MD=await unpackGlobal('__PACK_MACHINE_DETAILS__');}
+  if(f.router){await loadScriptPath(f.router,'__PACK_ROUTER__');RD=await unpackGlobal('__PACK_ROUTER__');}
+
+  S.catalog=C;S.WA=WA;S.routerData=RD;S.pointDetails=PD;S.machineDetails=MD;S.connected=true;
+  S.loadMeta={
+    folder:S.sourceFolderName,mode:'auto',manifestGeneratedAt:manifest.generatedAt||null,
+    catalog:f.catalog,whatsapp:f.whatsapp,pointDetails:f.pointDetails||null,machineDetails:f.machineDetails||null,router:f.router||null,
+    mediaFiles:S.autoMediaMap.size,connectedAt:new Date().toISOString()
+  };
+  await refreshLocal();
+  await PrismaDB.put('sources',{id:'v11_auto',kind:'auto-folder',name:S.sourceFolderName,meta:S.loadMeta,updatedAt:new Date().toISOString()});
+  await PrismaDB.audit('fonte','BASE_PRISMA carregada automaticamente','',S.loadMeta);
+  return stats();
+}
 function applyImportOverlay(type,obj){
   const candidates=S.imported.filter(r=>r.kind===type&&r.active!==false&&r.data);
   let best=null;
@@ -200,6 +249,7 @@ async function connectFolder(fileList){
   if(!whatsapp)throw new Error('whatsapp.js não encontrado na pasta selecionada.');
 
   S.mediaUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});S.mediaUrls.clear();
+  S.autoMediaMap.clear();S.sourceMode='manual';
   S.files=new Map(files.map(f=>[basename(f),f]));
   S.sourceFolderName=(files[0].webkitRelativePath||'').split('/')[0]||'Pasta selecionada';
   toast('Lendo base. Pode levar alguns segundos…');
@@ -345,8 +395,11 @@ function operationsMachineUrl(m){return m&&m.id?'https://operacoes.eletromidia.c
 function sourceFileUrl(name){
   const k=String(name||'').split('/').pop().toLowerCase();if(!k)return '';
   if(S.mediaUrls.has(k))return S.mediaUrls.get(k);
-  const f=S.files.get(k);if(!f)return '';
-  try{const u=URL.createObjectURL(f);S.mediaUrls.set(k,u);return u}catch(e){return ''}
+  const f=S.files.get(k);
+  if(f){try{const u=URL.createObjectURL(f);S.mediaUrls.set(k,u);return u}catch(e){}}
+  const rel=S.autoMediaMap.get(k);
+  if(rel){try{return new URL(rel,location.href).href}catch(e){return rel}}
+  return '';
 }
 function mapsUrl(p){
   if(Number.isFinite(p.lat)&&Number.isFinite(p.lng))return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.lat+','+p.lng);
@@ -355,7 +408,7 @@ function mapsUrl(p){
 }
 
 window.PrismaCore={
-  S,norm,compact,num,text,esc,fmt,toast,connectFolder,refreshLocal,rebuild,stats,search,
+  S,norm,compact,num,text,esc,fmt,toast,connectFolder,connectManifest,refreshLocal,rebuild,stats,search,
   pointForMachine,machinesForPoint,messagesForPoint,messagesForMachine,groupStatsForPoint,groupStatsForMachine,ticketsForPoint,assetsForPoint,operationsPointUrl,operationsMachineUrl,sourceFileUrl,mapsUrl,saveCorrection,removeCorrection,
   getPoint:key=>S.pointByKey.get(key)||S.pointByKey.get('code:'+norm(key))||null,
   getMachine:key=>S.machineByKey.get(key)||S.machineByKey.get('id:'+norm(key))||null
