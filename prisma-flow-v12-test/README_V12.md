@@ -1,20 +1,46 @@
 # PRISMA FLOW V12 TESTE
 
-Build isolada para testes. **Não substitui, não sobrescreve e não grava na pasta da V11.**
+## Modo portátil automático 12.2
 
-A pasta V11 é selecionada pelo navegador e usada somente como fonte. Tudo que é novo da V12 fica no IndexedDB separado:
+O fluxo principal agora é:
 
-`prisma_flow_v12_test`
+1. baixe/extrai a V12;
+2. abra a pasta `BASE_PRISMA`;
+3. **jogue dentro dela a pasta V11 inteira e outras pastas antigas que quiser manter**;
+4. não renomeie e não achate nada;
+5. volte uma pasta;
+6. execute **`ABRIR_PRISMA_V12.bat`**.
+
+O launcher varre `BASE_PRISMA` recursivamente, encontra o conjunto mais completo de `catalog.js` + `whatsapp.js` + detalhes + roteador, mapeia as mídias, gera `base_manifest.js` e abre a V12.
+
+Na abertura a base é carregada **automaticamente**. O botão **Conectar pasta V11** continua existindo apenas como fallback manual.
+
+Estrutura esperada:
+
+```text
+prisma-flow-v12-test/
+├── ABRIR_PRISMA_V12.bat
+├── PREPARAR_BASE.ps1
+├── index.html
+├── ...
+└── BASE_PRISMA/
+    ├── Minha pasta V11/
+    │   ├── catalog.js
+    │   ├── whatsapp.js
+    │   ├── point_details.js
+    │   ├── machine_details.js
+    │   ├── router.js
+    │   └── media/
+    └── outras pastas antigas/
+```
+
+A V12 **não modifica** os arquivos jogados em `BASE_PRISMA`. Correções, tarefas, importações, preferências e demais dados continuam no banco separado `prisma_flow_v12_test`.
+
+---
 
 ## Como testar
 
-1. Baixe novamente a branch `prisma-flow-v12-test`.
-2. Extraia o ZIP.
-3. Entre na pasta `prisma-flow-v12-test`.
-4. Abra `index.html` no Chrome ou Edge atualizado.
-5. Clique em **Conectar pasta V11**.
-6. Selecione a pasta completa onde hoje você abre o PRISMA V11.
-7. Aguarde o carregamento de catálogo, WhatsApp, detalhes e roteador.
+Use **`ABRIR_PRISMA_V12.bat`**. Ele prepara a base e abre o sistema. Se quiser ignorar o modo automático, ainda dá para abrir `index.html` e usar **Conectar pasta V11** manualmente.
 
 A V12 procura na pasta selecionada:
 
