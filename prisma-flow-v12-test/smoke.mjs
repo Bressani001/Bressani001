@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 
 const root='prisma-flow-v12-test';
-const js=['db.js','legacy.js','core.js','importer.js','map.js','routes.js','groups.js','router_noc.js','messages.js','flow.js','explore.js','access.js','app.js'];
-const required=['index.html','styles.css',...js,'README_V12.md','LEIA-ME-V12.txt'];
+const js=['db.js','legacy.js','core.js','auto_loader.js','importer.js','map.js','routes.js','groups.js','router_noc.js','messages.js','flow.js','explore.js','access.js','app.js'];
+const required=['index.html','styles.css',...js,'README_V12.md','LEIA-ME-V12.txt','ABRIR_PRISMA_V12.bat','PREPARAR_BASE.ps1','BASE_PRISMA/COLOQUE_SUAS_PASTAS_AQUI.txt'];
 for(const f of required){
   if(!fs.existsSync(root+'/'+f))throw new Error('Arquivo ausente: '+f);
 }
@@ -28,6 +28,9 @@ const core=fs.readFileSync(root+'/core.js','utf8');
 for(const p of ['__PACK_CATALOG__','__PACK_WHATSAPP__','__PACK_ROUTER__','__PACK_POINT_DETAILS__','__PACK_MACHINE_DETAILS__']){
   if(!core.includes(p))throw new Error('Loader ausente: '+p);
 }
+if(!core.includes('connectManifest')||!core.includes('autoMediaMap'))throw new Error('Modo portátil automático incompleto');
+const auto=fs.readFileSync(root+'/auto_loader.js','utf8');
+if(!auto.includes('base_manifest.js')||!auto.includes('connectManifest'))throw new Error('Auto-loader incompleto');
 const importer=fs.readFileSync(root+'/importer.js','utf8');
 for(const ext of ['xlsx','xls','csv','json'])if(!importer.includes(ext))throw new Error('Importador não suporta '+ext);
 for(const fn of ['matrixToObjects','headerRowScore','infer'])if(!importer.includes(fn))throw new Error('Importador adaptativo incompleto: '+fn);
