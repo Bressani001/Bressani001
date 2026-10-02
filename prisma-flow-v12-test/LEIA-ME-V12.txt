@@ -1,68 +1,41 @@
-PRISMA FLOW V12 - TESTE ISOLADO
-================================
+PRISMA FLOW V12 - MODO PORTATIL AUTOMATICO 12.2
+================================================
 
-NÃO SUBSTITUA SUA V11.
+AGORA O JEITO CERTO DE ABRIR E:
 
-1. Baixe a branch prisma-flow-v12-test novamente.
-2. Extraia o ZIP.
-3. Abra prisma-flow-v12-test/index.html no Chrome ou Edge.
-4. Clique em "Conectar pasta V11".
-5. Selecione a pasta COMPLETA da V11.
-6. A V12 lê catalog.js, whatsapp.js, point_details.js,
-   machine_details.js, router.js/router_v7.js e media/ quando existir.
-7. Nada é salvo de volta nesses arquivos.
+1. Entre em BASE_PRISMA.
+2. Jogue la dentro a pasta V11 inteira.
+3. Pode jogar tambem outras pastas antigas. Nao precisa misturar os arquivos.
+4. Volte para a pasta principal da V12.
+5. Execute:
 
-BANCO LOCAL DA V12
-prisma_flow_v12_test
+   ABRIR_PRISMA_V12.bat
 
-PRINCIPAIS MÓDULOS
-- Busca única
-- Explorar
-- Meu Turno
-- Ponto 360º
-- Mapa
-- Ponto -> Grupo
-- Roteador NOC
-- Rotas WhatsApp
-- Grupos
-- Mensagens PRISMA
-- Relações
-- Importador adaptativo
-- Correções
-- Saúde das bases
-- Operações
-- Dados locais
-- Backup
-- Fontes
+O BAT chama PREPARAR_BASE.ps1, que:
+- varre BASE_PRISMA e subpastas;
+- procura catalog.js;
+- procura whatsapp.js;
+- procura point_details.js;
+- procura machine_details.js;
+- procura router.js / router_v7.js;
+- escolhe o conjunto mais completo;
+- localiza as midias;
+- gera base_manifest.js;
+- abre index.html.
 
-IMPORTADOR
-- XLSX / XLS / CSV / TXT / JSON
-- detecta cabeçalho mesmo após linhas de título
-- escolhe a melhor aba de Excel
-- tenta entender coluna por nome + conteúdo
-- permite corrigir o mapeamento
-- aprende o mapeamento corrigido
-- SHA-256
-- prévia de diff
-- overlay local
-- pausar / reativar / excluir
+A V12 carrega sozinha.
 
-MAPA
-A build atual NÃO usa mais diretamente o servidor comunitário
-tile.openstreetmap.org que retornou 403 no teste anterior.
-O fundo usa Leaflet com camadas públicas da Esri, sem API key.
-No canto do mapa você pode trocar entre Ruas, Satélite e Claro.
-Google Maps continua disponível nos pontos.
+VOCE NAO PRECISA MAIS SELECIONAR A PASTA V11 TODA VEZ.
 
-WHATSAPP
-Mensagens originais não são editadas.
-Grupos, rotas, roteador, mídias, evidências e vínculos foram restaurados.
-
-SLACK
-A estrutura está pronta, mas o parser definitivo do histórico será feito em cima
-dos arquivos reais do Slack quando eles forem enviados.
+O botao "Conectar pasta V11" continua existindo como fallback caso queira testar
+outra pasta manualmente.
 
 IMPORTANTE
-Se você já tinha baixado uma versão anterior da V12, apague aquela pasta de teste
-ou simplesmente extraia esta versão em OUTRA pasta. Não misture os arquivos das
-duas builds.
+- NAO jogue os arquivos da V11 por cima dos arquivos da V12.
+- Jogue a pasta antiga DENTRO de BASE_PRISMA.
+- Pode preservar todas as subpastas.
+- A copia da V11 em BASE_PRISMA nao e modificada.
+- Correcoes, tarefas, importacoes e configuracoes V12 continuam separadas.
+
+BUILD
+12.2.0-PORTATIL-20261002
