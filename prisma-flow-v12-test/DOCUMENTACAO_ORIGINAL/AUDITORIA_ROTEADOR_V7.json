@@ -1,0 +1,47 @@
+{
+  "version": 7,
+  "routing_engine": {
+    "groups": 102,
+    "messages": 22754,
+    "associations": 22,
+    "cross_group_media_hashes": 64,
+    "profile_terms": 3867,
+    "confidence_policy": "confirmed/high only when multiple independent signals or explicit historical rule; medium/ambiguous blocks automatic routing"
+  },
+  "explicit_validated_route": {
+    "source": "ELT- RP",
+    "signal": "SCIRP",
+    "target": "Manutenção | Iguatemi &ELT",
+    "historical_evidence_pairs": [
+      [
+        5373,
+        5370
+      ],
+      [
+        6427,
+        6424
+      ],
+      [
+        10009,
+        10011
+      ],
+      [
+        19852,
+        19853
+      ],
+      [
+        20285,
+        20278
+      ],
+      [
+        20286,
+        20271
+      ]
+    ]
+  },
+  "integrity": {
+    "existing_catalog_js_sha256": "bf35aacfab8ba77e35c6794da30c26d476ce1b1980d2d9e09cc86b32287d8bbf",
+    "existing_whatsapp_js_sha256": "a9947c6b132eb28962b70829c81b3d635ce2ddbae4652a57dfd3448eec16a8d9",
+    "router_js_sha256": "e087ebc9387a1fae4e2b0320a80c4b0797fffd5990a039be65a8925940e729f2"
+  }
+}
