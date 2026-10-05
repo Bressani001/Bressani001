@@ -33,7 +33,7 @@ function Search-First([string[]]$Names, [string[]]$Roots) {
 
             try {
                 $hit = Get-ChildItem -LiteralPath $root -File -Recurse -ErrorAction SilentlyContinue |
-                    Where-Object { $_.Name -ieq $name } |
+                    Where-Object { $_.FullName -notmatch '\\PRISMA_FLOW_V12_DEFINITIVO(?:_BACKUP_\d+)?\\' -and $_.Name -ieq $name } |
                     Sort-Object LastWriteTimeUtc -Descending |
                     Select-Object -First 1
                 if ($hit) { return $hit }
@@ -48,10 +48,10 @@ function Search-Pattern([string]$Pattern, [string[]]$Roots) {
     foreach ($root in $Roots) {
         if (!$root -or !(Test-Path -LiteralPath $root)) { continue }
         try {
-            $hits += Get-ChildItem -LiteralPath $root -File -Recurse -Filter $Pattern -ErrorAction SilentlyContinue
+            $hits += Get-ChildItem -LiteralPath $root -File -Recurse -Filter $Pattern -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '\\PRISMA_FLOW_V12_DEFINITIVO(?:_BACKUP_\d+)?\\' }
         } catch {}
     }
-    return @($hits | Sort-Object Length -Descending, LastWriteTimeUtc -Descending)
+    return @($hits | Sort-Object @{Expression='Length';Descending=$true}, @{Expression='LastWriteTimeUtc';Descending=$true})
 }
 
 function Extract-Zip([System.IO.FileInfo]$Zip, [string]$Destination) {
@@ -109,7 +109,7 @@ foreach ($file in $AppFiles) {
     Safe-CopyFile $src (Join-Path $OutputRoot $file)
 }
 
-Copy-Item -LiteralPath (Join-Path $SourceRoot 'vendor\*') -Destination (Join-Path $OutputRoot 'vendor') -Recurse -Force
+Copy-Item -Path (Join-Path $SourceRoot 'vendor\*') -Destination (Join-Path $OutputRoot 'vendor') -Recurse -Force
 
 # Copia logo/mark se ja estiverem na propria pasta do projeto.
 foreach ($img in @('prisma_logo.png','prisma_mark.png')) {
@@ -158,7 +158,12 @@ if ($FullZip) {
     Extract-Zip $FullZip (Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8') | Out-Null
     Write-Host 'Pacote completo extraido. O ZIP original NAO foi duplicado na pasta final.' -ForegroundColor Green
 } else {
-    # Se o ZIP completo nao existir, tenta reconstruir das 5 partes.
+    $LegacyZip = Search-First @('Central_Eletromidia_NOC_v8.zip') $SearchRoots
+    if ($LegacyZip) {
+        Extract-Zip $LegacyZip (Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8') | Out-Null
+        Write-Host 'Pacote V8 legado extraido como fallback.' -ForegroundColor Green
+    } else {
+    # Se nenhum ZIP completo existir, tenta reconstruir das 5 partes.
     $Parts = @()
     foreach ($n in 1..5) {
         $suffix = $n.ToString('00')
@@ -183,6 +188,7 @@ if ($FullZip) {
         Write-Host 'Pacote reconstruido e extraido.' -ForegroundColor Green
     } else {
         Write-Host 'Pacote completo/midias nao encontrado. A build ainda funcionara com a base solta, se localizada.' -ForegroundColor Yellow
+    }
     }
 }
 
