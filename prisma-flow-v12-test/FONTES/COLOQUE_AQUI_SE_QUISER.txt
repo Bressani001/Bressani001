@@ -1,0 +1,24 @@
+PRISMA FLOW V12 DEFINITIVO - PASTA FONTES
+==========================================
+
+NORMALMENTE VOCE NEM PRECISA COLOCAR NADA AQUI.
+
+O montador procura automaticamente tambem em:
+- Downloads
+- Desktop
+- Documents
+
+Mas, se quiser garantir que ele encontre tudo, copie para esta pasta os arquivos/pastas antigos
+antes de executar MONTAR_PRISMA_DEFINITIVO.bat.
+
+Ele reconhece automaticamente os nomes que foram usados no projeto:
+- Central_Eletromidia_NOC_V8_COMPLETO_COM_BASES_2026-09-21.zip
+- NOC_V8_COMPLETO.part01 ... part05
+- WHATSAPP_MASTER.zip
+- PLANILHAS_E_CSV.zip
+- PRISMA_FLOW_V11_UPDATE_FINAL.zip
+- catalog(1).js / catalog.js
+- whatsapp(1).js / whatsapp.js
+- point_details(1).js / point_details.js
+- machine_details(1).js / machine_details.js
+- router(1).js / router_v7(1).js / router.js
