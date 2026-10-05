@@ -82,10 +82,10 @@ async function unpackGlobal(varName){
   const raw=await gunzipBase64(packed);
   return JSON.parse(raw);
 }
-function loadScriptPath(path,varName){
+function loadScriptPath(path,varName,keepExisting){
   return new Promise((resolve,reject)=>{
     if(!path){resolve(false);return;}
-    if(varName)try{delete window[varName]}catch(e){window[varName]=undefined}
+    if(varName&&!keepExisting)try{delete window[varName]}catch(e){window[varName]=undefined}
     const s=document.createElement('script');
     s.src=String(path)+(String(path).includes('?')?'&':'?')+'v='+Date.now();
     s.async=false;
@@ -94,30 +94,42 @@ function loadScriptPath(path,varName){
     document.head.appendChild(s);
   });
 }
+async function loadPackedSource(single,parts,varName){
+  if(single){
+    await loadScriptPath(single,varName,false);
+    return unpackGlobal(varName);
+  }
+  if(Array.isArray(parts)&&parts.length){
+    try{delete window[varName]}catch(e){window[varName]=undefined}
+    window[varName]='';
+    for(const path of parts)await loadScriptPath(path,varName,true);
+    return unpackGlobal(varName);
+  }
+  return null;
+}
 async function connectManifest(manifest){
   if(!manifest||!manifest.files)throw new Error('Manifesto automático da base inválido.');
   const f=manifest.files||{};
-  if(!f.catalog||!f.whatsapp)throw new Error('BASE_PRISMA não contém um conjunto válido com catalog.js + whatsapp.js.');
+  if(!(f.catalog||f.catalogParts?.length)||!(f.whatsapp||f.whatsappParts?.length))throw new Error('BASE_PRISMA não contém um conjunto válido com catálogo + WhatsApp.');
 
   S.mediaUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});S.mediaUrls.clear();
   S.files=new Map();S.autoMediaMap=new Map(Object.entries(manifest.media||{}).map(([k,v])=>[String(k).toLowerCase(),String(v)]));
   S.sourceMode='auto';S.sourceFolderName=manifest.sourceRoot||'BASE_PRISMA automático';
   toast('Carregando BASE_PRISMA automaticamente…');
 
-  await loadScriptPath(f.catalog,'__PACK_CATALOG__');
-  const C=await unpackGlobal('__PACK_CATALOG__');
-  await loadScriptPath(f.whatsapp,'__PACK_WHATSAPP__');
-  const WA=await unpackGlobal('__PACK_WHATSAPP__');
+  const C=await loadPackedSource(f.catalog,f.catalogParts,'__PACK_CATALOG__');
+  const WA=await loadPackedSource(f.whatsapp,f.whatsappParts,'__PACK_WHATSAPP__');
 
-  let PD=null,MD=null,RD=null;
-  if(f.pointDetails){await loadScriptPath(f.pointDetails,'__PACK_POINT_DETAILS__');PD=await unpackGlobal('__PACK_POINT_DETAILS__');}
-  if(f.machineDetails){await loadScriptPath(f.machineDetails,'__PACK_MACHINE_DETAILS__');MD=await unpackGlobal('__PACK_MACHINE_DETAILS__');}
-  if(f.router){await loadScriptPath(f.router,'__PACK_ROUTER__');RD=await unpackGlobal('__PACK_ROUTER__');}
+  const PD=await loadPackedSource(f.pointDetails,f.pointDetailsParts,'__PACK_POINT_DETAILS__');
+  const MD=await loadPackedSource(f.machineDetails,f.machineDetailsParts,'__PACK_MACHINE_DETAILS__');
+  const RD=await loadPackedSource(f.router,f.routerParts,'__PACK_ROUTER__');
 
   S.catalog=C;S.WA=WA;S.routerData=RD;S.pointDetails=PD;S.machineDetails=MD;S.connected=true;
   S.loadMeta={
     folder:S.sourceFolderName,mode:'auto',manifestGeneratedAt:manifest.generatedAt||null,
-    catalog:f.catalog,whatsapp:f.whatsapp,pointDetails:f.pointDetails||null,machineDetails:f.machineDetails||null,router:f.router||null,
+    catalog:f.catalog||f.catalogParts?.join(', '),whatsapp:f.whatsapp||f.whatsappParts?.join(', '),
+    pointDetails:f.pointDetails||f.pointDetailsParts?.join(', '),machineDetails:f.machineDetails||f.machineDetailsParts?.join(', '),
+    router:f.router||f.routerParts?.join(', '),
     mediaFiles:S.autoMediaMap.size,connectedAt:new Date().toISOString()
   };
   await refreshLocal();
