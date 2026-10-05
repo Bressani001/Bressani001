@@ -1,0 +1,38 @@
+window.__PRISMA_BASE_MANIFEST__={
+  version:3,
+  build:"12.3.0-DEFINITIVO-20261005",
+  generatedAt:"2026-10-05T16:49:00-03:00",
+  sourceRoot:"BASE EMBUTIDA DEFINITIVA",
+  mixed:false,
+  files:{
+    catalogParts:[
+      "BASE_PRISMA/ATUAL/catalog.part01.js",
+      "BASE_PRISMA/ATUAL/catalog.part02.js",
+      "BASE_PRISMA/ATUAL/catalog.part03.js",
+      "BASE_PRISMA/ATUAL/catalog.part04.js",
+      "BASE_PRISMA/ATUAL/catalog.part05.js",
+      "BASE_PRISMA/ATUAL/catalog.part06.js",
+      "BASE_PRISMA/ATUAL/catalog.part07.js"
+    ],
+    whatsapp:"BASE_PRISMA/ATUAL/whatsapp.js",
+    pointDetailsParts:[
+      "BASE_PRISMA/ATUAL/point_details.part01.js",
+      "BASE_PRISMA/ATUAL/point_details.part02.js",
+      "BASE_PRISMA/ATUAL/point_details.part03.js",
+      "BASE_PRISMA/ATUAL/point_details.part04.js"
+    ],
+    machineDetailsParts:[
+      "BASE_PRISMA/ATUAL/machine_details.part01.js",
+      "BASE_PRISMA/ATUAL/machine_details.part02.js",
+      "BASE_PRISMA/ATUAL/machine_details.part03.js",
+      "BASE_PRISMA/ATUAL/machine_details.part04.js"
+    ],
+    router:"BASE_PRISMA/ATUAL/router.js"
+  },
+  media:{},
+  scan:{
+    embedded:true,
+    mediaFiles:0,
+    note:"Base operacional embutida. Mídias antigas continuam opcionais."
+  }
+};
