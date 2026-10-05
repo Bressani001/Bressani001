@@ -1,0 +1,61 @@
+PRISMA FLOW V11 — ATUALIZAÇÃO SOBRE A V10
+
+VERSÃO
+PRISMA FLOW 11.0.0
+
+REGRA CENTRAL
+Esta atualização é aditiva. Ela preserva V8, V9 e V10:
+- Roteador NOC
+- Rotas dos Grupos
+- Ponto → Grupo
+- busca e evidências
+- máquinas, pontos, WhatsApp, eventos, ativos e chamados
+- Mensagens PRISMA
+- links do Operações
+- configurações locais existentes
+
+NOVO FLUXO
+Pesquisar → Entender → Agir → Registrar
+
+RECURSOS
+1. Busca/comando universal com Ctrl+K ou /
+2. Meu Turno: Fazer, Validar, Aguardando, Em andamento, Bloqueado, Concluído
+3. Captura rápida determinística, sem IA inventando contexto
+4. Histórico automático das ações
+5. Favoritos
+6. Ponto 360º com máquinas, chamados, grupos, mensagens, ativos e Operações
+7. Níveis CONFIRMADO / PROVÁVEL / HISTÓRICO / SEM EVIDÊNCIA
+8. Relações navegáveis Ponto ⇄ Máquina ⇄ Chamado ⇄ Grupo ⇄ Mensagem ⇄ Ativo
+9. Saúde das bases
+10. Importador CSV/JSON com validação, SHA-256, diff e confirmação
+11. Overlay local reversível
+12. Modo Novo no NOC
+13. Backup/exportação FLOW
+14. IndexedDB
+15. Web Worker com fallback local
+16. Sem CDN e pensado para uso local/offline
+
+O QUE NÃO FAZ
+- não usa IA para inventar grupo, rota, diagnóstico ou ação;
+- não executa HTML/scripts/fórmulas importadas;
+- não altera evidência original automaticamente;
+- não trata ausência em base velha como prova de inexistência;
+- não chuta ID interno de chamado;
+- não envia mensagem automaticamente.
+
+INSTALAÇÃO
+1. Duplique a pasta da V10 funcionando.
+2. Extraia o ZIP da V11.
+3. Copie os arquivos para Central_Eletromidia_NOC_v8 da CÓPIA.
+4. Substitua index.html.
+5. Não apague catalog.js, whatsapp.js, router.js, router_v8.js, router_v8_real.js, ux_v9.js, prisma_v10.js, machine_details.js, point_details.js, prisma_mark.png, prisma_logo.png nem media/.
+6. Abra index.html.
+7. O topo deverá mostrar PRISMA FLOW V11.
+
+ROLLBACK
+Volte à pasta V10 original. A V11 não apaga as chaves localStorage da V10.
+
+ATALHOS
+Ctrl+K = Busca universal
+/ = Busca universal fora de campos de texto
+Esc = Fechar palette/modal
