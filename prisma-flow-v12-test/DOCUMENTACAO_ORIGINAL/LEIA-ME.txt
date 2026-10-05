@@ -1,0 +1,88 @@
+CENTRAL ELETROMIDIA NOC v6 — COMO USAR
+========================================
+
+1. Extraia o ZIP inteiro para uma pasta.
+2. NÃO mova somente o index.html: ele depende de catalog.js, machine_details.js,
+   point_details.js, whatsapp.js e da pasta media/ na mesma estrutura.
+3. Abra index.html no Chrome ou Edge atualizado.
+4. Use a busca global ou as áreas Máquinas, Pontos, WhatsApp, Eventos,
+   Ativos/Chamados, Grupos e Integridade.
+
+BUSCA
+-----
+A pesquisa aceita texto parcial, termos fora de ordem e filtros.
+Exemplos típicos:
+  39787
+  redsalvador
+  recife
+  grupo:manutencao
+  autor:5511
+  evento:outage
+  asset:082209
+  ticket:1856343
+  os:linux
+  praca:BA
+  ip:179.246
+  fonte:whatsapp
+  midia:sim
+  vinculo:alto
+
+POLÍTICA DE CONFIANÇA
+---------------------
+O sistema não força ligação ambígua.
+- ALTA: identificador/nome/IP/código único ou contexto citado determinístico.
+- MÉDIA: nome de ponto por combinação distintiva validada.
+- CONTEXTO: resposta curta em até 30 min ligada a um único contexto anterior.
+- AMBÍGUA: fica sem vínculo automático para revisão humana.
+
+DADOS PRESERVADOS
+-----------------
+- 42.431 máquinas.
+- 95.520 registros de pontos.
+- 22.754 mensagens WhatsApp com ID único.
+- 4.038 mídias únicas capturadas e deduplicadas por SHA-256.
+- 221 identificadores de ativos/patrimônios derivados de texto explícito.
+- 447 chamados/tickets derivados de rótulos explícitos.
+
+COBERTURA WHATSAPP
+------------------
+O pacote original possui 102 grupos:
+- 20 COMPLETE
+- 65 COMPLETE_WITH_MEDIA_GAPS
+- 13 NEEDS_REVIEW
+- 4 FAILED
+
+O sistema NÃO interpreta grupo com falha/revisão como “sem atividade”.
+Veja a página Integridade para os detalhes.
+
+SENHAS / SISTEMA OPERACIONAL
+----------------------------
+Regra operacional preservada:
+- “Senha Padrão” => Linux
+- senha específica => Windows
+- senha ausente => não deduzir
+As planilhas de origem não trazem as senhas. Senhas cadastradas no sistema ficam
+em armazenamento local do navegador, sem inventar ou sobrescrever a fonte.
+
+ÚLTIMA ATUALIZAÇÃO
+------------------
+O campo estruturado “Última Atualização” permanece ignorado, conforme solicitado.
+Se a expressão aparecer dentro de uma mensagem original do WhatsApp, o texto bruto
+é preservado como evidência, sem virar campo estruturado da máquina.
+
+BACKUP
+------
+Faça backup dos dados locais (senhas, notas e favoritos) pela própria interface
+quando disponível. Não trate localStorage como cópia única de informação crítica.
+
+FUTURO SLACK
+------------
+A arquitetura já reserva Slack como outra fonte de mensagens. O modelo previsto é:
+canal/thread/mensagem -> mensagem normalizada -> identificação de entidade ->
+ponto/máquina/evento/ativo/chamado, preservando a origem e a confiança do vínculo.
+
+PACOTE DIVIDIDO PARA DOWNLOAD
+-----------------------------
+A distribuição entregue no chat usa um CORE + 6 ZIPs de mídia por causa do volume.
+Veja PACOTE_DOWNLOAD.txt para o procedimento exato. O conteúdo final, depois de
+extraído, continua sendo uma única pasta integrada.
