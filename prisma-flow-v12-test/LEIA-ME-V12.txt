@@ -1,41 +1,26 @@
-PRISMA FLOW V12 - MODO PORTATIL AUTOMATICO 12.2
-================================================
+PRISMA FLOW V12 DEFINITIVO
+==========================
 
-AGORA O JEITO CERTO DE ABRIR E:
+BUILD 12.3.0-DEFINITIVO-20261005
 
-1. Entre em BASE_PRISMA.
-2. Jogue la dentro a pasta V11 inteira.
-3. Pode jogar tambem outras pastas antigas. Nao precisa misturar os arquivos.
-4. Volte para a pasta principal da V12.
-5. Execute:
+COMO ABRIR
+1. Extraia o ZIP.
+2. Entre na pasta prisma-flow-v12-test.
+3. Execute ABRIR_PRISMA.bat.
 
-   ABRIR_PRISMA_V12.bat
+A BASE JA ESTA DENTRO DA PASTA.
+NAO PRECISA SELECIONAR V11.
+NAO PRECISA INSTALAR LEAFLET.
+NAO PRECISA INSTALAR BIBLIOTECA DE EXCEL.
 
-O BAT chama PREPARAR_BASE.ps1, que:
-- varre BASE_PRISMA e subpastas;
-- procura catalog.js;
-- procura whatsapp.js;
-- procura point_details.js;
-- procura machine_details.js;
-- procura router.js / router_v7.js;
-- escolhe o conjunto mais completo;
-- localiza as midias;
-- gera base_manifest.js;
-- abre index.html.
+O botao "Trocar base (opcional)" serve apenas para testes.
 
-A V12 carrega sozinha.
+OFFLINE
+- busca/base/WhatsApp/roteador/XLSX/CSV/JSON funcionam localmente;
+- mapa continua mostrando os pontos com "Sem fundo";
+- Ruas/Satelite/Claro e Google Maps precisam de internet.
 
-VOCE NAO PRECISA MAIS SELECIONAR A PASTA V11 TODA VEZ.
-
-O botao "Conectar pasta V11" continua existindo como fallback caso queira testar
-outra pasta manualmente.
-
-IMPORTANTE
-- NAO jogue os arquivos da V11 por cima dos arquivos da V12.
-- Jogue a pasta antiga DENTRO de BASE_PRISMA.
-- Pode preservar todas as subpastas.
-- A copia da V11 em BASE_PRISMA nao e modificada.
-- Correcoes, tarefas, importacoes e configuracoes V12 continuam separadas.
-
-BUILD
-12.2.0-PORTATIL-20261002
+MIDIAS ANTIGAS
+Os binarios antigos de foto/video nao sao necessarios para rodar.
+Se quiser montar uma copia incluindo esses arquivos grandes, use
+MONTAR_PRISMA_DEFINITIVO.bat com o pacote antigo em Downloads ou FONTES.
