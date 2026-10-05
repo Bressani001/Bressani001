@@ -1,0 +1,45 @@
+CENTRAL ELETROMIDIA — ROTEADOR NOC v7
+=======================================
+
+OBJETIVO PRINCIPAL
+Receber uma ocorrência e responder:
+1) o que provavelmente está acontecendo;
+2) se vale tentar ação remota primeiro;
+3) qual grupo é o destino mais seguro;
+4) quais evidências históricas sustentam a recomendação;
+5) quando NÃO existe confiança suficiente para encaminhar automaticamente.
+
+INSTALAÇÃO MAIS FÁCIL
+Este pacote foi feito para atualizar a sua pasta existente:
+Central_Eletromidia_NOC_v6
+
+1. Feche o index.html se estiver aberto.
+2. Extraia este ZIP na pasta PAI que contém Central_Eletromidia_NOC_v6.
+3. Aceite MESCLAR/SUBSTITUIR os arquivos.
+4. NÃO apague a pasta media já montada com MEDIA_01...MEDIA_06.
+5. Abra Central_Eletromidia_NOC_v6/index.html.
+6. O primeiro menu agora será "Roteador NOC".
+
+EXEMPLO DE VALIDAÇÃO
+Texto:
+Elevador da Renner sem mídia - SCIRP, quando vai ser reparado?
+Grupo onde recebi:
+ELT- RP
+
+Resultado esperado:
+Manutenção | Iguatemi &ELT
+A recomendação usa regra histórica específica + evidências repetidas entre os dois grupos.
+
+SEGURANÇA
+- O sistema não classifica rota fraca como certeza.
+- Confiança MÉDIA/AMBÍGUA mostra aviso para não encaminhar automaticamente.
+- Rotas confirmadas manualmente por você podem ser salvas localmente e usadas como reforço futuro.
+- O texto original das mensagens continua preservado.
+- A pasta media da v6 é reutilizada; não é necessário baixar as mídias novamente.
+
+DADOS DO MOTOR
+Grupos analisados: 102
+Mensagens analisadas: 22754
+Associações entre grupos: 22
+Hashes de mídia vistos em mais de um grupo: 64
+Termos de perfil usados: 3867
