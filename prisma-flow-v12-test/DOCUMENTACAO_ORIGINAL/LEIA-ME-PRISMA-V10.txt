@@ -1,0 +1,48 @@
+PRISMA V10 — ATUALIZAÇÃO SOBRE A V9
+
+Nome:
+PRISMA = Plataforma de Roteamento, Informação, Suporte, Mensagens e Acessos
+
+INSTALAÇÃO SEGURA
+1. Faça uma cópia da pasta da V9 que já está funcionando.
+2. Extraia este ZIP.
+3. Copie TODOS os arquivos desta atualização para dentro da pasta Central_Eletromidia_NOC_v8.
+4. Escolha SUBSTITUIR quando o Windows perguntar.
+5. Não apague catalog.js, whatsapp.js, machine_details.js, point_details.js, router.js nem a pasta media.
+6. Feche a aba antiga e abra index.html da cópia atualizada.
+
+O QUE A V10 ADICIONA
+- Marca/UX PRISMA com logo aprovada.
+- Home de ação rápida e busca simplificada.
+- Busca rápida por ponto, máquina, grupo, chamado e mensagens.
+- Mensagens padronizadas editáveis.
+- Variáveis: ponto, código, máquina, ID, endereço, praça, chamado, grupo, @, data, hora e observação.
+- Trechos condicionais [[ ... ]] para sumirem quando o dado não for necessário.
+- Modelos: criar, editar, duplicar, excluir e restaurar padrões.
+- Revisão obrigatória antes de abrir WhatsApp ou Slack.
+- Nenhuma mensagem é enviada automaticamente.
+- Cadastro local de links de grupos do WhatsApp.
+- Cadastro local de canais Slack e contatos/@.
+- Links diretos do Operações para ponto e máquina.
+- Chamado direto quando o ID interno estiver mapeado; fallback seguro para lista + número ELT copiado.
+- Página Operações com atalhos e pesquisa.
+- Ações rápidas dentro dos drawers de ponto, máquina, grupo e chamado.
+- Botões ? contextuais sem poluir a interface.
+- Exportar/importar configuração PRISMA.
+- Atalho "/" para focar a busca da Home.
+- V8/V9 preservadas: roteador, Rotas dos Grupos, Ponto→Grupo, evidências, WhatsApp, máquinas, pontos e demais módulos.
+
+LIMITAÇÕES TRATADAS SEM INVENTAR
+- WhatsApp não fornece um deep link público confiável por NOME de grupo. Para abrir exatamente um grupo, cadastre na aba Mensagens > Destinos a URL/link que funciona no seu ambiente. Sem isso, o PRISMA abre o WhatsApp Web geral e copia a mensagem após a sua revisão.
+- Número ELT do chamado e ID interno do Operações são diferentes. Quando o ID interno não está conhecido, o PRISMA abre a lista de chamados e copia o número ELT em vez de chutar uma URL errada.
+
+ARQUIVOS DESTA ATUALIZAÇÃO
+index.html
+router_v8.js
+router_v8_real.js
+ux_v9.js
+prisma_v10.js
+prisma_logo.png
+prisma_mark.png
+MANIFEST_V10.json
+LEIA-ME-PRISMA-V10.txt
