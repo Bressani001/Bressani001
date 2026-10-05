@@ -1,0 +1,54 @@
+PRISMA FLOW V12 DEFINITIVO
+==========================
+
+BUILD: 12.3.0-DEFINITIVO-20261005
+
+COMO USAR
+---------
+1. Extraia o ZIP.
+2. Entre na pasta prisma-flow-v12-test.
+3. Dê dois cliques em ABRIR_PRISMA.bat.
+
+PRONTO.
+
+A base operacional principal já está dentro da própria pasta:
+- catálogo;
+- WhatsApp;
+- detalhes de pontos;
+- detalhes de máquinas;
+- roteador;
+- documentação/auditorias;
+- bibliotecas locais Leaflet e SheetJS.
+
+Você NÃO precisa:
+- selecionar a pasta V11 para começar;
+- colocar catalog.js manualmente;
+- colocar whatsapp.js manualmente;
+- instalar Leaflet;
+- instalar biblioteca XLS/XLSX;
+- manter a pasta V11 antiga ao lado.
+
+O botão "Trocar base (opcional)" existe apenas para testar outra base.
+
+OFFLINE
+-------
+O núcleo do PRISMA funciona com os arquivos locais:
+busca, pontos, máquinas, grupos, WhatsApp, roteador, rotas, importador XLS/XLSX/CSV/JSON,
+Meu Turno, Ponto 360, correções, backup e demais recursos.
+
+O mapa continua exibindo os pontos sem internet usando "Sem fundo".
+Os fundos Ruas / Satélite / Claro e o botão Google Maps dependem de internet.
+
+MIDIAS HISTORICAS
+-----------------
+A base de mensagens e as referências de mídia estão embutidas.
+Os arquivos binários antigos de foto/vídeo do pacote de centenas de MB não estão dentro
+do download GitHub da build definitiva. Eles NÃO são necessários para o PRISMA rodar.
+Se quiser incorporar essas mídias também, use MONTAR_PRISMA_DEFINITIVO.bat tendo o ZIP
+antigo em Downloads/FONTES. O montador gera uma cópia final com as mídias extraídas.
+
+SEGURANCA
+---------
+A V12 não altera a base embutida.
+Correções, tarefas, favoritos, modelos e preferências ficam no IndexedDB separado
+prisma_flow_v12_test.
