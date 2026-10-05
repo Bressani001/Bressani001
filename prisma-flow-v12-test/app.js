@@ -237,7 +237,7 @@ async function renderImports(){
 async function renderSources(){
   const host=qs('#page-sources');
   host.innerHTML='<div class="hero"><h2>FONTES DO <b>PRISMA</b></h2><p>Todas as fontes convergem para as mesmas entidades. WhatsApp é preservado; Slack será normalizado como canal/thread/mensagem quando você subir a base.</p></div><div class="card"><div class="card-body">'+
-  '<div class="source-row"><div><b>Base PRISMA V11</b><small>'+(K().S.connected?K().esc(K().S.sourceFolderName)+' • conectada nesta sessão':'não conectada nesta sessão')+'</small></div><button id="sourceConnect">'+(K().S.connected?'Reconectar':'Conectar')+'</button></div>'+
+  '<div class="source-row"><div><b>Base PRISMA</b><small>'+(K().S.connected?K().esc(K().S.sourceFolderName)+' • conectada nesta sessão':'não conectada nesta sessão')+'</small></div><button id="sourceConnect">'+(K().S.connected?'Reconectar':'Conectar')+'</button></div>'+
   '<div class="source-row"><div><b>WhatsApp</b><small>'+(K().S.connected?K().fmt(K().S.messages.length)+' mensagens • '+K().fmt(K().S.groups.length)+' grupos':'vem junto com a pasta V11')+'</small></div><span class="chip '+(K().S.connected?'ok':'warn')+'">'+(K().S.connected?'ATIVO':'AGUARDANDO')+'</span></div>'+
   '<div class="source-row"><div><b>Roteador histórico</b><small>'+(K().S.routerData?'router.js carregado com perfis/regras/associações':'router.js ainda não carregado')+'</small></div><span class="chip '+(K().S.routerData?'ok':'warn')+'">'+(K().S.routerData?'ATIVO':'AGUARDANDO')+'</span></div>'+
   '<div class="source-row"><div><b>Slack</b><small>Estrutura reservada para canal, thread, mensagem, autor, anexos e vínculo com ponto/máquina/chamado.</small></div><span class="chip blue">PRÓXIMA FONTE</span></div>'+
@@ -247,7 +247,7 @@ async function renderSources(){
 async function connect(files){
   try{qs('#connectBtn').disabled=true;qs('#connectBtn').textContent='Conectando…';await K().connectFolder(files);if(window.PrismaRoutes)PrismaRoutes.invalidate();if(window.PrismaRouter)PrismaRouter.invalidate();status();renderHome();K().toast('Base conectada com sucesso');}
   catch(e){console.error(e);K().toast(e.message||e);qs('#bootError').textContent='Falha ao conectar a pasta: '+(e.message||e);qs('#bootError').classList.remove('hidden');setTimeout(()=>qs('#bootError').classList.add('hidden'),7000);}
-  finally{qs('#connectBtn').disabled=false;qs('#connectBtn').textContent='Conectar pasta V11';qs('#folderInput').value='';}
+  finally{qs('#connectBtn').disabled=false;qs('#connectBtn').textContent='Trocar base (opcional)';qs('#folderInput').value='';}
 }
 async function boot(){
   try{
