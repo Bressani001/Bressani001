@@ -1,0 +1,76 @@
+CENTRAL ELETROMIDIA + NOC / WHATSAPP — AUDITORIA V6
+
+Base operacional preservada: 42431 máquinas / 95520 pontos
+WhatsApp: 102 grupos / 22754 mensagens únicas / 4038 mídias capturadas referenciadas
+Cobertura de grupos: 20 completos, 65 completos com gaps de mídia, 13 revisão, 4 falharam
+Mensagens com vínculo operacional: 1331 (ponto: 1331; máquina: 681)
+Eventos extraídos por evidência textual: {'outage': 851, 'maintenance': 736, 'access': 804, 'ticket': 977, 'restored': 955, 'configuration': 280, 'activation': 139, 'inventory': 54, 'asset_swap': 54}
+Identificadores derivados: 221 ativos/patrimônios rotulados; 447 chamados/tickets rotulados
+
+REGRAS DE SEGURANÇA DE VÍNCULO
+- O texto original de cada mensagem é preservado; vínculo derivado é camada separada.
+- Nenhum código ambíguo é forçado a um ponto.
+- Vínculos por ID/código/nome/IP exatos recebem maior confiança.
+- Relações por contexto/continuação recebem confiança menor e aparecem identificadas como contexto.
+- Mídias são deduplicadas pelo SHA-256 já fornecido no arquivo mestre.
+- messages-since-join.jsonl NÃO foi duplicado no banco: messages-all-observed.jsonl é a fonte primária e o limite de ingresso permanece nos metadados do grupo.
+- O campo Última Atualização continua ignorado conforme regra permanente da base anterior.
+
+GRUPOS COM FALHA DE COLETA
+- Recadinhos PLIM PLIM 🛠️🔧⚙️: Error: HEADER_VALIDATION_FAILED:Recadinhos PLIM PLIM 🛠️🔧⚙️
+    at waitConversation (snippet:///NOC-ULTIMATE-MASTER:830:11)
+    at async openGroup (snippet:///NOC-ULTIMATE-MASTER:849:26)
+    at async collectGroup (snippet:///NOC-ULTIMATE-MASTER:1044:20)
+    at async snippet:///NOC-ULTIMATE-MASTER:2516:25
+- Só MONITORAMENTO 🥇: Error: HEADER_VALIDATION_FAILED:Só MONITORAMENTO 🥇
+    at waitConversation (snippet:///NOC-ULTIMATE-MASTER:830:11)
+    at async openGroup (snippet:///NOC-ULTIMATE-MASTER:849:26)
+    at async collectGroup (snippet:///NOC-ULTIMATE-MASTER:1044:20)
+    at async snippet:///NOC-ULTIMATE-MASTER:2516:25
+- ‼️Configuração de máquina - Aevum ‼️: Error: HEADER_VALIDATION_FAILED:‼️Configuração de máquina - Aevum ‼️
+    at waitConversation (snippet:///NOC-ULTIMATE-MASTER:830:11)
+    at async openGroup (snippet:///NOC-ULTIMATE-MASTER:849:26)
+    at async collectGroup (snippet:///NOC-ULTIMATE-MASTER:1044:20)
+    at async snippet:///NOC-ULTIMATE-MASTER:2516:25
+- Força Tarefa Equipe Regionais/ Qualidade ✅: Error: HEADER_VALIDATION_FAILED:Força Tarefa Equipe Regionais/ Qualidade ✅
+    at waitConversation (snippet:///NOC-ULTIMATE-MASTER:830:11)
+    at async openGroup (snippet:///NOC-ULTIMATE-MASTER:849:26)
+    at async collectGroup (snippet:///NOC-ULTIMATE-MASTER:1044:20)
+    at async snippet:///NOC-ULTIMATE-MASTER:2516:25
+
+GRUPOS QUE EXIGEM REVISÃO
+- Chamados Sh / Trilhos digitais: JOIN_BOUNDARY_NOT_PRECISE; mensagens=49; gaps mídia=24
+- Atendimento chamados PATIO Shoppin MACEIÓ: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção SH Uberaba: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção | ELT | Floripa | SC: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção Campinas: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção Tec | ELT | SH Cerrado: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção | Cidade SP & ELT: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- ATIVAÇÕES PROJETOS: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Teste countdown: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Totem | Red | Curitiba | "Clear": JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Manutenção Shop Bougainville GO - Eletromidia: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Ez Towers - Chamados Eletromidia: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+- Eletromidia GPS: JOIN_BOUNDARY_NOT_PRECISE, ZERO_MESSAGES; mensagens=0; gaps mídia=0
+
+OBSERVAÇÃO
+A Central não trata ausência de mensagens em grupos FAILED/NEEDS_REVIEW como ausência de atividade. O painel sinaliza cobertura incompleta.
+VALIDAÇÃO ESTRUTURAL FINAL DO PACOTE
+- IDs de mensagem duplicados: 0.
+- Índices de grupos fora do limite: 0.
+- Contagem de mensagens por grupo divergente do inventário importado: 0.
+- Links mensagem→ponto fora do limite: 0.
+- Links mensagem→máquina fora do limite: 0.
+- Índice reverso ponto→mensagem: 100% consistente com os links diretos.
+- Índice reverso máquina→mensagem: 100% consistente com os links diretos.
+- Eventos com referência de mensagem inválida: 0.
+- Referências inválidas em ativos/patrimônios: 0.
+- Referências inválidas em chamados/tickets: 0.
+- Referências de mídia: 5239 ocorrências (4140 capturadas; 1099 indisponíveis na origem).
+- Mídias capturadas únicas: 4038; arquivos presentes: 4038; arquivos capturados ausentes: 0.
+- Sintaxe JavaScript validada em index.html, catalog.js, whatsapp.js, machine_details.js e point_details.js.
+
+LIMITAÇÃO DE TESTE VISUAL AUTOMATIZADO
+O runtime Chromium disponível no ambiente de geração não concluiu o modo headless dentro da janela de teste,
+portanto a validação visual/end-to-end final deve ser feita abrindo index.html em Chrome/Edge. Isso não altera
+as validações estruturais acima, que passaram sem erro.
