@@ -87,7 +87,7 @@ function ensure(){
     none:L.layerGroup()
   };
 
-  let initial='streets';try{initial=localStorage.getItem('prisma_v12_basemap')||'streets'}catch(e){}
+  let initial=(navigator.onLine===false?'none':'streets');try{initial=localStorage.getItem('prisma_v12_basemap')||initial}catch(e){}
   if(!baseLayers[initial])initial='streets';
   setBasemap(initial);
 
