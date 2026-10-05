@@ -1,0 +1,65 @@
+MAPA LÓGICO — CENTRAL ELETROMIDIA NOC v6
+========================================
+
+                        ┌────────────────────────┐
+                        │      FONTES BRUTAS      │
+                        └───────────┬────────────┘
+                                    │
+          ┌─────────────────────────┼──────────────────────────┐
+          │                         │                          │
+          ▼                         ▼                          ▼
+┌──────────────────┐      ┌──────────────────┐       ┌──────────────────┐
+│ PLANILHAS/CSV    │      │ WHATSAPP MASTER  │       │ SLACK (FUTURO)   │
+│ máquinas/pontos  │      │ msgs + mídia     │       │ canais/threads   │
+└────────┬─────────┘      └────────┬─────────┘       └────────┬─────────┘
+         │                         │                          │
+         ▼                         ▼                          ▼
+┌──────────────────┐      ┌──────────────────┐       ┌──────────────────┐
+│ NORMALIZAÇÃO     │      │ MENSAGEM ORIGINAL│       │ MENSAGEM ORIGINAL│
+│ sem perder fonte│      │ + quote + mídia  │       │ + thread + mídia │
+└────────┬─────────┘      └────────┬─────────┘       └────────┬─────────┘
+         │                         └─────────────┬────────────┘
+         │                                       │
+         ▼                                       ▼
+┌──────────────────┐                   ┌───────────────────────┐
+│ ENTIDADES MESTRE │◄──────────────────│ LINKER DE ENTIDADES   │
+│                  │                   │ confiança + evidência │
+│ PONTO            │                   └───────────┬───────────┘
+│   ⇅              │                               │
+│ MÁQUINA          │                               ▼
+└───────┬──────────┘                   ┌───────────────────────┐
+        │                              │ FATOS DERIVADOS       │
+        │                              │ evento / ativo /      │
+        │                              │ chamado / restauração │
+        │                              └───────────┬───────────┘
+        └──────────────────────┬───────────────────┘
+                               ▼
+                    ┌────────────────────────┐
+                    │  CENTRAL DE CONSULTA   │
+                    │ busca + timelines +    │
+                    │ detalhes + integridade │
+                    └────────────────────────┘
+
+REGRAS DE LIGAÇÃO
+=================
+1. Nunca unir por “parece ser” quando há mais de um candidato plausível.
+2. Identificadores explícitos ganham de inferências textuais.
+3. Código de ponto só é usado diretamente quando é único/seguro no contexto.
+4. Máquina pode levar ao ponto por vínculo já validado na base anterior.
+5. Nome de ponto textual exige combinação distintiva, não uma palavra genérica.
+6. Quote herda contexto determinístico da mensagem citada.
+7. Follow-up curto só herda contexto em janela de 30 min e apenas para mensagens
+   de estado/fechamento (ex.: OK, resolvido, normalizado, online, concluído).
+8. Ambiguidade fica visível e sem vínculo forçado.
+9. Duplicata exata pode ser consolidada; conflito é preservado e sinalizado.
+10. Texto original e mídia permanecem evidência; derivação nunca substitui fonte.
+
+CAMADAS
+=======
+A. Fonte: arquivo/grupo/mensagem/mídia original.
+B. Entidade: Ponto e Máquina.
+C. Relação: mensagem ↔ ponto/máquina com confiança e motivo.
+D. Evento: indisponibilidade, manutenção, acesso, chamado, restauração,
+   configuração, ativação, inventário, troca de ativo.
+E. Registro operacional: ativo/patrimônio e chamado/ticket com linha do tempo.
+F. Auditoria: cobertura, falhas, gaps, conflitos e origem.
