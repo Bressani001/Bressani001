@@ -321,4 +321,4 @@ Write-Host ('Tamanho:  ' + $TotalMB + ' MB') -ForegroundColor White
 Write-Host ''
 Write-Host 'Agora use somente: ABRIR_PRISMA.bat' -ForegroundColor Yellow
 Write-Host ''
-Start-Process explorer.exe -ArgumentList ('"' + $OutputRoot + '"')
+if (!$env:CI) { Start-Process explorer.exe -ArgumentList ('"' + $OutputRoot + '"') }
