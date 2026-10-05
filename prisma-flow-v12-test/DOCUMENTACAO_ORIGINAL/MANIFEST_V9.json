@@ -1,0 +1,33 @@
+{
+  "version": "9.0.0-ux-groups",
+  "date": "2026-09-24",
+  "scope": [
+    "Ponto→Grupo",
+    "Busca de grupos por ponto",
+    "UX visual de grupos",
+    "Atalhos Operações",
+    "Preservação V8"
+  ],
+  "files": {
+    "LEIA-ME-V9.txt": {
+      "bytes": 1251,
+      "sha256": "f03f82d034478ad510799a90bb55fc21286ee8ea0d8d61f1346f5f2d0327db1e"
+    },
+    "index.html": {
+      "bytes": 83103,
+      "sha256": "73eb042619d2d40baa922467876e88c3bc69d3cd831390a07c6e6c8d98b7fec8"
+    },
+    "router_v8.js": {
+      "bytes": 392,
+      "sha256": "0656d57216bb0306360742a78213cc9825f1afa0ec2b4e70df47a4dc2ca26eb4"
+    },
+    "router_v8_real.js": {
+      "bytes": 60607,
+      "sha256": "8ea41b3c3cccac3f2965b202767c7a21691a87cf2c61209c22d2264cc90e7332"
+    },
+    "ux_v9.js": {
+      "bytes": 23656,
+      "sha256": "237abe1cc6378005683bbc043ca27f5d1b02c9948a2d912b74fe77b1e5f7ce0d"
+    }
+  }
+}
