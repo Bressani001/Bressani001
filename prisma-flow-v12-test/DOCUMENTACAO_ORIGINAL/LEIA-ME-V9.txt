@@ -1,0 +1,36 @@
+CENTRAL ELETROMIDIA NOC — V9 UX / PONTO → GRUPO
+
+ESCOPO DESTA VERSÃO
+- Nova tela “Ponto → Grupo” como fluxo principal de descoberta.
+- Busca aceita código/nome do ponto e também máquina relacionada.
+- Grupos passam a ser encontrados também pelo ponto relacionado.
+- Tela de Grupos reorganizada e com busca própria.
+- Resultado de Pontos mostra o grupo mais associado direto na tabela.
+- Drawer de Ponto ganha grupos relacionados + atalhos.
+- Drawer de Máquina ganha links diretos para Operações.
+- Link direto do ponto usa o ID interno da base (coluna ID), não o código operacional.
+- V8 de roteamento permanece preservada.
+- Nenhuma base, mídia, senha local, histórico ou vínculo existente é apagado.
+
+INSTALAÇÃO
+1. Faça uma cópia de segurança da pasta atual da Central.
+2. Copie os 4 arquivos deste pacote para a pasta onde já estão index.html, catalog.js, whatsapp.js etc.
+3. Substitua os arquivos quando o Windows perguntar.
+4. Feche a aba antiga do navegador.
+5. Abra index.html novamente.
+
+ARQUIVOS DESTE UPDATE
+- index.html
+- router_v8.js
+- router_v8_real.js
+- ux_v9.js
+
+NÃO APAGUE DA PASTA ATUAL
+- catalog.js
+- whatsapp.js
+- router.js
+- machine_details.js
+- point_details.js
+- media/
+
+VERSÃO: 9.0.0-ux-groups
