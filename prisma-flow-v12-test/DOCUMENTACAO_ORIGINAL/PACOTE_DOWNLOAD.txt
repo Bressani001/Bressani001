@@ -1,0 +1,48 @@
+DISTRIBUIÇÃO DO PACOTE — CENTRAL ELETROMIDIA NOC v6
+====================================================
+
+O pacote completo foi dividido porque as 4.038 mídias somam centenas de MB.
+
+ARQUIVOS PARA BAIXAR
+--------------------
+1) Central_Eletromidia_NOC_v6_CORE.zip  -> sistema + bancos + auditorias
+2) Central_Eletromidia_NOC_v6_MEDIA_01.zip
+3) Central_Eletromidia_NOC_v6_MEDIA_02.zip
+4) Central_Eletromidia_NOC_v6_MEDIA_03.zip
+5) Central_Eletromidia_NOC_v6_MEDIA_04.zip
+6) Central_Eletromidia_NOC_v6_MEDIA_05.zip
+7) Central_Eletromidia_NOC_v6_MEDIA_06.zip
+
+INSTALAÇÃO
+----------
+- Extraia o CORE em uma pasta.
+- Extraia TODOS os 6 pacotes MEDIA na MESMA pasta onde extraiu o CORE.
+- Quando o extrator perguntar por mesclagem de pastas, permita mesclar.
+- O resultado final deve conter:
+
+  Central_Eletromidia_NOC_v6/
+    index.html
+    catalog.js
+    whatsapp.js
+    machine_details.js
+    point_details.js
+    media/
+      ...4038 arquivos...
+
+- Abra Central_Eletromidia_NOC_v6/index.html no Chrome ou Edge.
+
+IMPORTANTE
+----------
+O CORE funciona sem as mídias para pesquisa textual e cruzamento de dados.
+Os seis pacotes MEDIA são necessários para abrir localmente todas as 4.038 mídias
+que foram efetivamente capturadas pelo coletor. As 1.099 ocorrências marcadas como
+indisponíveis não existem no pacote de origem; o sistema as sinaliza em vez de inventar arquivo.
+
+SHA-256 DOS PACOTES DE MÍDIA
+----------------------------
+MEDIA_01: 23c1267a636ba2f28ff2487e762ee0ce290f649413d75e13816ae9a70ebbc716
+MEDIA_02: c35a7dccba0c736fd15a534de5809c66c52f7d283327b30a30324b8a2e91a5fb
+MEDIA_03: 50896f7a1f569ab748f3a53d2b4a0c0aa92599a3d15c5021e4126c9e9a1293dd
+MEDIA_04: aaec3521bd1afc74bdf0be7a12fb9d8b9cb9b517c97a359233d155ef2f5ddf11
+MEDIA_05: cd50293313da83378695536421195864ae252a9d30fbdb2a5aa508fe7443d93a
+MEDIA_06: c063fcd055ed08171a56fa83b0566cbc87069bb47390c6984806462f0a9771d8
