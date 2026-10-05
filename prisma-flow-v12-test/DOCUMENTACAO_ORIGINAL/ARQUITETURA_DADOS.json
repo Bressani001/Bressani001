@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "machine": {
+      "key": "id_maquina",
+      "source": "machine_details.js",
+      "relations": [
+        "point",
+        "whatsapp_message",
+        "local_password",
+        "local_note"
+      ]
+    },
+    "point": {
+      "key": "id_db",
+      "alternateKey": "codigo + praça for alphanumeric",
+      "source": "point_details.js",
+      "relations": [
+        "machine",
+        "whatsapp_message"
+      ]
+    },
+    "whatsapp_group": {
+      "key": "group id",
+      "source": "NOC_ULTIMATE_MASTER_V1/master-index.json",
+      "relations": [
+        "whatsapp_message"
+      ]
+    },
+    "whatsapp_message": {
+      "key": "messageId",
+      "source": "messages-all-observed.jsonl",
+      "relations": [
+        "point",
+        "machine",
+        "media",
+        "event",
+        "quoted_message"
+      ]
+    },
+    "media": {
+      "key": "sha256",
+      "source": "_media_by_sha256",
+      "dedup": "global SHA-256"
+    },
+    "event": {
+      "key": "message + event type",
+      "source": "derived from message text",
+      "evidence": "original message always retained"
+    }
+  },
+  "future_sources": {
+    "slack": {
+      "strategy": "normalize message/thread/channel into source-message model, then run same entity linker",
+      "status": "reserved"
+    }
+  }
+}
