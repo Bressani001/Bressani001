@@ -54,11 +54,79 @@ function Search-Pattern([string]$Pattern, [string[]]$Roots) {
     return @($hits | Sort-Object @{Expression='Length';Descending=$true}, @{Expression='LastWriteTimeUtc';Descending=$true})
 }
 
+function Search-Directory([string[]]$Names, [string[]]$Roots) {
+    foreach ($name in $Names) {
+        foreach ($root in $Roots) {
+            if (!$root -or !(Test-Path -LiteralPath $root)) { continue }
+            try {
+                $direct = Join-Path $root $name
+                if (Test-Path -LiteralPath $direct -PathType Container) {
+                    return (Get-Item -LiteralPath $direct)
+                }
+                $hit = Get-ChildItem -LiteralPath $root -Directory -Recurse -ErrorAction SilentlyContinue |
+                    Where-Object {
+                        $_.FullName -notmatch '\\PRISMA_FLOW_V12_DEFINITIVO(?:_BACKUP_\d+)?\\' -and
+                        $_.Name -ieq $name
+                    } |
+                    Sort-Object LastWriteTimeUtc -Descending |
+                    Select-Object -First 1
+                if ($hit) { return $hit }
+            } catch {}
+        }
+    }
+    return $null
+}
+
+function Copy-Tree([string]$From, [string]$To) {
+    Ensure-Dir $To
+    $robo = Get-Command robocopy.exe -ErrorAction SilentlyContinue
+    if ($robo) {
+        Write-Host ('Copiando arvore existente: ' + $From) -ForegroundColor DarkGray
+        & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /R:1 /W:1 /NFL /NDL /NP /NJH /NJS | Out-Null
+        $rc = $LASTEXITCODE
+        if ($rc -gt 7) {
+            throw ('robocopy falhou com codigo ' + $rc + ' ao copiar ' + $From)
+        }
+        return
+    }
+    Copy-Item -LiteralPath (Join-Path $From '*') -Destination $To -Recurse -Force
+}
+
 function Extract-Zip([System.IO.FileInfo]$Zip, [string]$Destination) {
     if (!$Zip) { return $false }
     Ensure-Dir $Destination
-    Write-Host ('Extraindo: ' + $Zip.FullName) -ForegroundColor DarkGray
-    Expand-Archive -LiteralPath $Zip.FullName -DestinationPath $Destination -Force
+    Write-Host ('Extraindo com tar: ' + $Zip.FullName) -ForegroundColor DarkGray
+
+    $tar = Get-Command tar.exe -ErrorAction SilentlyContinue
+    if ($tar) {
+        & tar.exe -xf $Zip.FullName -C $Destination
+        if ($LASTEXITCODE -eq 0) { return $true }
+        Write-Host ('tar.exe retornou codigo ' + $LASTEXITCODE + '. Tentando extracao .NET...') -ForegroundColor Yellow
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [System.IO.Compression.ZipFile]::OpenRead($Zip.FullName)
+    try {
+        $root = [System.IO.Path]::GetFullPath($Destination)
+        foreach ($entry in $archive.Entries) {
+            if ([string]::IsNullOrWhiteSpace($entry.FullName)) { continue }
+            $rel = ($entry.FullName -replace '/', '\\').TrimStart('\\')
+            $target = [System.IO.Path]::GetFullPath((Join-Path $root $rel))
+            if (!$target.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+
+            if ([string]::IsNullOrEmpty($entry.Name)) {
+                Ensure-Dir $target
+                continue
+            }
+
+            Ensure-Dir (Split-Path -Parent $target)
+            $input = $entry.Open()
+            try {
+                $output = [System.IO.File]::Open($target, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write, [System.IO.FileShare]::None)
+                try { $input.CopyTo($output) } finally { $output.Dispose() }
+            } finally { $input.Dispose() }
+        }
+    } finally { $archive.Dispose() }
     return $true
 }
 
@@ -150,45 +218,64 @@ if ($MarkHit) { Safe-CopyFile $MarkHit.FullName (Join-Path $OutputRoot 'assets\p
 
 Write-Step 'Recuperando pacote completo / midias sem duplicar arquivos gigantes'
 
-$FullZip = Search-Pattern 'Central_Eletromidia_NOC_V8_COMPLETO_COM_BASES_2026-09-21*.zip' $SearchRoots |
-    Where-Object { $_.Length -gt 400MB } |
-    Select-Object -First 1
+$LegacyDest = Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8'
 
-if ($FullZip) {
-    Extract-Zip $FullZip (Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8') | Out-Null
-    Write-Host 'Pacote completo extraido. O ZIP original NAO foi duplicado na pasta final.' -ForegroundColor Green
+# Primeiro prefere uma pasta ja extraida. Evita reabrir ZIP gigante e contorna
+# bugs do Expand-Archive com entradas de diretorio inconsistentes.
+$ExtractedLegacy = Search-Directory @(
+    'Central_Eletromidia_NOC_V8_COMPLETO_COM_BASES_2026-09-21',
+    'Central_Eletromidia_NOC_v8'
+) $SearchRoots
+
+if ($ExtractedLegacy) {
+    Write-Host ('Pasta V8 ja extraida encontrada: ' + $ExtractedLegacy.FullName) -ForegroundColor Green
+    $LegacyCopyRoot = Join-Path $LegacyDest $ExtractedLegacy.Name
+    Copy-Tree $ExtractedLegacy.FullName $LegacyCopyRoot
+    Write-Host 'V8/midias copiadas da pasta ja extraida. Nenhum ZIP gigante foi reprocessado.' -ForegroundColor Green
 } else {
-    $LegacyZip = Search-First @('Central_Eletromidia_NOC_v8.zip') $SearchRoots
-    if ($LegacyZip) {
-        Extract-Zip $LegacyZip (Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8') | Out-Null
-        Write-Host 'Pacote V8 legado extraido como fallback.' -ForegroundColor Green
-    } else {
-    # Se nenhum ZIP completo existir, tenta reconstruir das 5 partes.
-    $Parts = @()
-    foreach ($n in 1..5) {
-        $suffix = $n.ToString('00')
-        $part = Search-First @('NOC_V8_COMPLETO.part' + $suffix) $SearchRoots
-        if ($part) { $Parts += $part }
-    }
+    $FullZip = Search-Pattern 'Central_Eletromidia_NOC_V8_COMPLETO_COM_BASES_2026-09-21*.zip' $SearchRoots |
+        Where-Object { $_.Length -gt 400MB } |
+        Select-Object -First 1
 
-    if ($Parts.Count -eq 5) {
-        Write-Host 'ZIP completo nao encontrado. Reconstruindo pelas 5 partes...' -ForegroundColor Yellow
-        $TempZip = Join-Path $env:TEMP ('PRISMA_V8_' + $NowTag + '.zip')
-        $outStream = [System.IO.File]::Create($TempZip)
-        try {
-            foreach ($part in $Parts | Sort-Object Name) {
-                $inStream = [System.IO.File]::OpenRead($part.FullName)
-                try { $inStream.CopyTo($outStream) } finally { $inStream.Dispose() }
-            }
-        } finally {
-            $outStream.Dispose()
-        }
-        Expand-Archive -LiteralPath $TempZip -DestinationPath (Join-Path $OutputRoot 'BASE_PRISMA\LEGADO_V8') -Force
-        Remove-Item -LiteralPath $TempZip -Force
-        Write-Host 'Pacote reconstruido e extraido.' -ForegroundColor Green
+    if ($FullZip) {
+        Extract-Zip $FullZip $LegacyDest | Out-Null
+        Write-Host 'Pacote completo extraido com extrator robusto. O ZIP original NAO foi duplicado na pasta final.' -ForegroundColor Green
     } else {
-        Write-Host 'Pacote completo/midias nao encontrado. A build ainda funcionara com a base solta, se localizada.' -ForegroundColor Yellow
-    }
+        $LegacyZip = Search-First @('Central_Eletromidia_NOC_v8.zip') $SearchRoots
+        if ($LegacyZip) {
+            Extract-Zip $LegacyZip $LegacyDest | Out-Null
+            Write-Host 'Pacote V8 legado extraido como fallback.' -ForegroundColor Green
+        } else {
+            # Se nenhum ZIP completo existir, tenta reconstruir das 5 partes.
+            $Parts = @()
+            foreach ($n in 1..5) {
+                $suffix = $n.ToString('00')
+                $part = Search-First @('NOC_V8_COMPLETO.part' + $suffix) $SearchRoots
+                if ($part) { $Parts += $part }
+            }
+
+            if ($Parts.Count -eq 5) {
+                Write-Host 'ZIP completo nao encontrado. Reconstruindo pelas 5 partes...' -ForegroundColor Yellow
+                $TempZip = Join-Path $env:TEMP ('PRISMA_V8_' + $NowTag + '.zip')
+                $outStream = [System.IO.File]::Create($TempZip)
+                try {
+                    foreach ($part in $Parts | Sort-Object Name) {
+                        $inStream = [System.IO.File]::OpenRead($part.FullName)
+                        try { $inStream.CopyTo($outStream) } finally { $inStream.Dispose() }
+                    }
+                } finally {
+                    $outStream.Dispose()
+                }
+                try {
+                    Extract-Zip (Get-Item -LiteralPath $TempZip) $LegacyDest | Out-Null
+                } finally {
+                    Remove-Item -LiteralPath $TempZip -Force -ErrorAction SilentlyContinue
+                }
+                Write-Host 'Pacote reconstruido e extraido.' -ForegroundColor Green
+            } else {
+                Write-Host 'Pacote completo/midias nao encontrado. A build ainda funcionara com a base solta, se localizada.' -ForegroundColor Yellow
+            }
+        }
     }
 }
 
