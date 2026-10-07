@@ -10,7 +10,7 @@ function loadManifest(){
     try{delete window.__PRISMA_BASE_MANIFEST__}catch(e){window.__PRISMA_BASE_MANIFEST__=undefined}
     const s=document.createElement('script');
     s.id='prismaAutoManifestScript';
-    s.src='./base_manifest.js?v='+Date.now();
+    s.src=(location.protocol==='file:')?'./base_manifest.js':('./base_manifest.js?v='+Date.now());
     s.onload=()=>{manifestLoaded=true;resolve(window.__PRISMA_BASE_MANIFEST__||null)};
     s.onerror=()=>{s.remove();resolve(null)};
     document.head.appendChild(s);
