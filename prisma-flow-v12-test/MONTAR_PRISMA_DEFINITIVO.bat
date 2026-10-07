@@ -19,7 +19,9 @@ echo Ele NAO altera os arquivos originais.
 echo.
 pause
 
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0MONTAR_PRISMA_DEFINITIVO.ps1"
+set "PRISMA_MONTADOR_ROOT=%~dp0"
+set "PRISMA_MONTADOR_SCRIPT=%~dp0MONTAR_PRISMA_DEFINITIVO.ps1"
+powershell.exe -NoProfile -Command "$ErrorActionPreference='Stop'; $code=Get-Content -LiteralPath $env:PRISMA_MONTADOR_SCRIPT -Raw; & ([ScriptBlock]::Create($code))"
 set RC=%ERRORLEVEL%
 
 echo.
