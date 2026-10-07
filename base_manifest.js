@@ -1,7 +1,7 @@
 window.__PRISMA_BASE_MANIFEST__={
   version:3,
-  build:"12.3.0-DEFINITIVO-20261005",
-  generatedAt:"2026-10-05T16:49:00-03:00",
+  build:"12.4.0-FINAL-DIRETO-20261007",
+  generatedAt:"2026-10-07T00:00:00-03:00",
   sourceRoot:"BASE EMBUTIDA DEFINITIVA",
   mixed:false,
   files:{
@@ -33,6 +33,6 @@ window.__PRISMA_BASE_MANIFEST__={
   scan:{
     embedded:true,
     mediaFiles:0,
-    note:"Base operacional embutida. Mídias antigas continuam opcionais."
+    note:"Base operacional embutida e pronta para abrir direto. Mídias históricas binárias não são necessárias para o núcleo funcionar."
   }
 };
