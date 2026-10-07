@@ -2,31 +2,76 @@ PRISMA FLOW V12 FINAL - STATUS DA BUILD
 =========================================
 
 Build: 12.4.0-FINAL-DIRETO-20261007
+Branch: prisma-flow-v12-final
 
-Formato:
-- pasta única;
-- abre por ABRIR_PRISMA.bat;
+RESULTADO
+---------
+VALIDAÇÃO AUTOMÁTICA REAL: PASS
+
+GitHub Actions:
+- workflow: PRISMA V12 FINAL validation
+- job: validate
+- conclusão: success
+- run: 37626388191
+
+BASE EMBUTIDA VALIDADA
+----------------------
+catalog:
+- payload compactado: 11.347.568 caracteres
+- JSON descompactado: 53.620.943 caracteres
+
+whatsapp:
+- payload compactado: 3.090.116 caracteres
+- JSON descompactado: 9.397.691 caracteres
+
+point_details:
+- payload compactado: 5.793.716 caracteres
+- JSON descompactado: 35.236.285 caracteres
+
+machine_details:
+- payload compactado: 6.419.548 caracteres
+- JSON descompactado: 28.312.347 caracteres
+
+router:
+- payload compactado: 105.852 caracteres
+- JSON descompactado: 264.929 caracteres
+
+CONTAGENS VALIDADAS
+-------------------
+- pontos: 95.520
+- máquinas: 42.431
+- grupos WhatsApp: 102
+- mensagens: 22.754
+- perfis do roteador: 102
+
+PACOTE FINAL
+------------
+- pasta única depois de extrair o ZIP;
+- ABRIR_PRISMA.bat na raiz;
 - sem montador;
 - sem PowerShell;
 - sem V11 externa;
-- sem CDN obrigatória para o núcleo.
-
-Validações estruturais previstas:
-- presença de todos os módulos runtime;
-- sintaxe JS;
-- manifest/base embutida;
-- 95.520 pontos;
-- 42.431 máquinas;
-- 102 grupos WhatsApp;
-- 22.754 mensagens;
-- point_details e machine_details;
-- roteador com perfis;
+- sem CDN obrigatória para o núcleo;
 - Leaflet local;
-- SheetJS local;
-- ausência de CDN obrigatória;
-- ausência do montador na pasta final;
-- mapa offline com fallback Sem fundo.
+- SheetJS/XLSX local;
+- base operacional embutida;
+- documentação e legado preservados;
+- mapa com fallback offline "Sem fundo".
 
-Observação:
-Fotos e vídeos históricos binários do pacote bruto não estão nesta edição GitHub.
-As referências permanecem na base e não afetam o núcleo operacional.
+CHECAGENS DE CÓDIGO
+-------------------
+- todos os módulos runtime JS: syntax OK
+- index sem CDN obrigatória: PASS
+- carregamento automático da base: PASS
+- manifest embutido: PASS
+- partes compactadas da base presentes: PASS
+- importador adaptativo: PASS
+- fallback de mapa offline: PASS
+- montador ausente do pacote final: PASS
+
+MÍDIAS HISTÓRICAS
+-----------------
+As mensagens e referências de mídia estão na base.
+Fotos/vídeos binários históricos do pacote bruto não fazem parte desta edição GitHub.
+Eles não são necessários para busca, roteamento, relações, mapa, importações ou uso
+operacional do PRISMA.
