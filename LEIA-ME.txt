@@ -1,54 +1,93 @@
-PRISMA FLOW V12 DEFINITIVO
-==========================
+PRISMA FLOW V12 FINAL
+=====================
 
-BUILD: 12.3.0-DEFINITIVO-20261005
+BUILD: 12.4.0-FINAL-DIRETO-20261007
 
-COMO USAR
----------
+COMO ABRIR
+----------
 1. Extraia o ZIP.
-2. Entre na pasta prisma-flow-v12-test.
-3. Dê dois cliques em ABRIR_PRISMA.bat.
+2. Abra a pasta extraída.
+3. Dê dois cliques em:
 
-PRONTO.
+   ABRIR_PRISMA.bat
 
-A base operacional principal já está dentro da própria pasta:
-- catálogo;
-- WhatsApp;
-- detalhes de pontos;
-- detalhes de máquinas;
-- roteador;
-- documentação/auditorias;
-- bibliotecas locais Leaflet e SheetJS.
+Só isso.
 
-Você NÃO precisa:
-- selecionar a pasta V11 para começar;
-- colocar catalog.js manualmente;
-- colocar whatsapp.js manualmente;
-- instalar Leaflet;
-- instalar biblioteca XLS/XLSX;
-- manter a pasta V11 antiga ao lado.
+NÃO existe etapa de montagem.
+NÃO precisa PowerShell.
+NÃO precisa colocar V11 dentro.
+NÃO precisa selecionar pasta para começar.
+NÃO precisa instalar Leaflet.
+NÃO precisa instalar biblioteca de Excel.
+NÃO depende de CDN para o núcleo funcionar.
 
-O botão "Trocar base (opcional)" existe apenas para testar outra base.
+O QUE JÁ VEM EMBUTIDO
+---------------------
+- catálogo operacional;
+- 95.520 pontos;
+- 42.431 máquinas;
+- 102 grupos do WhatsApp;
+- 22.754 mensagens observadas;
+- point_details;
+- machine_details;
+- roteador / perfis / regras;
+- código PRISMA V7 -> V11 preservado em LEGADO_V7_V11;
+- auditorias e manifests originais em DOCUMENTACAO_ORIGINAL;
+- Leaflet local;
+- SheetJS/XLSX local;
+- toda a aplicação V12.
+
+RECURSOS V12
+------------
+- busca global;
+- Explorar;
+- Meu Turno;
+- Ponto 360º;
+- mapa;
+- Ruas / Satélite / Claro / Sem fundo;
+- Google Maps;
+- Ponto -> Grupo;
+- Roteador NOC;
+- Rotas WhatsApp;
+- evidências cruzadas;
+- grupos e histórico;
+- Mensagens PRISMA;
+- Relações;
+- importador adaptativo XLS/XLSX/CSV/TXT/JSON;
+- detecção de cabeçalho e melhor aba;
+- SHA-256 e prévia de diferenças;
+- correções reversíveis;
+- overlays;
+- Operações;
+- notas e senhas locais;
+- Saúde das bases;
+- Backup;
+- estrutura pronta para ingestão futura do Slack.
 
 OFFLINE
 -------
-O núcleo do PRISMA funciona com os arquivos locais:
-busca, pontos, máquinas, grupos, WhatsApp, roteador, rotas, importador XLS/XLSX/CSV/JSON,
-Meu Turno, Ponto 360, correções, backup e demais recursos.
+O núcleo funciona localmente.
 
-O mapa continua exibindo os pontos sem internet usando "Sem fundo".
-Os fundos Ruas / Satélite / Claro e o botão Google Maps dependem de internet.
+Sem internet o mapa muda automaticamente para "Sem fundo" e continua mostrando
+os pontos pelas coordenadas. Ruas, Satélite, Claro e Google Maps precisam de internet.
 
-MIDIAS HISTORICAS
+DADOS LOCAIS
+------------
+Correções, tarefas, favoritos, modelos, importações e preferências ficam no banco
+IndexedDB separado:
+
+prisma_flow_v12_test
+
+A base embutida não é sobrescrita.
+
+MÍDIAS HISTÓRICAS
 -----------------
-A base de mensagens e as referências de mídia estão embutidas.
-Os arquivos binários antigos de foto/vídeo do pacote de centenas de MB não estão dentro
-do download GitHub da build definitiva. Eles NÃO são necessários para o PRISMA rodar.
-Se quiser incorporar essas mídias também, use MONTAR_PRISMA_DEFINITIVO.bat tendo o ZIP
-antigo em Downloads/FONTES. O montador gera uma cópia final com as mídias extraídas.
+As mensagens e referências de mídia estão na base.
+As fotos/vídeos binários históricos do pacote bruto de centenas de MB NÃO fazem
+parte do download GitHub desta edição. Eles não são necessários para o funcionamento
+do PRISMA, busca, roteamento ou relações.
 
-SEGURANCA
----------
-A V12 não altera a base embutida.
-Correções, tarefas, favoritos, modelos e preferências ficam no IndexedDB separado
-prisma_flow_v12_test.
+IMPORTANTE
+----------
+Este é o pacote final direto. Não rode MONTAR_PRISMA_DEFINITIVO.bat de versões antigas.
+Esse montador não existe nesta edição.
