@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
 
-const root = path.resolve('prisma-flow-v12-test');
+const root = path.resolve('.');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 
 function single(file,varName){
@@ -52,7 +52,7 @@ if(index.includes('unpkg.com/leaflet')||index.includes('cdn.jsdelivr.net/npm/xls
 for(const f of ['vendor/leaflet.js','vendor/leaflet.css','vendor/xlsx.full.min.js','base_manifest.js','ABRIR_PRISMA.bat']){
   if(!fs.existsSync(path.join(root,f))) throw new Error('Missing definitive file '+f);
 }
-if(!index.includes('12.3.0-DEFINITIVO-20261005')) throw new Error('Wrong build id');
+if(!index.includes('12.4.0-FINAL-DIRETO-20261007')) throw new Error('Wrong build id');
 
 console.log('COUNTS',JSON.stringify({
   points:catalog.P.length,
@@ -61,4 +61,7 @@ console.log('COUNTS',JSON.stringify({
   messages:whatsapp.messages.length,
   routerProfiles:router.profiles.length
 }));
-console.log('PRISMA V12 DEFINITIVO DATA VALIDATION: OK');
+for(const f of ['MONTAR_PRISMA_DEFINITIVO.bat','MONTAR_PRISMA_DEFINITIVO.ps1','PREPARAR_BASE.ps1']){
+  if(fs.existsSync(path.join(root,f))) throw new Error('Final package must not contain montador dependency: '+f);
+}
+console.log('PRISMA V12 FINAL DIRECT-OPEN VALIDATION: OK');
