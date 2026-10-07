@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$SourceRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$SourceRoot = if ($env:PRISMA_MONTADOR_ROOT) { [System.IO.Path]::GetFullPath($env:PRISMA_MONTADOR_ROOT) } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $OutputRoot = Join-Path $SourceRoot 'PRISMA_FLOW_V12_DEFINITIVO'
 $NowTag = Get-Date -Format 'yyyyMMdd_HHmmss'
 
@@ -232,8 +232,16 @@ foreach ($name in $Docs) {
 Write-Step 'Gerando manifesto automatico da base'
 
 $Prep = Join-Path $OutputRoot 'PREPARAR_BASE.ps1'
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $Prep
-if ($LASTEXITCODE -ne 0) {
+$env:PRISMA_APP_ROOT = $OutputRoot
+$env:PRISMA_PREP_SCRIPT = $Prep
+try {
+    & powershell.exe -NoProfile -Command "$ErrorActionPreference='Stop'; $code=Get-Content -LiteralPath $env:PRISMA_PREP_SCRIPT -Raw; & ([ScriptBlock]::Create($code))"
+    $PrepExit = $LASTEXITCODE
+} finally {
+    Remove-Item Env:PRISMA_APP_ROOT -ErrorAction SilentlyContinue
+    Remove-Item Env:PRISMA_PREP_SCRIPT -ErrorAction SilentlyContinue
+}
+if ($PrepExit -ne 0) {
     throw 'A base foi copiada, mas o manifesto automatico nao conseguiu encontrar catalog.js + whatsapp.js.'
 }
 
