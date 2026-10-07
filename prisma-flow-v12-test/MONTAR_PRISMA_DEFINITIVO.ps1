@@ -89,7 +89,7 @@ function Copy-Tree([string]$From, [string]$To) {
         }
         return
     }
-    Copy-Item -LiteralPath (Join-Path $From '*') -Destination $To -Recurse -Force
+    Copy-Item -Path (Join-Path $From '*') -Destination $To -Recurse -Force
 }
 
 function Extract-Zip([System.IO.FileInfo]$Zip, [string]$Destination) {
