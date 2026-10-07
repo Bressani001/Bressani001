@@ -56,7 +56,8 @@ function tileLayer(url,opts){
     tileErrors++;
     if(tileErrors===12){
       const el=document.getElementById('mapTileStatus');
-      if(el)el.innerHTML='<span class="chip warn">Fundo indisponível. Troque a visualização.</span>';
+      if(el)el.innerHTML='<span class="chip warn">Fundo online indisponível. Usando pontos sem fundo.</span>';
+      setBasemap('none');
     }
   });
   layer.on('load',()=>{const el=document.getElementById('mapTileStatus');if(el)el.innerHTML='';});
