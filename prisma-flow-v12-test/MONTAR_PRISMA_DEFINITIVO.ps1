@@ -235,7 +235,7 @@ $Prep = Join-Path $OutputRoot 'PREPARAR_BASE.ps1'
 $env:PRISMA_APP_ROOT = $OutputRoot
 $env:PRISMA_PREP_SCRIPT = $Prep
 try {
-    & powershell.exe -NoProfile -Command "$ErrorActionPreference='Stop'; $code=Get-Content -LiteralPath $env:PRISMA_PREP_SCRIPT -Raw; & ([ScriptBlock]::Create($code))"
+    & powershell.exe -NoProfile -Command '$ErrorActionPreference="Stop"; $code=Get-Content -LiteralPath $env:PRISMA_PREP_SCRIPT -Raw; & ([ScriptBlock]::Create($code))'
     $PrepExit = $LASTEXITCODE
 } finally {
     Remove-Item Env:PRISMA_APP_ROOT -ErrorAction SilentlyContinue
