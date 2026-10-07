@@ -1,0 +1,32 @@
+PRISMA FLOW V12 FINAL - STATUS DA BUILD
+=========================================
+
+Build: 12.4.0-FINAL-DIRETO-20261007
+
+Formato:
+- pasta única;
+- abre por ABRIR_PRISMA.bat;
+- sem montador;
+- sem PowerShell;
+- sem V11 externa;
+- sem CDN obrigatória para o núcleo.
+
+Validações estruturais previstas:
+- presença de todos os módulos runtime;
+- sintaxe JS;
+- manifest/base embutida;
+- 95.520 pontos;
+- 42.431 máquinas;
+- 102 grupos WhatsApp;
+- 22.754 mensagens;
+- point_details e machine_details;
+- roteador com perfis;
+- Leaflet local;
+- SheetJS local;
+- ausência de CDN obrigatória;
+- ausência do montador na pasta final;
+- mapa offline com fallback Sem fundo.
+
+Observação:
+Fotos e vídeos históricos binários do pacote bruto não estão nesta edição GitHub.
+As referências permanecem na base e não afetam o núcleo operacional.
