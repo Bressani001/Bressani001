@@ -87,7 +87,7 @@ function loadScriptPath(path,varName,keepExisting){
     if(!path){resolve(false);return;}
     if(varName&&!keepExisting)try{delete window[varName]}catch(e){window[varName]=undefined}
     const s=document.createElement('script');
-    s.src=String(path)+(String(path).includes('?')?'&':'?')+'v='+Date.now();
+    const base=String(path);s.src=(location.protocol==='file:')?base:(base+(base.includes('?')?'&':'?')+'v='+Date.now());
     s.async=false;
     s.onload=()=>{s.remove();resolve(true)};
     s.onerror=()=>{s.remove();reject(new Error('Não foi possível carregar '+path));};
