@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$AppRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$AppRoot = if ($env:PRISMA_APP_ROOT) { [System.IO.Path]::GetFullPath($env:PRISMA_APP_ROOT) } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $BaseRoot = Join-Path $AppRoot 'BASE_PRISMA'
 $ManifestPath = Join-Path $AppRoot 'base_manifest.js'
 
