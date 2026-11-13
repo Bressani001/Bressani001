@@ -31,7 +31,7 @@ function typeMeta(type){
 function openResult(r){
   const A=window.PrismaApp;
   if(!A)return;
-  if(r.type==='point'&&!r.imported){A.activate('flow360');setTimeout(()=>window.PrismaFlow?.setCurrentPoint(r.key)&&window.PrismaFlow.render360(r.key),25);return;}
+  if(r.type==='point'&&!r.imported){A.activate('flow360');setTimeout(()=>{window.PrismaFlow?.setCurrentPoint(r.key);window.PrismaFlow?.render360(r.key)},25);return;}
   if(r.type==='machine'&&!r.imported){A.openMachine(r.key);return;}
   if(r.type==='group'){window.PrismaGroups?.openGroup(Number(r.entity.index));return;}
   if(r.type==='message'){A.openMessage(Number(r.entity.index));return;}
