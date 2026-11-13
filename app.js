@@ -57,59 +57,130 @@ function status(){
   else{el.textContent='Base não conectada';el.className='status-pill warn';}
 }
 function stat(n,label){return '<div class="card stat"><b>'+K().fmt(n)+'</b><span>'+K().esc(label)+'</span></div>';}
-function renderHome(){
+async function renderHome(){
   const s=K().stats(),host=qs('#page-home');
+  let tasks=[],favs=[],audit=[];
+  try{
+    [tasks,favs,audit]=await Promise.all([PrismaDB.all('tasks'),PrismaDB.all('favorites'),PrismaDB.all('audit')]);
+  }catch(e){}
+  const openTasks=tasks.filter(t=>t.status!=='Concluído').sort((x,y)=>String(y.updatedAt||'').localeCompare(String(x.updatedAt||'')));
+  const now=Date.now();
+  const overdue=openTasks.filter(t=>t.dueAt&&new Date(t.dueAt).getTime()<now).length;
+  const recent=(audit||[]).sort((x,y)=>String(y.at||'').localeCompare(String(x.at||''))).slice(0,6);
+  const favRows=(favs||[]).slice(0,6);
+
+  const kpi=(n,label)=>'<div class="kpi-card"><b>'+K().fmt(n)+'</b><span>'+label+'</span></div>';
+  const taskRows=openTasks.slice(0,5).map(t=>'<div class="home-list-row"><div><b>'+K().esc(t.title||'Tarefa')+'</b><small>'+K().esc([t.status,t.priority,t.ticket&&('Chamado '+t.ticket)].filter(Boolean).join(' • '))+'</small></div><button data-home-task="'+K().esc(t.id)+'">Abrir</button></div>').join('');
+  const favHtml=favRows.map(f=>'<div class="home-list-row"><div><b>'+K().esc(f.label||f.key||'Favorito')+'</b><small>'+K().esc(f.kind||'item')+'</small></div><button data-home-fav="'+K().esc(f.key||'')+'" data-home-fav-kind="'+K().esc(f.kind||'')+'">Abrir</button></div>').join('');
+  const recentHtml=recent.map(x=>'<div class="home-list-row"><div><b>'+K().esc(x.label||x.type||'Atividade')+'</b><small>'+K().esc(x.at||'')+'</small></div></div>').join('');
+
   host.innerHTML=
-    '<div class="hero"><h2>PRISMA <b>FLOW V12</b></h2><p>Ambiente isolado. A base operacional já vem embutida. Correções, tarefas, importações, modelos e preferências ficam isolados no banco <b>prisma_flow_v12_test</b>.</p>'+
-      '<div class="actions" style="margin-top:11px"><button id="homeConnect" class="primary">'+(K().S.connected?'Trocar base (opcional)':'Carregar outra base')+'</button><button data-home-go="search">Buscar</button><button data-home-go="today">Meu Turno</button><button data-home-go="map">Mapa</button><button data-home-go="router">Roteador NOC</button></div></div>'+
-    '<div class="grid4">'+stat(s.points,'Pontos')+stat(s.machines,'Máquinas')+stat(s.messages,'Mensagens')+stat(s.withCoords,'Pontos com coordenadas')+'</div>'+
-    '<div class="grid4" style="margin-top:12px">'+stat(s.groups,'Grupos WhatsApp')+stat(s.tickets,'Chamados')+stat(s.assets,'Ativos')+stat(s.imported,'Registros importados V12')+'</div>'+
-    '<div class="grid2" style="margin-top:12px">'+
-      '<div class="card"><div class="card-head"><h3>Fluxo operacional</h3><small>pesquisar → entender → agir → registrar</small></div><div class="card-body">'+
-        '<div class="source-row"><div><b>Busca única</b><small>Ponto, máquina, grupo, chamado, ativo, mensagem e importado.</small></div><button data-home-go="search">Abrir</button></div>'+
-        '<div class="source-row"><div><b>Ponto 360º</b><small>Relações, histórico, grupo, mapa, Operações e próxima ação.</small></div><button data-home-go="flow360">Abrir</button></div>'+
-        '<div class="source-row"><div><b>Meu Turno</b><small>Fazer, Validar, Aguardando, Em andamento, Bloqueado e Concluído.</small></div><button data-home-go="today">Abrir</button></div>'+
-        '<div class="source-row"><div><b>Roteamento</b><small>Roteador NOC + rotas direcionais entre grupos.</small></div><button data-home-go="router">Analisar</button></div>'+
-      '</div></div>'+
-      '<div class="card"><div class="card-head"><h3>Dados e segurança</h3><small>sem substituir arquivos</small></div><div class="card-body">'+
-        '<div class="audit-row"><b>Base operacional</b><small>'+(K().S.connected?K().esc(K().S.sourceFolderName)+' • conectada':'somente leitura quando conectada')+'</small></div>'+
-        '<div class="audit-row"><b>Banco V12</b><small>IndexedDB separado: prisma_flow_v12_test.</small></div>'+
-        '<div class="source-row"><div><b>Importador adaptativo</b><small>XLS/XLSX/CSV/JSON com mapeamento antes de gravar.</small></div><button data-home-go="imports">Importar</button></div>'+
-        '<div class="source-row"><div><b>Correções reversíveis</b><small>Corrige a verdade operacional sem apagar o valor original.</small></div><button data-home-go="corrections">Ver</button></div>'+
-      '</div></div>'+
+    '<div class="home-command">'+
+      '<div class="home-kicker">PRISMA NOC COMMAND CENTER</div>'+
+      '<h2>O que você precisa resolver agora?</h2>'+
+      '<p>Digite qualquer coisa que você lembrar. Código do ponto, host, máquina, ativo, chamado, grupo, endereço, praça ou trecho da mensagem.</p>'+
+      '<div class="home-omni"><input id="homeOmniSearch" autocomplete="off" placeholder="Ex.: 78670, urbanbarrafunda2_1, 119047, Interclube, offline…"><button id="homeOmniGo" class="primary">Buscar agora</button></div>'+
+      '<div class="home-examples"><button data-home-example="78670">código do ponto</button><button data-home-example="offline">offline</button><button data-home-example="Interclube">nome/local</button><button data-home-example="119047">ativo</button><button data-home-example="urban">host/máquina</button></div>'+
+    '</div>'+
+
+    '<div class="home-quick-grid">'+
+      '<button class="quick-card" data-home-go="search"><span class="q-icon">⌕</span><b>Busca global</b><small>Encontre qualquer entidade e já abra a ação certa.</small></button>'+
+      '<button class="quick-card" data-home-go="map"><span class="q-icon">⌖</span><b>Mapa operacional</b><small>Pesquise, foque o ponto e abra no Google Maps.</small></button>'+
+      '<button class="quick-card" data-home-go="router"><span class="q-icon">↗</span><b>Roteador NOC</b><small>Cole a ocorrência e veja destino + evidências.</small></button>'+
+      '<button class="quick-card" data-home-go="imports"><span class="q-icon">＋</span><b>Subir informação</b><small>Planilha fora do padrão, CSV ou JSON sem ficar adaptando coluna.</small></button>'+
+    '</div>'+
+
+    '<div class="kpi-strip">'+
+      kpi(s.points,'Pontos')+kpi(s.machines,'Máquinas')+kpi(s.withCoords,'No mapa')+
+      kpi(s.groups,'Grupos')+kpi(s.messages,'Mensagens')+kpi(openTasks.length,'Pendências')+
+    '</div>'+
+
+    '<div class="home-layout">'+
+      '<div class="home-stack">'+
+        '<div class="card"><div class="card-body"><div class="home-section-head"><h3>Meu Turno</h3><div class="actions"><span class="chip '+(overdue?'danger':'ok')+'">'+K().fmt(overdue)+' atrasada(s)</span><button data-home-go="today">Ver tudo</button></div></div><div class="home-list">'+(taskRows||'<div class="empty">Nenhuma pendência aberta.</div>')+'</div></div></div>'+
+        '<div class="card"><div class="card-body"><div class="home-section-head"><h3>Atividade recente</h3><button data-home-go="explore">Explorar</button></div><div class="home-list">'+(recentHtml||'<div class="empty">Ainda sem atividade local.</div>')+'</div></div></div>'+
+      '</div>'+
+      '<div class="home-stack">'+
+        '<div class="card"><div class="card-body"><div class="home-section-head"><h3>Favoritos</h3><button data-home-go="flow360">Abrir 360º</button></div><div class="home-list">'+(favHtml||'<div class="empty">Favorite pontos importantes no Ponto 360º.</div>')+'</div></div></div>'+
+        '<div class="card"><div class="card-body"><div class="home-section-head"><h3>Acesso rápido</h3><small>atalhos operacionais</small></div>'+
+          '<div class="home-list">'+
+            '<div class="home-list-row"><div><b>Ponto → Grupo</b><small>Qual grupo mais aparece para esse ponto?</small></div><button data-home-go="pointgroup">Abrir</button></div>'+
+            '<div class="home-list-row"><div><b>Rotas WhatsApp</b><small>De onde chega e para onde vai.</small></div><button data-home-go="routes">Abrir</button></div>'+
+            '<div class="home-list-row"><div><b>Correções</b><small>Corrija sem apagar a origem.</small></div><button data-home-go="corrections">Abrir</button></div>'+
+          '</div>'+
+        '</div></div>'+
+      '</div>'+
     '</div>';
-  qs('#homeConnect').onclick=()=>qs('#folderInput').click();
+
+  const runHomeSearch=()=>{
+    const q=qs('#homeOmniSearch').value.trim();
+    activate('search');
+    setTimeout(()=>{const x=qs('#globalSearch');if(x){x.value=q;if(q)qs('#doSearch')?.click();else x.focus();}},25);
+  };
+  qs('#homeOmniGo').onclick=runHomeSearch;
+  qs('#homeOmniSearch').onkeydown=e=>{if(e.key==='Enter')runHomeSearch()};
+  host.querySelectorAll('[data-home-example]').forEach(b=>b.onclick=()=>{qs('#homeOmniSearch').value=b.dataset.homeExample;runHomeSearch()});
   host.querySelectorAll('[data-home-go]').forEach(b=>b.onclick=()=>activate(b.dataset.homeGo));
+  host.querySelectorAll('[data-home-task]').forEach(b=>b.onclick=()=>{activate('today');setTimeout(()=>PrismaFlow.taskEditor(b.dataset.homeTask),25)});
+  host.querySelectorAll('[data-home-fav]').forEach(b=>b.onclick=()=>{if(b.dataset.homeFavKind==='point'){PrismaFlow.setCurrentPoint(b.dataset.homeFav);activate('flow360')}else activate('search')});
+  setTimeout(()=>qs('#homeOmniSearch')?.focus(),30);
 }
 function resultCard(r){
-  const e=K().esc;let actions='';
-  if(r.type==='point'&&!r.imported)actions='<button class="primary" data-open-360="'+e(r.key)+'">360º</button><button data-open-point="'+e(r.key)+'">Detalhes</button>';
-  else if(r.type==='machine'&&!r.imported)actions='<button data-open-machine="'+e(r.key)+'">Detalhes</button>';
-  else if(r.type==='group')actions='<button data-open-group="'+e(r.entity.index)+'">Grupo</button><button data-route-group="'+e(r.entity.index)+'">Rotas</button>';
-  else if(r.type==='message')actions='<button data-open-message="'+e(r.entity.index)+'">Evidência</button>';
-  else if(r.type==='ticket')actions='<button data-open-ticket="'+e(r.entity.index)+'">Chamado</button>';
-  else if(r.type==='asset')actions='<button data-open-asset="'+e(r.entity.index)+'">Ativo</button>';
-  else if(r.imported)actions='<button data-open-import="'+e(r.entity.id)+'">Abrir importado</button>';
+  const e=K().esc;let actions='',ico='•';
+  if(r.type==='point'&&!r.imported){ico='⌖';actions='<button class="primary" data-open-360="'+e(r.key)+'">360º</button><button data-open-point="'+e(r.key)+'">Detalhes</button><button data-map-point="'+e(r.key)+'">Mapa</button>';}
+  else if(r.type==='machine'&&!r.imported){ico='▣';actions='<button class="primary" data-open-machine="'+e(r.key)+'">Abrir</button>';}
+  else if(r.type==='group'){ico='◉';actions='<button class="primary" data-open-group="'+e(r.entity.index)+'">Grupo</button><button data-route-group="'+e(r.entity.index)+'">Rotas</button>';}
+  else if(r.type==='message'){ico='✎';actions='<button data-open-message="'+e(r.entity.index)+'">Evidência</button>';}
+  else if(r.type==='ticket'){ico='#';actions='<button class="primary" data-open-ticket="'+e(r.entity.index)+'">Chamado</button>';}
+  else if(r.type==='asset'){ico='◇';actions='<button data-open-asset="'+e(r.entity.index)+'">Ativo</button>';}
+  else if(r.imported){ico='＋';actions='<button data-open-import="'+e(r.entity.id)+'">Abrir importado</button>';}
   const type={point:'Ponto',machine:'Máquina',group:'Grupo',message:'Mensagem',asset:'Ativo',ticket:'Chamado'}[r.type]||r.type;
-  return '<div class="result"><div><strong>'+e(r.title)+'</strong><small>'+e(r.sub||'')+'</small><div class="meta"><span class="chip">'+e(type)+'</span>'+(r.imported?'<span class="chip orange">importado</span>':'')+'</div></div><div class="actions">'+actions+'</div></div>';
+  return '<div class="result"><div><strong><span class="result-type-icon">'+ico+'</span>'+e(r.title)+'</strong><small>'+e(r.sub||'')+'</small><div class="meta"><span class="chip">'+e(type)+'</span>'+(r.imported?'<span class="chip orange">importado</span>':'')+'</div></div><div class="actions">'+actions+'</div></div>';
 }
 function groupResults(rows){
   const order=['point','machine','group','ticket','asset','message'];
   const labels={point:'Pontos',machine:'Máquinas',group:'Grupos',ticket:'Chamados',asset:'Ativos',message:'Mensagens'};
-  let html='';
-  for(const type of order){const list=rows.filter(r=>r.type===type);if(!list.length)continue;html+='<div class="card result-section"><div class="card-head"><h3>'+labels[type]+'</h3><small>'+K().fmt(list.length)+' resultado(s)</small></div><div class="result-list">'+list.map(resultCard).join('')+'</div></div>';}
-  const other=rows.filter(r=>!order.includes(r.type));if(other.length)html+='<div class="card result-section"><div class="card-head"><h3>Outros importados</h3><small>'+other.length+'</small></div><div class="result-list">'+other.map(resultCard).join('')+'</div></div>';
-  return html||'<div class="card empty">Nada encontrado.</div>';
+  const counts=Object.fromEntries(order.map(t=>[t,rows.filter(r=>r.type===t).length]));
+  let html='<div class="search-summary">'+order.filter(t=>counts[t]).map(t=>'<span class="chip">'+labels[t]+': '+K().fmt(counts[t])+'</span>').join('')+'</div>';
+  for(const type of order){
+    const list=rows.filter(r=>r.type===type);if(!list.length)continue;
+    html+='<div class="card result-section"><div class="card-head"><h3>'+labels[type]+'</h3><small>'+K().fmt(list.length)+' resultado(s)</small></div><div class="result-list">'+list.map(resultCard).join('')+'</div></div>';
+  }
+  const other=rows.filter(r=>!order.includes(r.type));
+  if(other.length)html+='<div class="card result-section"><div class="card-head"><h3>Outros importados</h3><small>'+other.length+'</small></div><div class="result-list">'+other.map(resultCard).join('')+'</div></div>';
+  return rows.length?html:'<div class="card empty">Nada encontrado. Tente código, host, ativo, endereço, grupo ou um trecho diferente.</div>';
 }
 function renderSearchPage(){
   const host=qs('#page-search');
-  host.innerHTML='<div class="card search-shell"><div class="search-row"><input id="globalSearch" placeholder="Ex.: Urban Barra Funda, 119047, Chronos, chamado, grupo, offline…"><select id="searchType"><option value="all">Tudo</option><option value="point">Pontos</option><option value="machine">Máquinas</option><option value="group">Grupos</option><option value="ticket">Chamados</option><option value="asset">Ativos</option><option value="message">Mensagens</option></select><button id="doSearch" class="primary">Buscar</button></div><div class="actions" style="margin-top:8px"><span class="chip">Digite o que lembrar</span><span class="chip">sem sintaxe obrigatória</span><button id="searchMap" style="margin-left:auto">Ver pontos no mapa</button></div></div><div id="searchOutput">'+(!K().S.connected?'<div class="card empty">A base embutida não carregou. Tente recarregar a página ou use Trocar base (opcional).</div>':'<div class="card empty">Digite qualquer pedaço da informação.</div>')+'</div>';
-  const run=async()=>{const q=qs('#globalSearch').value.trim(),type=qs('#searchType').value;if(!q){qs('#searchOutput').innerHTML='<div class="card empty">Digite algo para pesquisar.</div>';return}qs('#searchOutput').innerHTML='<div class="card empty">Pesquisando…</div>';const rows=await K().search(q,160,type);qs('#searchOutput').innerHTML=groupResults(rows);bindResultActions(qs('#searchOutput'));};
-  qs('#doSearch').onclick=run;qs('#globalSearch').onkeydown=e=>{if(e.key==='Enter')run();};qs('#searchMap').onclick=async()=>{const q=qs('#globalSearch').value.trim();activate('map');if(q){qs('#mapQuery').value=q;await PrismaMap.searchAndRender(q);}};setTimeout(()=>qs('#globalSearch')?.focus(),30);
+  host.innerHTML=
+    '<div class="card search-shell">'+
+      '<div class="search-row"><input id="globalSearch" autocomplete="off" placeholder="Ponto, máquina, host, chamado, ativo, grupo, endereço…"><select id="searchType"><option value="all">Tudo</option><option value="point">Pontos</option><option value="machine">Máquinas</option><option value="group">Grupos</option><option value="ticket">Chamados</option><option value="asset">Ativos</option><option value="message">Mensagens</option></select><button id="doSearch" class="primary">Buscar</button></div>'+
+      '<div class="actions" style="margin-top:9px"><button data-search-kind="all" class="active">Tudo</button><button data-search-kind="point">Pontos</button><button data-search-kind="machine">Máquinas</button><button data-search-kind="ticket">Chamados</button><button data-search-kind="asset">Ativos</button><button data-search-kind="group">Grupos</button><button id="searchMap" style="margin-left:auto">⌖ Ver no mapa</button></div>'+
+    '</div>'+
+    '<div id="searchOutput">'+(!K().S.connected?'<div class="card empty">A base embutida não carregou. Recarregue a página ou use Base no topo para apontar outra fonte.</div>':'<div class="card empty">Digite qualquer coisa que você lembrar. A busca cruza todas as entidades.</div>')+'</div>';
+
+  let timer=0;
+  const run=async()=>{
+    const q=qs('#globalSearch').value.trim(),type=qs('#searchType').value;
+    host.querySelectorAll('[data-search-kind]').forEach(b=>b.classList.toggle('active',b.dataset.searchKind===type));
+    if(!q){qs('#searchOutput').innerHTML='<div class="card empty">Digite algo para pesquisar.</div>';return}
+    qs('#searchOutput').innerHTML='<div class="card empty">Cruzando base operacional…</div>';
+    const rows=await K().search(q,180,type);
+    qs('#searchOutput').innerHTML=groupResults(rows);
+    bindResultActions(qs('#searchOutput'));
+  };
+  qs('#doSearch').onclick=run;
+  qs('#globalSearch').onkeydown=e=>{if(e.key==='Enter')run()};
+  qs('#globalSearch').oninput=()=>{clearTimeout(timer);if(qs('#globalSearch').value.trim().length>=3)timer=setTimeout(run,260)};
+  qs('#searchType').onchange=run;
+  host.querySelectorAll('[data-search-kind]').forEach(b=>b.onclick=()=>{qs('#searchType').value=b.dataset.searchKind;run()});
+  qs('#searchMap').onclick=async()=>{const q=qs('#globalSearch').value.trim();activate('map');if(q){setTimeout(async()=>{const x=qs('#mapQuery');if(x)x.value=q;await PrismaMap.searchAndRender(q)},40)}};
+  setTimeout(()=>qs('#globalSearch')?.focus(),30);
 }
 function bindResultActions(host){
   host.querySelectorAll('[data-open-360]').forEach(b=>b.onclick=()=>{PrismaFlow.setCurrentPoint(b.dataset.open360);activate('flow360')});
   host.querySelectorAll('[data-open-point]').forEach(b=>b.onclick=()=>openPoint(b.dataset.openPoint));
+  host.querySelectorAll('[data-map-point]').forEach(b=>b.onclick=()=>{const p=K().getPoint(b.dataset.mapPoint);if(!p)return;activate('map');setTimeout(()=>PrismaMap.renderSearchPoints([p]),50)});
   host.querySelectorAll('[data-open-machine]').forEach(b=>b.onclick=()=>openMachine(b.dataset.openMachine));
   host.querySelectorAll('[data-open-group]').forEach(b=>b.onclick=()=>PrismaGroups.openGroup(Number(b.dataset.openGroup)));
   host.querySelectorAll('[data-route-group]').forEach(b=>b.onclick=()=>{activate('routes');setTimeout(()=>PrismaRoutes.selectGroup(Number(b.dataset.routeGroup)),30)});
