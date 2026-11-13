@@ -3,20 +3,20 @@
 
 const K=()=>window.PrismaCore;
 const PAGE_META={
- home:['Início','Visão geral do PRISMA FLOW V12 isolado.'],
- search:['Buscar','Procure ponto, máquina, grupo, chamado, ativo, mensagem ou dado importado.'],
+ home:['Visão geral','Encontre, entenda e aja sem caçar informação.'],
+ search:['Busca global','Ponto, máquina, host, chamado, ativo, grupo, endereço ou mensagem.'],
  explore:['Explorar','Pontos, máquinas, WhatsApp, eventos, ativos e chamados em uma área única.'],
  today:['Meu Turno','Pendências, favoritos, captura rápida e atividade.'],
  flow360:['Ponto 360º','Tudo relacionado ao ponto em uma tela operacional.'],
- map:['Mapa','Navegue geograficamente pelos pontos com coordenadas.'],
+ map:['Mapa operacional','Pesquise o ponto, foque no mapa e abra a ação certa.'],
  pointgroup:['Ponto → Grupo','Descubra os grupos mais associados a um ponto ou máquina.'],
  router:['Roteador NOC','Cole a ocorrência e receba uma rota explicada por evidências.'],
  routes:['Rotas WhatsApp','Veja de onde chega e para onde vai cada fluxo entre grupos.'],
  groups:['Grupos','Cobertura e histórico dos grupos do WhatsApp.'],
  messages:['Mensagens PRISMA','Modelos, contexto real, revisão e destinos.'],
  relations:['Relações','Ponto ⇄ Máquina ⇄ Chamado ⇄ Grupo ⇄ Mensagem ⇄ Ativo.'],
- imports:['Importar','Suba XLSX, CSV ou JSON mesmo fora do padrão antigo.'],
- corrections:['Correções','Revise e desfaça qualquer correção local da V12.'],
+ imports:['Importar dados','Suba XLSX, CSV, TXT ou JSON mesmo fora do padrão.'],
+ corrections:['Correções','Corrija sem apagar a fonte original.'],
  health:['Saúde das bases','Cobertura, integridade e fontes carregadas.'],
  operations:['Operações','Atalhos seguros para ponto, máquina e chamado.'],
  local:['Dados locais','Senhas e notas operacionais preservadas localmente.'],
@@ -53,8 +53,8 @@ function activate(id){
 }
 function status(){
   const el=qs('#baseStatus');
-  if(K().S.connected){el.textContent=(K().S.sourceMode==='auto'?'Base automática • ':'Base conectada • ')+K().S.sourceFolderName;el.className='status-pill ok';}
-  else{el.textContent='Base não conectada';el.className='status-pill warn';}
+  if(K().S.connected){el.textContent='Base pronta';el.title=(K().S.sourceMode==='auto'?'Base embutida • ':'Base manual • ')+K().S.sourceFolderName;el.className='status-pill ok';}
+  else{el.textContent='Base indisponível';el.className='status-pill warn';}
 }
 function stat(n,label){return '<div class="card stat"><b>'+K().fmt(n)+'</b><span>'+K().esc(label)+'</span></div>';}
 async function renderHome(){
@@ -318,7 +318,7 @@ async function renderSources(){
 async function connect(files){
   try{qs('#connectBtn').disabled=true;qs('#connectBtn').textContent='Conectando…';await K().connectFolder(files);if(window.PrismaRoutes)PrismaRoutes.invalidate();if(window.PrismaRouter)PrismaRouter.invalidate();status();renderHome();K().toast('Base conectada com sucesso');}
   catch(e){console.error(e);K().toast(e.message||e);qs('#bootError').textContent='Falha ao conectar a pasta: '+(e.message||e);qs('#bootError').classList.remove('hidden');setTimeout(()=>qs('#bootError').classList.add('hidden'),7000);}
-  finally{qs('#connectBtn').disabled=false;qs('#connectBtn').textContent='Trocar base (opcional)';qs('#folderInput').value='';}
+  finally{qs('#connectBtn').disabled=false;qs('#connectBtn').textContent='Base';qs('#folderInput').value='';}
 }
 async function boot(){
   try{
@@ -333,9 +333,9 @@ async function boot(){
     qs('#quickAddBtn').onclick=()=>showModal('<h3 style="margin-top:0">Adicionar</h3><div class="quick-add-grid"><button data-quick-go="imports"><b>Importar arquivo</b><small>XLSX, CSV, JSON…</small></button><button data-quick-go="today" data-new-task><b>Nova tarefa</b><small>Meu Turno</small></button><button data-quick-go="messages"><b>Nova mensagem</b><small>WhatsApp / Slack</small></button><button data-quick-go="search"><b>Corrigir cadastro</b><small>Busque o ponto ou máquina e clique em ✎</small></button></div>');
     document.addEventListener('click',e=>{const b=e.target.closest('[data-quick-go]');if(!b)return;const page=b.dataset.quickGo,newTask=b.hasAttribute('data-new-task');closeModal();activate(page);if(newTask)setTimeout(()=>PrismaFlow.taskEditor(null,{}),20);});
     qs('#connectBtn').onclick=()=>qs('#folderInput').click();qs('#folderInput').onchange=e=>connect(e.target.files);qs('#drawerClose').onclick=closeDrawer;qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
-    document.addEventListener('keydown',e=>{const tag=(document.activeElement?.tagName||'').toLowerCase();if(e.key==='Escape'){closeDrawer();closeModal()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}});
-    status();renderHome();if(autoResult.loaded)K().toast('BASE_PRISMA carregada automaticamente');else if(autoResult.error){qs('#bootError').textContent='Auto-load falhou: '+(autoResult.error.message||autoResult.error);qs('#bootError').classList.remove('hidden');setTimeout(()=>qs('#bootError').classList.add('hidden'),7000);}
-  }catch(e){console.error(e);qs('#bootError').textContent='Falha ao iniciar a V12: '+(e.message||e);qs('#bootError').classList.remove('hidden');}
+    document.addEventListener('keydown',e=>{const tag=(document.activeElement?.tagName||'').toLowerCase();if(e.key==='Escape'){closeDrawer();closeModal()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();qs('#topQuickSearch')?.focus()}else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}});
+    status();renderHome();if(autoResult.loaded)K().toast('PRISMA pronto');else if(autoResult.error){qs('#bootError').textContent='Auto-load falhou: '+(autoResult.error.message||autoResult.error);qs('#bootError').classList.remove('hidden');setTimeout(()=>qs('#bootError').classList.add('hidden'),7000);}
+  }catch(e){console.error(e);qs('#bootError').textContent='Falha ao iniciar o PRISMA V13: '+(e.message||e);qs('#bootError').classList.remove('hidden');}
 }
 
 window.PrismaApp={activate,renderHome,renderImports,renderCorrections,renderSources,openDrawer,closeDrawer,showModal,closeModal,openPoint,openMachine,openMessage,openTicket,openAsset,openImport};
