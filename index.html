@@ -3,56 +3,100 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>PRISMA FLOW V12 DEFINITIVO</title>
+  <meta name="color-scheme" content="dark">
+  <title>PRISMA FLOW V13 • NOC COMMAND CENTER</title>
   <link rel="stylesheet" href="./vendor/leaflet.css">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./v13.css">
 </head>
 <body>
   <div id="bootError" class="boot-error hidden"></div>
-  <div class="shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">P</div>
-        <div><strong>PRISMA <b>FLOW</b></strong><small>V12 FINAL • 12.4.0-FINAL-DIRETO-20261007</small></div>
+  <div class="shell v13-shell">
+    <aside class="sidebar v13-sidebar" id="sidebar">
+      <div class="brand v13-brand">
+        <div class="prisma-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" role="img">
+            <defs>
+              <linearGradient id="pg1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffb22c"/>
+                <stop offset=".55" stop-color="#ff6a00"/>
+                <stop offset="1" stop-color="#ff3d00"/>
+              </linearGradient>
+              <linearGradient id="pg2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#3a3a3f"/>
+                <stop offset="1" stop-color="#090a0d"/>
+              </linearGradient>
+            </defs>
+            <path d="M32 5 58 51 43 55 31 28 18 53 6 49Z" fill="url(#pg1)"/>
+            <path d="M32 5 31 28 18 53 6 49Z" fill="url(#pg2)"/>
+            <path d="M31 28 43 55 18 53Z" fill="#17181d" stroke="#ffb22c" stroke-width="1.2"/>
+            <path d="M31 28 43 55" stroke="#fff4cf" stroke-width="1.3" opacity=".88"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <strong>PRISMA <b>FLOW</b></strong>
+          <small>NOC COMMAND CENTER • V13</small>
+        </div>
+        <button id="sidebarToggle" class="sidebar-toggle" title="Recolher menu">‹</button>
       </div>
 
-      <div class="nav-section">PRINCIPAL</div>
-      <button class="nav active" data-page="home">Início</button>
-      <button class="nav" data-page="search">Buscar</button>
-      <button class="nav" data-page="explore">Explorar</button>
-      <button class="nav" data-page="today">Meu Turno</button>
-      <button class="nav" data-page="flow360">Ponto 360º</button>
-      <button class="nav" data-page="map">Mapa</button>
+      <nav class="nav-stack">
+        <div class="nav-section">TRABALHO</div>
+        <button class="nav active" data-page="home"><span class="nav-ico">⌂</span><span>Visão geral</span></button>
+        <button class="nav" data-page="search"><span class="nav-ico">⌕</span><span>Busca global</span></button>
+        <button class="nav" data-page="map"><span class="nav-ico">⌖</span><span>Mapa</span></button>
+        <button class="nav" data-page="today"><span class="nav-ico">✓</span><span>Meu Turno</span></button>
+        <button class="nav" data-page="flow360"><span class="nav-ico">◎</span><span>Ponto 360º</span></button>
 
-      <div class="nav-section">ROTEAMENTO</div>
-      <button class="nav" data-page="pointgroup">Ponto → Grupo</button>
-      <button class="nav" data-page="router">Roteador NOC</button>
-      <button class="nav" data-page="routes">Rotas WhatsApp</button>
-      <button class="nav" data-page="groups">Grupos</button>
-      <button class="nav" data-page="messages">Mensagens</button>
-      <button class="nav" data-page="relations">Relações</button>
+        <div class="nav-section">ACIONAMENTO</div>
+        <button class="nav" data-page="router"><span class="nav-ico">↗</span><span>Roteador NOC</span></button>
+        <button class="nav" data-page="pointgroup"><span class="nav-ico">⇢</span><span>Ponto → Grupo</span></button>
+        <button class="nav" data-page="routes"><span class="nav-ico">⇄</span><span>Rotas WhatsApp</span></button>
+        <button class="nav" data-page="messages"><span class="nav-ico">✎</span><span>Mensagens</span></button>
+        <button class="nav" data-page="groups"><span class="nav-ico">◉</span><span>Grupos</span></button>
 
-      <div class="nav-section">DADOS</div>
-      <button class="nav" data-page="imports">Importar</button>
-      <button class="nav" data-page="corrections">Correções</button>
-      <button class="nav" data-page="health">Saúde das bases</button>
-      <button class="nav" data-page="operations">Operações</button>
-      <button class="nav" data-page="local">Dados locais</button>
-      <button class="nav" data-page="backup">Backup</button>
-      <button class="nav" data-page="sources">Fontes</button>
+        <div class="nav-section">BASE</div>
+        <button class="nav" data-page="imports"><span class="nav-ico">＋</span><span>Importar dados</span></button>
+        <button class="nav" data-page="corrections"><span class="nav-ico">✦</span><span>Correções</span></button>
+
+        <details class="nav-more">
+          <summary>Mais ferramentas</summary>
+          <div class="nav-more-body">
+            <button class="nav" data-page="explore"><span class="nav-ico">▦</span><span>Explorar base</span></button>
+            <button class="nav" data-page="relations"><span class="nav-ico">⌘</span><span>Relações</span></button>
+            <button class="nav" data-page="operations"><span class="nav-ico">↗</span><span>Operações</span></button>
+            <button class="nav" data-page="health"><span class="nav-ico">♥</span><span>Saúde das bases</span></button>
+            <button class="nav" data-page="local"><span class="nav-ico">●</span><span>Dados locais</span></button>
+            <button class="nav" data-page="backup"><span class="nav-ico">⇩</span><span>Backup</span></button>
+            <button class="nav" data-page="sources"><span class="nav-ico">◫</span><span>Fontes</span></button>
+          </div>
+        </details>
+      </nav>
 
       <div class="side-spacer"></div>
-      <div class="safe-box"><b>Modo seguro</b><span>Base principal embutida; alterações operacionais ficam isoladas na V12.</span></div>
+      <div class="sidebar-status">
+        <span class="status-dot"></span>
+        <div><b>Base embutida</b><small>95.520 pontos • 42.431 máquinas</small></div>
+      </div>
     </aside>
 
-    <main class="main">
-      <header class="topbar">
-        <div><h1 id="pageTitle">Início</h1><p id="pageSub">Base operacional embutida. Abra e use; troca manual de base é opcional.</p></div>
-        <div class="top-actions">
-          <div class="top-search"><input id="topQuickSearch" placeholder="Buscar ponto, máquina, chamado, grupo, ativo…"><button id="topQuickSearchBtn">Buscar</button></div>
-          <button id="quickAddBtn">+ Adicionar</button>
-          <span id="baseStatus" class="status-pill warn">Base não conectada</span>
-          <button id="connectBtn" class="primary">Trocar base (opcional)</button>
+    <main class="main v13-main">
+      <header class="topbar v13-topbar">
+        <div class="page-heading">
+          <span class="page-eyebrow">PRISMA / NOC</span>
+          <h1 id="pageTitle">Visão geral</h1>
+          <p id="pageSub">Encontre, entenda e aja sem caçar informação.</p>
+        </div>
+        <div class="top-actions v13-top-actions">
+          <div class="top-search v13-top-search">
+            <span class="search-glyph">⌕</span>
+            <input id="topQuickSearch" autocomplete="off" placeholder="Ponto, máquina, chamado, grupo, ativo, endereço…">
+            <span class="kbd">Ctrl K</span>
+            <button id="topQuickSearchBtn" class="search-submit">Buscar</button>
+          </div>
+          <button id="quickAddBtn" class="quick-add">＋</button>
+          <span id="baseStatus" class="status-pill warn">Carregando base…</span>
+          <button id="connectBtn" class="base-switch" title="Trocar base manualmente">Base</button>
           <input id="folderInput" type="file" webkitdirectory multiple hidden>
         </div>
       </header>
@@ -87,7 +131,6 @@
 
   <script src="./vendor/xlsx.full.min.js"></script>
   <script src="./vendor/leaflet.js"></script>
-
   <script src="./db.js"></script>
   <script src="./legacy.js"></script>
   <script src="./core.js"></script>
@@ -102,5 +145,6 @@
   <script src="./explore.js"></script>
   <script src="./access.js"></script>
   <script src="./app.js"></script>
+  <script src="./v13.js"></script>
 </body>
 </html>
