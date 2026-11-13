@@ -1,7 +1,9 @@
-PRISMA FLOW V12 FINAL
-=====================
+PRISMA FLOW V13 - NOC COMMAND CENTER
+====================================
 
-BUILD: 12.4.0-FINAL-DIRETO-20261007
+BUILD
+-----
+13.0.0-FINAL-NOC-20261113
 
 COMO ABRIR
 ----------
@@ -11,83 +13,106 @@ COMO ABRIR
 
    ABRIR_PRISMA.bat
 
-Só isso.
+Não existe montagem.
+Não precisa PowerShell.
+Não precisa apontar para a V11.
+Não precisa instalar Leaflet ou biblioteca de Excel.
+A base operacional já vem embutida.
 
-NÃO existe etapa de montagem.
-NÃO precisa PowerShell.
-NÃO precisa colocar V11 dentro.
-NÃO precisa selecionar pasta para começar.
-NÃO precisa instalar Leaflet.
-NÃO precisa instalar biblioteca de Excel.
-NÃO depende de CDN para o núcleo funcionar.
+O QUE MUDOU NA V13
+------------------
+- identidade PRISMA refeita com logo/branding;
+- menu reorganizado por tarefa, com recursos avançados em "Mais ferramentas";
+- menu recolhível;
+- dashboard operacional com busca como ação principal;
+- busca preditiva no topo;
+- busca global com filtros simples e ações direto no resultado;
+- mapa reconstruído como workspace: lista lateral + pesquisa + foco + popup + Google Maps + Operações;
+- Ponto 360º reorganizado para mostrar identidade, próxima ação e relações rapidamente;
+- Roteador NOC em fluxo de 3 etapas;
+- importador inteligente com arrastar e soltar;
+- importador continua detectando cabeçalho, melhor aba, significado de coluna e diferenças;
+- atalhos de teclado;
+- menos telas competindo visualmente sem remover nenhuma função antiga.
 
-O QUE JÁ VEM EMBUTIDO
----------------------
-- catálogo operacional;
+ATALHOS
+-------
+Ctrl + K  -> busca preditiva do topo
+/         -> abre Busca Global
+Alt + H   -> Visão geral
+Alt + B   -> Busca
+Alt + M   -> Mapa
+Alt + T   -> Meu Turno
+Alt + R   -> Roteador
+Alt + I   -> Importar
+
+BASE EMBUTIDA
+-------------
 - 95.520 pontos;
 - 42.431 máquinas;
-- 102 grupos do WhatsApp;
+- 102 grupos WhatsApp;
 - 22.754 mensagens observadas;
 - point_details;
 - machine_details;
 - roteador / perfis / regras;
-- código PRISMA V7 -> V11 preservado em LEGADO_V7_V11;
-- auditorias e manifests originais em DOCUMENTACAO_ORIGINAL;
 - Leaflet local;
 - SheetJS/XLSX local;
-- toda a aplicação V12.
+- legado V7 -> V11 preservado;
+- documentação original preservada.
 
-RECURSOS V12
-------------
-- busca global;
-- Explorar;
-- Meu Turno;
-- Ponto 360º;
-- mapa;
-- Ruas / Satélite / Claro / Sem fundo;
-- Google Maps;
-- Ponto -> Grupo;
-- Roteador NOC;
-- Rotas WhatsApp;
-- evidências cruzadas;
-- grupos e histórico;
-- Mensagens PRISMA;
-- Relações;
-- importador adaptativo XLS/XLSX/CSV/TXT/JSON;
-- detecção de cabeçalho e melhor aba;
-- SHA-256 e prévia de diferenças;
-- correções reversíveis;
-- overlays;
-- Operações;
-- notas e senhas locais;
-- Saúde das bases;
-- Backup;
-- estrutura pronta para ingestão futura do Slack.
+MAPA
+----
+O mapa mostra apenas pontos com coordenada real válida.
 
-OFFLINE
--------
-O núcleo funciona localmente.
+Modos:
+- Ruas;
+- Satélite;
+- Claro;
+- Sem fundo.
 
-Sem internet o mapa muda automaticamente para "Sem fundo" e continua mostrando
-os pontos pelas coordenadas. Ruas, Satélite, Claro e Google Maps precisam de internet.
+A lista lateral acompanha a busca ou a área visível.
+Clique num ponto para focar.
+O popup permite abrir o cadastro, Operações e Google Maps.
+
+Sem internet, o PRISMA continua funcionando e o mapa usa automaticamente "Sem fundo".
+
+IMPORTADOR
+----------
+Aceita:
+- XLSX;
+- XLS;
+- CSV;
+- TXT tabular;
+- JSON.
+
+Pode arrastar o arquivo para a tela.
+
+O PRISMA:
+1. procura o cabeçalho;
+2. analisa as abas;
+3. interpreta colunas por nome + conteúdo;
+4. mostra mapeamento;
+5. mostra novos / alterados / iguais / duplicados / inválidos;
+6. mantém a linha original;
+7. preserva colunas desconhecidas;
+8. permite corrigir;
+9. aprende mapeamentos;
+10. permite pausar, reativar ou excluir o overlay.
 
 DADOS LOCAIS
 ------------
-Correções, tarefas, favoritos, modelos, importações e preferências ficam no banco
-IndexedDB separado:
+Tarefas, favoritos, correções, importações, modelos, notas, senhas e preferências
+continuam no IndexedDB local do PRISMA.
 
-prisma_flow_v12_test
+A base embutida nunca é sobrescrita.
 
-A base embutida não é sobrescrita.
+SLACK
+-----
+A arquitetura está preparada para Slack, mas o parser definitivo depende dos
+arquivos reais que você ainda vai subir. Nada foi inventado antecipadamente.
 
 MÍDIAS HISTÓRICAS
 -----------------
 As mensagens e referências de mídia estão na base.
-As fotos/vídeos binários históricos do pacote bruto de centenas de MB NÃO fazem
-parte do download GitHub desta edição. Eles não são necessários para o funcionamento
-do PRISMA, busca, roteamento ou relações.
-
-IMPORTANTE
-----------
-Este é o pacote final direto. Não rode MONTAR_PRISMA_DEFINITIVO.bat de versões antigas.
-Esse montador não existe nesta edição.
+Fotos/vídeos binários brutos não fazem parte deste ZIP GitHub e não são necessários
+para busca, roteamento, mapa, grupos, relações ou importação.
