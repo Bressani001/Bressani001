@@ -1,13 +1,23 @@
-PRISMA FLOW V13 - STATUS DA BUILD
-===================================
+PRISMA V13.1 - STATUS DA BUILD
+================================
 
-Build: 13.0.0-FINAL-NOC-20261113
-Branch: prisma-flow-v13-final
+Branch: prisma-v13.1
+Pasta final: PRISMA_V13.1
 
-OBJETIVO
---------
-Transformar a base funcional V12 em uma ferramenta NOC rápida de usar:
-menos menu, busca central, mapa útil, Ponto 360º direto e importação simples.
+CORREÇÃO DE ARQUITETURA
+-----------------------
+A V13.0 podia congelar o Chrome porque aguardava toda a base pesada antes de ligar a interface.
+
+A V13.1:
+- liga menu, busca, drawer e botões primeiro;
+- carrega catálogo depois;
+- indexa 95.520 pontos em blocos;
+- indexa 42.431 máquinas em blocos;
+- libera Busca Global assim que o índice principal fica pronto;
+- carrega point_details depois e então libera o Mapa;
+- carrega WhatsApp e libera Grupos / Rotas / Mensagens;
+- carrega o Roteador separadamente;
+- deixa machine_details avançado por último.
 
 BASE EMBUTIDA
 -------------
@@ -15,44 +25,31 @@ BASE EMBUTIDA
 - 42.431 máquinas
 - 102 grupos WhatsApp
 - 22.754 mensagens
-- 102 perfis do roteador
 - point_details
 - machine_details
+- router
 - Leaflet local
-- SheetJS/XLSX local
+- XLSX local
 
-UPGRADES V13
-------------
-- logo PRISMA em SVG embutido
-- layout NOC Command Center
-- sidebar reorganizada e recolhível
-- dashboard operacional
-- busca preditiva no topo
-- busca global com filtros e ações rápidas
-- mapa com painel lateral de pontos
-- foco de ponto no mapa
-- popup escuro com cadastro / Operações / Google Maps
-- Ponto 360º reorganizado
-- Roteador NOC em 3 etapas
-- importador drag-and-drop
-- atalhos de teclado
-- recursos avançados preservados em "Mais ferramentas"
+TESTES
+------
+validate_definitive.mjs:
+- estrutura e contagens da base
+- sintaxe dos módulos
+- ausência de montador
+- progress loader
+- boot responsivo
 
-REGRAS PRESERVADAS
-------------------
-- base embutida não é sobrescrita
-- correções são locais e reversíveis
-- mensagens originais do WhatsApp não são alteradas
-- importações são overlays
-- Slack continua preparado para ingestão futura real
+browser_smoke.mjs:
+- abre index.html via file://
+- clica no menu antes da base terminar
+- valida que a UI responde
+- espera apenas o catálogo
+- busca ponto 78670
+- espera point_details
+- abre o mapa
+- espera WhatsApp
+- abre Grupos
 
-VALIDAÇÃO
----------
-O workflow da branch executa validate_definitive.mjs e verifica:
-- contagens da base embutida
-- arquivos obrigatórios
-- sintaxe dos módulos runtime
-- ausência de CDN obrigatória
-- presença dos módulos V13
-- presença dos marcadores do novo layout
-- ausência de montador / PowerShell
+O workflow também empacota a pasta exatamente como:
+PRISMA_V13.1
