@@ -1,7 +1,7 @@
 window.__PRISMA_BASE_MANIFEST__={
   version:3,
-  build:"12.4.0-FINAL-DIRETO-20261007",
-  generatedAt:"2026-10-07T00:00:00-03:00",
+  build:"13.0.0-FINAL-NOC-20261113",
+  generatedAt:"2026-11-13T11:08:00-03:00",
   sourceRoot:"BASE EMBUTIDA DEFINITIVA",
   mixed:false,
   files:{
