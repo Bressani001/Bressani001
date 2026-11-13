@@ -80,7 +80,7 @@ function ensure(){
   const host=document.getElementById('mapCanvas');if(!host)return false;
   if(!window.L){host.innerHTML='<div class="empty">Leaflet local não carregou.</div>';return false;}
   if(map)return true;
-  map=L.map(host,{preferCanvas:true,zoomControl:true,attributionControl:true}).setView([-23.5505,-46.6333],11);
+  map=L.map(host,{preferCanvas:false,zoomControl:true,attributionControl:true}).setView([-23.5505,-46.6333],11);
   baseLayers={
     streets:tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}),
     satellite:tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}),
