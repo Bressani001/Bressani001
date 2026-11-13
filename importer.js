@@ -107,7 +107,7 @@ async function parseFile(file){
   }
   if(ext==='csv'||ext==='txt')return parseCSV(await file.text());
   if(ext==='xlsx'||ext==='xls'){
-    if(!window.XLSX)throw new Error('Leitor XLSX não carregou. Conecte à internet nesta primeira versão ou salve como CSV.');
+    if(!window.XLSX)throw new Error('Leitor XLSX local não carregou. Reabra o PRISMA e tente novamente.');
     const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
     let bestRows=[],bestScore=-1;
     for(const name of wb.SheetNames){
@@ -310,11 +310,27 @@ async function analyze(file){
 
 function init(){
   const input=document.getElementById('smartImportFile');if(!input)return;
-  input.onchange=async function(){
-    const f=input.files&&input.files[0];if(!f)return;
-    try{await analyze(f);}catch(e){C().toast(e.message||e);document.getElementById('importPreview').innerHTML='<div class="card empty">'+C().esc(e.message||e)+'</div>';}
-    input.value='';
+  const drop=document.querySelector('.import-drop');
+  const handle=async f=>{
+    if(!f)return;
+    try{
+      if(drop)drop.classList.add('processing');
+      await analyze(f);
+    }catch(e){
+      C().toast(e.message||e);
+      document.getElementById('importPreview').innerHTML='<div class="card empty">'+C().esc(e.message||e)+'</div>';
+    }finally{
+      if(drop)drop.classList.remove('processing','dragover');
+    }
   };
+  input.onchange=async function(){const f=input.files&&input.files[0];await handle(f);input.value='';};
+  if(drop&&!drop.dataset.dragBound){
+    drop.dataset.dragBound='1';
+    drop.addEventListener('dragenter',e=>{e.preventDefault();drop.classList.add('dragover')});
+    drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover')});
+    drop.addEventListener('dragleave',e=>{if(!drop.contains(e.relatedTarget))drop.classList.remove('dragover')});
+    drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');handle(e.dataTransfer?.files?.[0])});
+  }
 }
 
 window.PrismaImporter={init,analyze,parseCSV,parseFile,semantics:SEMANTICS};
