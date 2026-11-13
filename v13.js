@@ -108,8 +108,8 @@ function setupShortcuts(){
 
 function setupBuildBadge(){
   const copy=q('.brand-copy small');
-  if(copy)copy.textContent='NOC COMMAND CENTER • V13.0 FINAL';
-  document.title='PRISMA FLOW V13 • NOC COMMAND CENTER';
+  if(copy)copy.textContent='PRISMA • V13.1';
+  document.title='PRISMA V13.1';
 }
 
 function init(){
