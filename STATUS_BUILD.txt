@@ -53,3 +53,5 @@ browser_smoke.mjs:
 
 O workflow também empacota a pasta exatamente como:
 PRISMA_V13.1
+
+Trigger de validação: 2026-11-13T14:53:56.593Z
