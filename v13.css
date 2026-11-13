@@ -418,3 +418,16 @@ body.sidebar-collapsed .sidebar-status .status-dot{width:8px;height:8px}
 .import-drop{transition:.16s ease}
 .import-drop.dragover{border-color:var(--orange);background:linear-gradient(180deg,rgba(255,90,19,.12),#0a0e13);box-shadow:0 0 0 4px rgba(255,90,19,.06)}
 .import-drop.processing{opacity:.72;pointer-events:none}
+
+.load-stage-card{
+  max-width:720px;margin:36px auto;padding:20px;
+  display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:center;
+  border:1px solid #26313b;border-radius:14px;background:#0b0f14;box-shadow:0 18px 50px rgba(0,0,0,.24)
+}
+.load-stage-card b,.load-stage-card small{display:block}
+.load-stage-card b{font-size:11px}.load-stage-card small{font-size:8.5px;color:#77828e;margin-top:4px}
+.load-spinner{width:30px;height:30px;border-radius:50%;border:3px solid #242d37;border-top-color:#ff6418;animation:prismaSpin .8s linear infinite}
+@keyframes prismaSpin{to{transform:rotate(360deg)}}
+.load-bar{height:5px;background:#171d24;border-radius:99px;margin-top:10px;overflow:hidden}
+.load-bar i{display:block;height:100%;background:linear-gradient(90deg,#ff5410,#ff8a39);border-radius:99px;transition:width .2s ease}
+.status-pill.loading{min-width:150px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
