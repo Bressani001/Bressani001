@@ -1,0 +1,22 @@
+name: PRISMA V13 validation
+
+on:
+  push:
+    branches:
+      - prisma-flow-v13-final
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate PRISMA V13 embedded data and runtime
+        run: node validate_definitive.mjs
