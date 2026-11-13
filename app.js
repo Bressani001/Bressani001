@@ -23,6 +23,25 @@ const PAGE_META={
  backup:['Backup','Exportação e restauração dos dados locais da V12.'],
  sources:['Fontes','Base embutida, WhatsApp, planilhas e preparação para Slack.']
 };
+const PAGE_NEEDS={
+  map:'pointDetails',
+  flow360:'whatsapp',
+  pointgroup:'whatsapp',
+  router:'router',
+  routes:'whatsapp',
+  groups:'whatsapp',
+  messages:'whatsapp',
+  relations:'whatsapp',
+  explore:'whatsapp',
+  health:'full'
+};
+function loadingPage(id,need){
+  const host=qs('#page-'+id),st=K().S.loadState||{};
+  if(!host)return;
+  host.innerHTML='<div class="load-stage-card"><div class="load-spinner"></div><div><b>'+K().esc(st.label||'Carregando módulo…')+'</b><small>Essa tela abre automaticamente assim que o dado necessário estiver pronto.</small><div class="load-bar"><i style="width:'+Math.max(4,Math.min(100,Number(st.progress||0)))+'%"></i></div></div></div>';
+  K().whenReady(need).then(()=>{if(qs('#page-'+id)?.classList.contains('active'))activate(id)}).catch(()=>{});
+}
+
 
 function qs(s){return document.querySelector(s)}
 function qsa(s){return Array.from(document.querySelectorAll(s))}
@@ -31,6 +50,10 @@ function activate(id){
   qsa('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
   const meta=PAGE_META[id]||[id,''];
   qs('#pageTitle').textContent=meta[0];qs('#pageSub').textContent=meta[1];
+
+  const need=PAGE_NEEDS[id];
+  if(need&&!K().isReady(need)){loadingPage(id,need);return;}
+
   if(id==='home')renderHome();
   else if(id==='search')renderSearchPage();
   else if(id==='explore')PrismaExplore.renderPage();
@@ -52,9 +75,27 @@ function activate(id){
   else if(id==='sources')renderSources();
 }
 function status(){
-  const el=qs('#baseStatus');
-  if(K().S.connected){el.textContent='Base pronta';el.title=(K().S.sourceMode==='auto'?'Base embutida • ':'Base manual • ')+K().S.sourceFolderName;el.className='status-pill ok';}
-  else{el.textContent='Base indisponível';el.className='status-pill warn';}
+  const el=qs('#baseStatus');if(!el)return;
+  const st=K().S.loadState||{};
+  if(st.phase&&st.phase!=='idle'&&st.phase!=='ready'&&st.phase!=='error'){
+    el.textContent=Math.round(Number(st.progress||0))+'% • '+(st.label||'Carregando');
+    el.title=st.label||'Carregando base';
+    el.className='status-pill warn loading';
+    return;
+  }
+  if(st.phase==='error'){
+    el.textContent='Carga parcial';
+    el.title=st.label||'Falha durante a carga complementar';
+    el.className='status-pill warn';
+    return;
+  }
+  if(K().S.connected){
+    el.textContent=K().isReady('full')?'Base pronta':'Índice pronto';
+    el.title=(K().S.sourceMode==='auto'?'Base embutida • ':'Base manual • ')+K().S.sourceFolderName;
+    el.className='status-pill ok';
+  }else{
+    el.textContent='Inicializando…';el.className='status-pill warn';
+  }
 }
 function stat(n,label){return '<div class="card stat"><b>'+K().fmt(n)+'</b><span>'+K().esc(label)+'</span></div>';}
 async function renderHome(){
@@ -322,22 +363,77 @@ async function connect(files){
 }
 async function boot(){
   try{
-    await PrismaDB.open();await PrismaLegacy.migrate();await K().refreshLocal();await PrismaMessages.ensureDefaults();await PrismaFlow.applySettings();
-    let autoResult={loaded:false};
-    if(window.PrismaAuto){
-      try{autoResult=await PrismaAuto.tryLoad();}catch(e){console.error(e);}
-    }
-    qsa('.nav').forEach(b=>b.onclick=()=>activate(b.dataset.page));
-    const runTopSearch=()=>{const q=qs('#topQuickSearch').value.trim();activate('search');setTimeout(()=>{const x=qs('#globalSearch');if(x){x.value=q;if(q)qs('#doSearch')?.click();else x.focus();}},20)};
-    qs('#topQuickSearchBtn').onclick=runTopSearch;qs('#topQuickSearch').onkeydown=e=>{if(e.key==='Enter')runTopSearch()};
-    qs('#quickAddBtn').onclick=()=>showModal('<h3 style="margin-top:0">Adicionar</h3><div class="quick-add-grid"><button data-quick-go="imports"><b>Importar arquivo</b><small>XLSX, CSV, JSON…</small></button><button data-quick-go="today" data-new-task><b>Nova tarefa</b><small>Meu Turno</small></button><button data-quick-go="messages"><b>Nova mensagem</b><small>WhatsApp / Slack</small></button><button data-quick-go="search"><b>Corrigir cadastro</b><small>Busque o ponto ou máquina e clique em ✎</small></button></div>');
-    document.addEventListener('click',e=>{const b=e.target.closest('[data-quick-go]');if(!b)return;const page=b.dataset.quickGo,newTask=b.hasAttribute('data-new-task');closeModal();activate(page);if(newTask)setTimeout(()=>PrismaFlow.taskEditor(null,{}),20);});
-    qs('#connectBtn').onclick=()=>qs('#folderInput').click();qs('#folderInput').onchange=e=>connect(e.target.files);qs('#drawerClose').onclick=closeDrawer;qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
-    document.addEventListener('keydown',e=>{const tag=(document.activeElement?.tagName||'').toLowerCase();if(e.key==='Escape'){closeDrawer();closeModal()}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();qs('#topQuickSearch')?.focus()}else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}});
-    status();renderHome();if(autoResult.loaded)K().toast('PRISMA pronto');else if(autoResult.error){qs('#bootError').textContent='Auto-load falhou: '+(autoResult.error.message||autoResult.error);qs('#bootError').classList.remove('hidden');setTimeout(()=>qs('#bootError').classList.add('hidden'),7000);}
-  }catch(e){console.error(e);qs('#bootError').textContent='Falha ao iniciar o PRISMA V13: '+(e.message||e);qs('#bootError').classList.remove('hidden');}
-}
+    await PrismaDB.open();
+    await PrismaLegacy.migrate();
+    await K().refreshLocal();
+    await PrismaMessages.ensureDefaults();
+    await PrismaFlow.applySettings();
 
+    qsa('.nav').forEach(b=>b.onclick=()=>activate(b.dataset.page));
+    const runTopSearch=()=>{const q=qs('#topQuickSearch').value.trim();activate('search');setTimeout(()=>{const x=qs('#globalSearch');if(x){x.value=q;if(q&&K().isReady('catalog'))qs('#doSearch')?.click();else x.focus();}},20)};
+    qs('#topQuickSearchBtn').onclick=runTopSearch;
+    qs('#topQuickSearch').onkeydown=e=>{if(e.key==='Enter')runTopSearch()};
+    qs('#quickAddBtn').onclick=()=>showModal('<h3 style="margin-top:0">Adicionar</h3><div class="quick-add-grid"><button data-quick-go="imports"><b>Importar arquivo</b><small>XLSX, CSV, JSON…</small></button><button data-quick-go="today" data-new-task><b>Nova tarefa</b><small>Meu Turno</small></button><button data-quick-go="messages"><b>Nova mensagem</b><small>WhatsApp / Slack</small></button><button data-quick-go="search"><b>Corrigir cadastro</b><small>Busque o ponto ou máquina e clique em ✎</small></button></div>');
+    document.addEventListener('click',e=>{const b=e.target.closest('[data-quick-go]');if(!b)return;const page=b.dataset.quickGo,newTask=b.hasAttribute('data-new-task');closeModal();activate(page);if(newTask)setTimeout(()=>PrismaFlow.taskEditor(null,{}),20)});
+    qs('#connectBtn').onclick=()=>qs('#folderInput').click();
+    qs('#folderInput').onchange=e=>connect(e.target.files);
+    qs('#drawerClose').onclick=closeDrawer;
+    qs('#drawerBack').onclick=e=>{if(e.target===qs('#drawerBack'))closeDrawer()};
+    qs('#modalBack').onclick=e=>{if(e.target===qs('#modalBack'))closeModal()};
+
+    document.addEventListener('keydown',e=>{
+      const tag=(document.activeElement?.tagName||'').toLowerCase();
+      if(e.key==='Escape'){closeDrawer();closeModal()}
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();qs('#topQuickSearch')?.focus()}
+      else if(e.key==='/'&&!/input|textarea|select/.test(tag)){e.preventDefault();activate('search');setTimeout(()=>qs('#globalSearch')?.focus(),20)}
+    });
+
+    let homeRefresh=0;
+    document.addEventListener('prisma:loadstate',e=>{
+      status();
+      const st=e.detail||{};
+      clearTimeout(homeRefresh);
+      if(['catalog-ready','whatsapp-ready','ready','error'].includes(st.phase)){
+        homeRefresh=setTimeout(()=>{if(qs('#page-home')?.classList.contains('active'))renderHome()},80);
+      }
+    });
+    document.addEventListener('prisma:ready',e=>{
+      const active=qsa('.page.active')[0];
+      if(active&&active.id!=='page-home'){
+        const id=active.id.replace(/^page-/,'');
+        if(PAGE_NEEDS[id]===e.detail?.key)activate(id);
+      }
+    });
+
+    status();
+    renderHome();
+
+    // A interface já está utilizável. A base começa depois, sem bloquear o boot.
+    if(window.PrismaAuto){
+      setTimeout(async()=>{
+        try{
+          const result=await PrismaAuto.tryLoad();
+          status();
+          if(result.loaded){
+            K().toast('Busca principal pronta');
+            if(qs('#page-home')?.classList.contains('active'))renderHome();
+          }else if(result.error){
+            qs('#bootError').textContent='Falha ao carregar a base embutida: '+(result.error.message||result.error);
+            qs('#bootError').classList.remove('hidden');
+          }
+        }catch(e){
+          console.error(e);
+          qs('#bootError').textContent='Falha ao carregar a base embutida: '+(e.message||e);
+          qs('#bootError').classList.remove('hidden');
+        }
+      },120);
+    }
+  }catch(e){
+    console.error(e);
+    qs('#bootError').textContent='Falha ao iniciar o PRISMA V13.1: '+(e.message||e);
+    qs('#bootError').classList.remove('hidden');
+  }
+}
 window.PrismaApp={activate,renderHome,renderImports,renderCorrections,renderSources,openDrawer,closeDrawer,showModal,closeModal,openPoint,openMachine,openMessage,openTicket,openAsset,openImport};
 boot();
 })();
