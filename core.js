@@ -14,7 +14,11 @@ const S={
   machinePoint:new Map(),
   lastSearch:[],
   sourceFolderName:'',
-  loadMeta:{}
+  loadMeta:{},
+  loadState:{phase:'idle',progress:0,label:'Aguardando'},
+  ready:{catalog:false,pointDetails:false,machineDetails:false,whatsapp:false,router:false,full:false},
+  readyWaiters:new Map(),
+  backgroundPromise:null
 };
 
 function norm(v){
@@ -35,15 +39,40 @@ function toast(msg){
   clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1900);
 }
 
-function b64ToBytes(b64){
-  const raw=atob(b64),out=new Uint8Array(raw.length);
-  for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+function yieldUI(ms){return new Promise(resolve=>setTimeout(resolve,ms||0))}
+function emitLoad(phase,progress,label){
+  S.loadState={phase,progress:Number(progress||0),label:String(label||'')};
+  try{document.dispatchEvent(new CustomEvent('prisma:loadstate',{detail:S.loadState}))}catch(e){}
+}
+function markReady(key){
+  S.ready[key]=true;
+  const list=S.readyWaiters.get(key)||[];
+  S.readyWaiters.delete(key);
+  list.forEach(fn=>{try{fn()}catch(e){}});
+  try{document.dispatchEvent(new CustomEvent('prisma:ready',{detail:{key}}))}catch(e){}
+}
+function isReady(key){return !!S.ready[key]}
+function whenReady(key){
+  if(isReady(key))return Promise.resolve();
+  return new Promise(resolve=>{
+    const list=S.readyWaiters.get(key)||[];
+    list.push(resolve);S.readyWaiters.set(key,list);
+  });
+}
+async function b64ToBytes(b64){
+  const raw=atob(b64),out=new Uint8Array(raw.length),CHUNK=262144;
+  for(let start=0;start<raw.length;start+=CHUNK){
+    const end=Math.min(raw.length,start+CHUNK);
+    for(let i=start;i<end;i++)out[i]=raw.charCodeAt(i);
+    if(end<raw.length)await yieldUI(0);
+  }
   return out;
 }
 async function gunzipBase64(b64){
   if(typeof DecompressionStream==='undefined') throw new Error('Seu navegador não oferece DecompressionStream. Use Chrome/Edge atualizado.');
   const ds=new DecompressionStream('gzip');
-  const stream=new Blob([b64ToBytes(b64)]).stream().pipeThrough(ds);
+  const bytes=await b64ToBytes(b64);
+  const stream=new Blob([bytes]).stream().pipeThrough(ds);
   return new Response(stream).text();
 }
 function extractAssignment(src,varName){
@@ -80,7 +109,12 @@ async function unpackGlobal(varName){
   const packed=window[varName];
   if(typeof packed!=='string'||!packed)throw new Error('Pacote '+varName+' não foi carregado.');
   const raw=await gunzipBase64(packed);
-  return JSON.parse(raw);
+  let parsed;
+  try{parsed=JSON.parse(raw)}finally{
+    try{delete window[varName]}catch(e){window[varName]=undefined}
+  }
+  await yieldUI(0);
+  return parsed;
 }
 function loadScriptPath(path,varName,keepExisting){
   return new Promise((resolve,reject)=>{
@@ -94,37 +128,82 @@ function loadScriptPath(path,varName,keepExisting){
     document.head.appendChild(s);
   });
 }
-async function loadPackedSource(single,parts,varName){
+async function loadPackedSource(single,parts,varName,label){
+  emitLoad('unpack',S.loadState.progress,label||('Carregando '+varName));
   if(single){
     await loadScriptPath(single,varName,false);
+    await yieldUI(0);
     return unpackGlobal(varName);
   }
   if(Array.isArray(parts)&&parts.length){
     try{delete window[varName]}catch(e){window[varName]=undefined}
     window[varName]='';
-    for(const path of parts)await loadScriptPath(path,varName,true);
+    for(let i=0;i<parts.length;i++){
+      emitLoad('files',S.loadState.progress,(label||varName)+' • parte '+(i+1)+'/'+parts.length);
+      await loadScriptPath(parts[i],varName,true);
+      await yieldUI(0);
+    }
     return unpackGlobal(varName);
   }
   return null;
 }
+async function hydrateManifest(manifest){
+  const f=manifest.files||{};
+  try{
+    if(f.pointDetails||f.pointDetailsParts?.length){
+      emitLoad('point-details',48,'Carregando coordenadas e detalhes dos pontos…');
+      S.pointDetails=await loadPackedSource(f.pointDetails,f.pointDetailsParts,'__PACK_POINT_DETAILS__','Detalhes dos pontos');
+      await rebuildPoints();
+      markReady('pointDetails');
+      emitLoad('point-details-ready',62,'Mapa e detalhes dos pontos prontos');
+    }else markReady('pointDetails');
+
+    if(f.whatsapp||f.whatsappParts?.length){
+      emitLoad('whatsapp',66,'Carregando grupos e histórico do WhatsApp…');
+      S.WA=await loadPackedSource(f.whatsapp,f.whatsappParts,'__PACK_WHATSAPP__','WhatsApp');
+      S.groups=(S.WA&&S.WA.groups)||[];
+      S.messages=(S.WA&&S.WA.messages)||[];
+      S.tickets=(S.WA&&S.WA.tickets)||[];
+      S.assets=(S.WA&&S.WA.assets)||[];
+      markReady('whatsapp');
+      emitLoad('whatsapp-ready',78,'WhatsApp e relações prontos');
+    }else markReady('whatsapp');
+
+    if(f.router||f.routerParts?.length){
+      emitLoad('router',80,'Carregando inteligência do roteador…');
+      S.routerData=await loadPackedSource(f.router,f.routerParts,'__PACK_ROUTER__','Roteador');
+      markReady('router');
+    }else markReady('router');
+
+    if(f.machineDetails||f.machineDetailsParts?.length){
+      emitLoad('machine-details',86,'Carregando detalhes avançados das máquinas…');
+      S.machineDetails=await loadPackedSource(f.machineDetails,f.machineDetailsParts,'__PACK_MACHINE_DETAILS__','Detalhes das máquinas');
+      await rebuildMachines();
+      markReady('machineDetails');
+    }else markReady('machineDetails');
+
+    S.ready.full=true;markReady('full');
+    emitLoad('ready',100,'PRISMA pronto');
+    try{await PrismaDB.audit('fonte','Base embutida carregada por etapas','',S.loadMeta)}catch(e){}
+    return stats();
+  }catch(e){
+    emitLoad('error',S.loadState.progress,'Falha ao completar a base: '+(e.message||e));
+    throw e;
+  }
+}
 async function connectManifest(manifest){
   if(!manifest||!manifest.files)throw new Error('Manifesto automático da base inválido.');
   const f=manifest.files||{};
-  if(!(f.catalog||f.catalogParts?.length)||!(f.whatsapp||f.whatsappParts?.length))throw new Error('BASE_PRISMA não contém um conjunto válido com catálogo + WhatsApp.');
+  if(!(f.catalog||f.catalogParts?.length))throw new Error('BASE_PRISMA não contém catálogo válido.');
 
   S.mediaUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});S.mediaUrls.clear();
   S.files=new Map();S.autoMediaMap=new Map(Object.entries(manifest.media||{}).map(([k,v])=>[String(k).toLowerCase(),String(v)]));
   S.sourceMode='auto';S.sourceFolderName=manifest.sourceRoot||'BASE_PRISMA automático';
-  toast('Carregando BASE_PRISMA automaticamente…');
+  S.ready={catalog:false,pointDetails:false,machineDetails:false,whatsapp:false,router:false,full:false};
 
-  const C=await loadPackedSource(f.catalog,f.catalogParts,'__PACK_CATALOG__');
-  const WA=await loadPackedSource(f.whatsapp,f.whatsappParts,'__PACK_WHATSAPP__');
-
-  const PD=await loadPackedSource(f.pointDetails,f.pointDetailsParts,'__PACK_POINT_DETAILS__');
-  const MD=await loadPackedSource(f.machineDetails,f.machineDetailsParts,'__PACK_MACHINE_DETAILS__');
-  const RD=await loadPackedSource(f.router,f.routerParts,'__PACK_ROUTER__');
-
-  S.catalog=C;S.WA=WA;S.routerData=RD;S.pointDetails=PD;S.machineDetails=MD;S.connected=true;
+  emitLoad('catalog',5,'Carregando índice principal…');
+  const C=await loadPackedSource(f.catalog,f.catalogParts,'__PACK_CATALOG__','Índice principal');
+  S.catalog=C;S.connected=true;
   S.loadMeta={
     folder:S.sourceFolderName,mode:'auto',manifestGeneratedAt:manifest.generatedAt||null,
     catalog:f.catalog||f.catalogParts?.join(', '),whatsapp:f.whatsapp||f.whatsappParts?.join(', '),
@@ -132,9 +211,19 @@ async function connectManifest(manifest){
     router:f.router||f.routerParts?.join(', '),
     mediaFiles:S.autoMediaMap.size,connectedAt:new Date().toISOString()
   };
+
+  emitLoad('indexing',24,'Montando busca rápida…');
   await refreshLocal();
-  await PrismaDB.put('sources',{id:'v11_auto',kind:'auto-folder',name:S.sourceFolderName,meta:S.loadMeta,updatedAt:new Date().toISOString()});
-  await PrismaDB.audit('fonte','BASE_PRISMA carregada automaticamente','',S.loadMeta);
+  markReady('catalog');
+  emitLoad('catalog-ready',38,'Busca principal pronta');
+
+  try{
+    await PrismaDB.put('sources',{id:'v13_auto',kind:'embedded',name:S.sourceFolderName,meta:S.loadMeta,updatedAt:new Date().toISOString()});
+  }catch(e){}
+
+  // libera a interface agora; o restante entra em segundo plano
+  S.backgroundPromise=(async()=>{await yieldUI(250);return hydrateManifest(manifest)})();
+  S.backgroundPromise.catch(e=>console.error('PRISMA background hydration failed',e));
   return stats();
 }
 function applyImportOverlay(type,obj){
@@ -218,37 +307,64 @@ function applyCorrections(type,key,obj){
   return out;
 }
 
-function rebuild(){
-  S.points=[];S.machines=[];S.pointByKey.clear();S.machineByKey.clear();S.machinePoint.clear();
-  const pc=(S.catalog&&S.catalog.P||[]).length;
-  const mc=(S.catalog&&S.catalog.M||[]).length;
-  S.pointCodeCounts=new Map();
-  for(const raw of (S.catalog&&S.catalog.P||[])){const code=norm((raw||[])[1]||'');if(code)S.pointCodeCounts.set(code,(S.pointCodeCounts.get(code)||0)+1);}
-  const codeCounts=new Map();
-  for(let i=0;i<pc;i++){const p=pointFrom(i);p._search=norm(pointBlob(p));S.points.push(p);S.pointByKey.set(p._key,p);if(p.code){const k=norm(p.code);codeCounts.set(k,(codeCounts.get(k)||0)+1);}}
-  S.points.forEach(p=>{if(p.code&&S.pointCodeCounts.get(norm(p.code))===1)S.pointByKey.set('code:'+norm(p.code),p);});
-  for(let i=0;i<mc;i++){const m=machineFrom(i);m._search=norm(machineBlob(m));S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);}
+async function rebuildPointRelations(){
+  S.machinePoint.clear();
   const sqMap=new Map();
-  S.points.forEach(p=>{if(p.code){const k=norm(p.code)+'|'+norm(p.square);if(!sqMap.has(k))sqMap.set(k,p);}});
-  S.machines.forEach(m=>{
+  for(let i=0;i<S.points.length;i++){
+    const p=S.points[i];
+    if(p.code){const k=norm(p.code)+'|'+norm(p.square);if(!sqMap.has(k))sqMap.set(k,p);}
+    if(i&&i%5000===0)await yieldUI(0);
+  }
+  for(let i=0;i<S.machines.length;i++){
+    const m=S.machines[i];
     let p=sqMap.get(norm(m.pointCode)+'|'+norm(m.square));
     if(!p&&m.pointCode&&S.pointCodeCounts.get(norm(m.pointCode))===1)p=S.pointByKey.get('code:'+norm(m.pointCode));
     if(p)S.machinePoint.set(m._key,p._key);
-  });
+    if(i&&i%4000===0)await yieldUI(0);
+  }
+}
+async function rebuildPoints(){
+  S.points=[];S.pointByKey.clear();S.pointCodeCounts=new Map();
+  const arr=(S.catalog&&S.catalog.P)||[],pc=arr.length,CHUNK=1400;
+  for(let i=0;i<pc;i++){
+    const raw=arr[i]||[],code=norm(raw[1]||'');
+    if(code)S.pointCodeCounts.set(code,(S.pointCodeCounts.get(code)||0)+1);
+    if(i&&i%6000===0)await yieldUI(0);
+  }
+  for(let i=0;i<pc;i++){
+    const p=pointFrom(i);p._search=norm(pointBlob(p));S.points.push(p);S.pointByKey.set(p._key,p);
+    if(i&&i%CHUNK===0){emitLoad('index-points',Math.min(55,26+Math.round((i/Math.max(pc,1))*18)),'Indexando pontos '+fmt(i)+' / '+fmt(pc));await yieldUI(0);}
+  }
+  for(let i=0;i<S.points.length;i++){
+    const p=S.points[i];if(p.code&&S.pointCodeCounts.get(norm(p.code))===1)S.pointByKey.set('code:'+norm(p.code),p);
+    if(i&&i%6000===0)await yieldUI(0);
+  }
+  await rebuildPointRelations();
+}
+async function rebuildMachines(){
+  S.machines=[];S.machineByKey.clear();
+  const mc=(S.catalog&&S.catalog.M||[]).length,CHUNK=1200;
+  for(let i=0;i<mc;i++){
+    const m=machineFrom(i);m._search=norm(machineBlob(m));S.machines.push(m);S.machineByKey.set(m._key,m);if(m.id)S.machineByKey.set('id:'+norm(m.id),m);
+    if(i&&i%CHUNK===0){emitLoad('index-machines',Math.min(95,44+Math.round((i/Math.max(mc,1))*10)),'Indexando máquinas '+fmt(i)+' / '+fmt(mc));await yieldUI(0);}
+  }
+  await rebuildPointRelations();
+}
+async function rebuild(){
+  await rebuildPoints();
+  await rebuildMachines();
   S.groups=(S.WA&&S.WA.groups)||[];
   S.messages=(S.WA&&S.WA.messages)||[];
   S.tickets=(S.WA&&S.WA.tickets)||[];
   S.assets=(S.WA&&S.WA.assets)||[];
 }
-
 async function refreshLocal(){
   if(!window.PrismaDB)return;
   const [corr,recs]=await Promise.all([PrismaDB.all('corrections'),PrismaDB.all('importRecords')]);
   S.corrections=new Map((corr||[]).map(x=>[x.id,x]));
   S.imported=(recs||[]).filter(x=>x.active!==false);
-  if(S.connected)rebuild();
+  if(S.connected)await rebuild();
 }
-
 async function connectFolder(fileList){
   const files=Array.from(fileList||[]);
   if(!files.length)throw new Error('Nenhum arquivo foi selecionado.');
@@ -275,7 +391,7 @@ async function connectFolder(fileList){
   ];
   const [C,WA,PD,MD,RD]=await Promise.all(jobs);
   S.catalog=C;S.WA=WA;S.routerData=RD;S.pointDetails=PD;S.machineDetails=MD;
-  S.connected=true;
+  S.connected=true;S.ready={catalog:true,pointDetails:!!PD,machineDetails:!!MD,whatsapp:!!WA,router:!!RD,full:true};
   S.loadMeta={
     folder:S.sourceFolderName,
     catalog:basename(catalog),whatsapp:basename(whatsapp),
@@ -420,7 +536,7 @@ function mapsUrl(p){
 }
 
 window.PrismaCore={
-  S,norm,compact,num,text,esc,fmt,toast,connectFolder,connectManifest,refreshLocal,rebuild,stats,search,
+  S,norm,compact,num,text,esc,fmt,toast,connectFolder,connectManifest,refreshLocal,rebuild,stats,search,isReady,whenReady,emitLoad,
   pointForMachine,machinesForPoint,messagesForPoint,messagesForMachine,groupStatsForPoint,groupStatsForMachine,ticketsForPoint,assetsForPoint,operationsPointUrl,operationsMachineUrl,sourceFileUrl,mapsUrl,saveCorrection,removeCorrection,
   getPoint:key=>S.pointByKey.get(key)||S.pointByKey.get('code:'+norm(key))||null,
   getMachine:key=>S.machineByKey.get(key)||S.machineByKey.get('id:'+norm(key))||null
