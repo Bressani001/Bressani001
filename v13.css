@@ -414,3 +414,7 @@ body.sidebar-collapsed .sidebar-status .status-dot{width:8px;height:8px}
 .top-suggest-copy b{font-size:9.5px}.top-suggest-copy small{font-size:7.5px;color:#727e8b;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-suggest-type{font-size:7px;color:#65707c;letter-spacing:.08em}
 .top-suggest-loading,.top-suggest-empty{padding:16px;text-align:center;color:#697481;font-size:8.5px}
+
+.import-drop{transition:.16s ease}
+.import-drop.dragover{border-color:var(--orange);background:linear-gradient(180deg,rgba(255,90,19,.12),#0a0e13);box-shadow:0 0 0 4px rgba(255,90,19,.06)}
+.import-drop.processing{opacity:.72;pointer-events:none}
