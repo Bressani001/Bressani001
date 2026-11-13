@@ -21,7 +21,7 @@ async function renderToday(){
   const host=document.getElementById('page-today');if(!host)return;const all=await tasks(),favs=await favorites(),audit=(await DB().all('audit')).sort((a,b)=>String(b.at).localeCompare(String(a.at))).slice(0,12);
   let rows=all;if(taskFilter==='abertas')rows=all.filter(t=>t.status!=='Concluído');else if(taskFilter!=='todas')rows=all.filter(t=>t.status===taskFilter);
   const overdue=all.filter(t=>t.status!=='Concluído'&&t.dueAt&&new Date(t.dueAt)<new Date()).length;
-  host.innerHTML='<div class="hero"><h2>MEU <b>TURNO</b></h2><p>Pesquisar → entender → agir → registrar. Pendências locais da V12, sem alterar a base de origem.</p><div class="actions" style="margin-top:10px"><button id="newTask" class="primary">Nova tarefa</button><button id="quickCapture">Captura rápida</button><span class="chip '+(overdue?'danger':'ok')+'">'+fmt(overdue)+' atrasada(s)</span></div></div>'+
+  host.innerHTML='<div class="hero"><h2>MEU <b>TURNO</b></h2><p>Pesquisar → entender → agir → registrar. Pendências locais do PRISMA, sem alterar a base de origem.</p><div class="actions" style="margin-top:10px"><button id="newTask" class="primary">Nova tarefa</button><button id="quickCapture">Captura rápida</button><span class="chip '+(overdue?'danger':'ok')+'">'+fmt(overdue)+' atrasada(s)</span></div></div>'+
   '<div class="tabs"><button data-task-filter="abertas">Abertas</button>'+STATUSES.map(s=>'<button data-task-filter="'+esc(s)+'">'+esc(s)+'</button>').join('')+'<button data-task-filter="todas">Todas</button></div>'+
   '<div class="grid2"><div class="card"><div class="card-head"><h3>Pendências</h3><small>'+fmt(rows.length)+'</small></div><div class="card-body task-list">'+(rows.length?rows.map(taskCard).join(''):'<div class="empty">Nada aqui.</div>')+'</div></div>'+
   '<div><div class="card"><div class="card-head"><h3>Favoritos</h3><small>'+fmt(favs.length)+'</small></div><div class="card-body">'+(favs.length?favs.map(f=>'<div class="source-row"><div><b>'+esc(f.label)+'</b><small>'+esc(f.kind)+'</small></div><button data-fav-open="'+esc(f.key)+'">Abrir</button></div>').join(''):'<div class="empty">Nenhum favorito.</div>')+'</div></div>'+
@@ -58,16 +58,92 @@ function recommendation(p,refs,groups){
   if(groups[0])body+=' Grupo com maior associação histórica: '+(S().groups[groups[0].group]?.name||'—')+'.';return {title,body};
 }
 async function render360(key){
-  const host=document.getElementById('page-flow360');if(!host)return;if(key)currentPointKey=key;let p=currentPointKey?C().getPoint(currentPointKey):null;
-  if(!p){host.innerHTML='<div class="hero"><h2>PONTO <b>360º</b></h2><p>Entenda o ponto, suas relações e a próxima ação em uma tela.</p><div class="search-row" style="margin-top:12px"><input id="p360Query" placeholder="Código, ponto ou máquina…"><button id="p360Run" class="primary">Abrir 360º</button></div></div><div id="p360Out"></div>';const run=async()=>{const rows=await C().search(document.getElementById('p360Query').value,15,'all'),r=rows.find(x=>x.type==='point'||x.type==='machine');if(!r)return C().toast('Ponto não encontrado');const pp=r.type==='point'?r.entity:C().pointForMachine(r.entity);if(pp)render360(pp._key)};document.getElementById('p360Run').onclick=run;document.getElementById('p360Query').onkeydown=e=>{if(e.key==='Enter')run()};return}
-  currentPointKey=p._key;const machines=C().machinesForPoint(p),refs=C().messagesForPoint(p).sort((a,b)=>Number(b.message[1]||0)-Number(a.message[1]||0)),groups=C().groupStatsForPoint(p),tickets=C().ticketsForPoint(p),assets=C().assetsForPoint(p),lvl=evidenceLevel(groups),rec=recommendation(p,refs,groups),fav=await isFav(p._key);
-  host.innerHTML='<div class="card"><div class="card-body"><div class="flow360-head"><div><small>PONTO '+esc(p.code||'—')+' • ID '+esc(p.id||'—')+'</small><h2>'+esc(p.name)+'</h2><p class="muted">'+esc([p.address,p.city,p.square].filter(Boolean).join(' • '))+'</p></div><div class="actions"><a class="btn" target="_blank" rel="noopener" href="'+esc(C().operationsPointUrl(p))+'">Operações ↗</a><a class="btn" target="_blank" rel="noopener" href="'+esc(C().mapsUrl(p))+'">Google Maps ↗</a><button id="p360Fav">'+(fav?'★ Favorito':'☆ Favoritar')+'</button><button id="p360Msg" class="primary">Criar mensagem</button></div></div></div></div>'+
-  '<div class="grid2" style="margin-top:12px"><div class="card"><div class="card-head"><h3>O que eu faço agora?</h3><span class="chip '+lvl[1]+'">'+lvl[0]+'</span></div><div class="card-body"><b>'+esc(rec.title)+'</b><p class="muted">'+esc(rec.body)+'</p><div class="actions"><button id="p360Task">Adicionar ao Meu Turno</button><button id="p360Groups">Ponto → Grupo</button></div></div></div><div class="card"><div class="card-head"><h3>Resumo de relações</h3><small>evidência real</small></div><div class="card-body grid4">'+mini('Máquinas',machines.length)+mini('Chamados',tickets.length)+mini('Grupos',groups.length)+mini('Mensagens',refs.length)+mini('Ativos',assets.length)+'</div></div></div>'+
-  '<div class="relation-grid" style="margin-top:12px">'+relMachines(machines)+relTickets(tickets)+relGroups(groups)+relAssets(assets)+'</div>'+
-  '<div class="card" style="margin-top:12px"><div class="card-head"><h3>Linha do tempo recente</h3><small>mensagem original</small></div><div class="card-body timeline">'+(refs.length?refs.slice(0,20).map(r=>'<button class="timeline-row" data-360-msg="'+r.index+'"><div class="meta">'+esc([r.message[2],r.message[3],r.group.name,Math.round(r.confidence*100)+'% vínculo'].filter(Boolean).join(' • '))+'</div><div>'+esc(r.message[6]||r.message[10]||'(sem texto)')+'</div></button>').join(''):'<div class="empty">Nenhuma mensagem vinculada.</div>')+'</div></div>';
-  document.getElementById('p360Fav').onclick=()=>toggleFav(p);document.getElementById('p360Msg').onclick=()=>{PrismaApp.activate('messages');setTimeout(()=>PrismaMessages.prefill({pointKey:p._key,group:groups[0]?.group}),30)};document.getElementById('p360Task').onclick=()=>taskEditor(null,{title:'Acompanhar '+(p.code?p.code+' • ':'')+p.name,pointKey:p._key,status:'Fazer',priority:'Média',notes:'Criado pelo Ponto 360º.'});document.getElementById('p360Groups').onclick=()=>PrismaGroups.openPointGroups(p._key);host.querySelectorAll('[data-360-msg]').forEach(b=>b.onclick=()=>PrismaApp.openMessage(Number(b.getAttribute('data-360-msg'))));bindRelations(host);
+  const host=document.getElementById('page-flow360');if(!host)return;
+  if(key)currentPointKey=key;
+  let p=currentPointKey?C().getPoint(currentPointKey):null;
+
+  if(!p){
+    host.innerHTML=
+      '<div class="home-command">'+
+        '<div class="home-kicker">PONTO 360º</div>'+
+        '<h2>Abra tudo que importa sobre um ponto.</h2>'+
+        '<p>Código, nome ou máquina. O PRISMA cruza cadastro, máquinas, chamados, grupos, ativos e histórico.</p>'+
+        '<div class="home-omni"><input id="p360Query" autocomplete="off" placeholder="Ex.: 78670, Chronos Offices, urbanbarrafunda2_1…"><button id="p360Run" class="primary">Abrir 360º</button></div>'+
+      '</div>';
+    const run=async()=>{
+      const q=document.getElementById('p360Query').value.trim();if(!q)return;
+      const rows=await C().search(q,20,'all'),r=rows.find(x=>x.type==='point'||x.type==='machine');
+      if(!r)return C().toast('Ponto não encontrado');
+      const pp=r.type==='point'?r.entity:C().pointForMachine(r.entity);
+      if(pp)render360(pp._key);
+    };
+    document.getElementById('p360Run').onclick=run;
+    document.getElementById('p360Query').onkeydown=e=>{if(e.key==='Enter')run()};
+    setTimeout(()=>document.getElementById('p360Query')?.focus(),20);
+    return;
+  }
+
+  currentPointKey=p._key;
+  const machines=C().machinesForPoint(p),
+        refs=C().messagesForPoint(p).sort((a,b)=>Number(b.message[1]||0)-Number(a.message[1]||0)),
+        groups=C().groupStatsForPoint(p),
+        tickets=C().ticketsForPoint(p),
+        assets=C().assetsForPoint(p),
+        lvl=evidenceLevel(groups),
+        rec=recommendation(p,refs,groups),
+        fav=await isFav(p._key),
+        topGroup=groups[0]?S().groups[groups[0].group]:null;
+
+  host.innerHTML=
+    '<div class="card"><div class="card-body"><div class="flow360-head">'+
+      '<div><div class="actions" style="margin-bottom:6px"><span class="chip blue">PONTO '+esc(p.code||'—')+'</span><span class="chip">ID '+esc(p.id||'—')+'</span>'+(p.status?'<span class="chip">'+esc(p.status)+'</span>':'')+'</div>'+
+      '<h2>'+esc(p.name)+'</h2><p class="muted">'+esc([p.address,p.neighborhood,p.city,p.square].filter(Boolean).join(' • '))+'</p></div>'+
+      '<div class="actions">'+
+        '<button id="p360CopyCode">Copiar código</button>'+
+        '<button id="p360Map">⌖ Mapa PRISMA</button>'+
+        '<a class="btn" target="_blank" rel="noopener" href="'+esc(C().operationsPointUrl(p))+'">Operações ↗</a>'+
+        '<a class="btn" target="_blank" rel="noopener" href="'+esc(C().mapsUrl(p))+'">Google Maps ↗</a>'+
+        '<button id="p360Fav">'+(fav?'★ Favorito':'☆ Favoritar')+'</button>'+
+        '<button id="p360Msg" class="primary">Criar mensagem</button>'+
+      '</div>'+
+    '</div></div></div>'+
+
+    '<div class="kpi-strip" style="margin-top:10px">'+
+      '<div class="kpi-card"><b>'+fmt(machines.length)+'</b><span>Máquinas</span></div>'+
+      '<div class="kpi-card"><b>'+fmt(tickets.length)+'</b><span>Chamados</span></div>'+
+      '<div class="kpi-card"><b>'+fmt(groups.length)+'</b><span>Grupos</span></div>'+
+      '<div class="kpi-card"><b>'+fmt(refs.length)+'</b><span>Mensagens</span></div>'+
+      '<div class="kpi-card"><b>'+fmt(assets.length)+'</b><span>Ativos</span></div>'+
+      '<div class="kpi-card"><b>'+esc(topGroup?.name||'—')+'</b><span>Grupo mais relacionado</span></div>'+
+    '</div>'+
+
+    '<div class="grid2" style="margin-top:12px">'+
+      '<div class="card"><div class="card-head"><h3>Próxima ação sugerida</h3><span class="chip '+lvl[1]+'">'+lvl[0]+'</span></div><div class="card-body"><b>'+esc(rec.title)+'</b><p class="muted">'+esc(rec.body)+'</p><div class="actions"><button id="p360Task">Adicionar ao Meu Turno</button><button id="p360Groups">Ponto → Grupo</button><button id="p360Routes">Rotas do grupo</button></div></div></div>'+
+      '<div class="card"><div class="card-head"><h3>Identificação rápida</h3><small>o essencial</small></div><div class="card-body field-grid">'+
+        '<div class="field"><label>Código</label><div>'+esc(p.code||'—')+'</div></div>'+
+        '<div class="field"><label>Praça</label><div>'+esc(p.square||'—')+'</div></div>'+
+        '<div class="field"><label>Cidade</label><div>'+esc(p.city||'—')+'</div></div>'+
+        '<div class="field"><label>CEP</label><div>'+esc(p.cep||'—')+'</div></div>'+
+      '</div></div>'+
+    '</div>'+
+
+    '<div class="relation-grid" style="margin-top:12px">'+relMachines(machines)+relTickets(tickets)+relGroups(groups)+relAssets(assets)+'</div>'+
+    '<div class="card" style="margin-top:12px"><div class="card-head"><h3>Histórico recente</h3><small>mensagem original • clique para abrir evidência</small></div><div class="card-body timeline">'+
+      (refs.length?refs.slice(0,24).map(r=>'<button class="timeline-row" data-360-msg="'+r.index+'"><div class="meta">'+esc([r.message[2],r.message[3],r.group.name,Math.round(r.confidence*100)+'% vínculo'].filter(Boolean).join(' • '))+'</div><div>'+esc(r.message[6]||r.message[10]||'(sem texto)')+'</div></button>').join(''):'<div class="empty">Nenhuma mensagem vinculada.</div>')+
+    '</div></div>';
+
+  document.getElementById('p360CopyCode').onclick=async()=>{try{await navigator.clipboard.writeText(String(p.code||''));C().toast('Código copiado')}catch(e){}};
+  document.getElementById('p360Map').onclick=()=>{PrismaApp.activate('map');setTimeout(()=>PrismaMap.renderSearchPoints([p]),40)};
+  document.getElementById('p360Fav').onclick=()=>toggleFav(p);
+  document.getElementById('p360Msg').onclick=()=>{PrismaApp.activate('messages');setTimeout(()=>PrismaMessages.prefill({pointKey:p._key,group:groups[0]?.group}),30)};
+  document.getElementById('p360Task').onclick=()=>taskEditor(null,{title:'Acompanhar '+(p.code?p.code+' • ':'')+p.name,pointKey:p._key,status:'Fazer',priority:'Média',notes:'Criado pelo Ponto 360º.'});
+  document.getElementById('p360Groups').onclick=()=>PrismaGroups.openPointGroups(p._key);
+  document.getElementById('p360Routes').onclick=()=>{if(groups[0]){PrismaApp.activate('routes');setTimeout(()=>PrismaRoutes.selectGroup(groups[0].group),30)}else C().toast('Sem grupo relacionado para abrir rotas')};
+  host.querySelectorAll('[data-360-msg]').forEach(b=>b.onclick=()=>PrismaApp.openMessage(Number(b.getAttribute('data-360-msg'))));
+  bindRelations(host);
   DB().audit('ponto_360','Abriu 360º: '+(p.code||p.name),p._key,{}).catch(()=>{});
 }
+
 function mini(a,b){return '<div class="mini-stat"><b>'+fmt(b)+'</b><span>'+esc(a)+'</span></div>'}
 function relMachines(ms){return '<div class="card"><div class="card-head"><h3>Máquinas</h3><small>'+fmt(ms.length)+'</small></div><div class="card-body">'+(ms.length?ms.slice(0,12).map(m=>'<button class="relation-row" data-rel-machine="'+esc(m._key)+'"><b>'+esc('['+m.id+'] '+m.name)+'</b><small>'+esc([m.os,m.ip].filter(Boolean).join(' • '))+'</small></button>').join(''):'<div class="empty">Nenhuma</div>')+'</div></div>'}
 function relTickets(ts){return '<div class="card"><div class="card-head"><h3>Chamados</h3><small>'+fmt(ts.length)+'</small></div><div class="card-body">'+(ts.length?ts.slice(0,12).map(t=>'<div class="relation-row"><b>'+esc(t.id)+'</b><small>'+fmt((t.row[1]||[]).length)+' ocorrência(s)</small></div>').join(''):'<div class="empty">Nenhum</div>')+'</div></div>'}
@@ -86,10 +162,10 @@ async function renderHealth(){
 }
 function statusRow(a,b,c){return '<div class="source-row"><b>'+esc(a)+'</b><span class="chip '+c+'">'+fmt(b)+'</span></div>'}
 async function renderBackup(){
-  const host=document.getElementById('page-backup');if(!host)return;host.innerHTML='<div class="hero"><h2>BACKUP <b>V12</b></h2><p>Exporta tarefas, favoritos, correções, importações, mapeamentos, modelos, destinos, contatos, histórico e configurações da V12. A base V11 original não entra porque continua sendo a fonte de leitura.</p></div><div class="card"><div class="card-body"><div class="actions"><button id="backupExport" class="primary">Exportar backup completo</button><button id="backupImport">Importar backup</button><input id="backupFile" type="file" accept=".json,application/json" hidden></div><p class="muted">Na importação você escolhe substituir ou mesclar os dados locais V12.</p></div></div>';
+  const host=document.getElementById('page-backup');if(!host)return;host.innerHTML='<div class="hero"><h2>BACKUP <b>PRISMA</b></h2><p>Exporta tarefas, favoritos, correções, importações, mapeamentos, modelos, destinos, contatos, histórico e configurações da V12. A base V11 original não entra porque continua sendo a fonte de leitura.</p></div><div class="card"><div class="card-body"><div class="actions"><button id="backupExport" class="primary">Exportar backup completo</button><button id="backupImport">Importar backup</button><input id="backupFile" type="file" accept=".json,application/json" hidden></div><p class="muted">Na importação você escolhe substituir ou mesclar os dados locais do PRISMA.</p></div></div>';
   document.getElementById('backupExport').onclick=exportBackup;document.getElementById('backupImport').onclick=()=>document.getElementById('backupFile').click();document.getElementById('backupFile').onchange=importBackup;
 }
-async function exportBackup(){const data=await DB().exportAll(),blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PRISMA_FLOW_V12_BACKUP_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),700);await DB().audit('backup','Backup V12 exportado','',{})}
+async function exportBackup(){const data=await DB().exportAll(),blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PRISMA_FLOW_V13_BACKUP_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),700);await DB().audit('backup','Backup V12 exportado','',{})}
 function importBackup(e){const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{try{const data=JSON.parse(rd.result),replace=confirm('OK = substituir dados locais V12.\nCancelar = mesclar.');await DB().importAll(data,replace);await C().refreshLocal();if(window.PrismaRoutes)PrismaRoutes.invalidate();if(window.PrismaRouter)PrismaRouter.invalidate();C().toast('Backup importado');renderBackup()}catch(err){alert('Backup inválido: '+(err.message||err))}};rd.readAsText(f)}
 async function applySettings(){const newbie=await DB().setting('newbie',false);document.body.classList.toggle('newbie',!!newbie)}
 window.PrismaFlow={renderToday,render360,renderRelations,renderHealth,renderBackup,taskEditor,openCapture,applySettings,get currentPointKey(){return currentPointKey},setCurrentPoint:k=>{currentPointKey=k}};
