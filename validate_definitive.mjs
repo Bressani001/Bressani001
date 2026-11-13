@@ -49,10 +49,10 @@ if(!Array.isArray(router.profiles)||router.profiles.length<50) throw new Error('
 
 const index=read('index.html');
 if(index.includes('unpkg.com/leaflet')||index.includes('cdn.jsdelivr.net/npm/xlsx')) throw new Error('Runtime CDN dependency still present');
-for(const f of ['vendor/leaflet.js','vendor/leaflet.css','vendor/xlsx.full.min.js','base_manifest.js','ABRIR_PRISMA.bat']){
+for(const f of ['vendor/leaflet.js','vendor/leaflet.css','vendor/xlsx.full.min.js','base_manifest.js','ABRIR_PRISMA.bat','v13.css','v13.js']){
   if(!fs.existsSync(path.join(root,f))) throw new Error('Missing definitive file '+f);
 }
-if(!index.includes('12.4.0-FINAL-DIRETO-20261007')) throw new Error('Wrong build id');
+if(!read('base_manifest.js').includes('13.0.0-FINAL-NOC-20261113')) throw new Error('Wrong build id');
 
 console.log('COUNTS',JSON.stringify({
   points:catalog.P.length,
@@ -64,4 +64,13 @@ console.log('COUNTS',JSON.stringify({
 for(const f of ['MONTAR_PRISMA_DEFINITIVO.bat','MONTAR_PRISMA_DEFINITIVO.ps1','PREPARAR_BASE.ps1']){
   if(fs.existsSync(path.join(root,f))) throw new Error('Final package must not contain montador dependency: '+f);
 }
-console.log('PRISMA V12 FINAL DIRECT-OPEN VALIDATION: OK');
+console.log('PRISMA V13 NOC COMMAND CENTER VALIDATION: OK');
+
+const runtime=['db.js','legacy.js','core.js','auto_loader.js','importer.js','map.js','routes.js','groups.js','router_noc.js','messages.js','flow.js','explore.js','access.js','app.js','v13.js'];
+for(const f of runtime){
+  const src=read(f);
+  try{ new Function(src); } catch(e){ throw new Error('Invalid runtime JS '+f+': '+e.message); }
+}
+const v13css=read('v13.css');
+for(const marker of ['home-command','map-v13-shell','top-search-suggest','prisma-mark']) if(!v13css.includes(marker)) throw new Error('V13 UX marker missing: '+marker);
+for(const marker of ['v13.css','v13.js','PRISMA FLOW V13']) if(!index.includes(marker)) throw new Error('V13 index marker missing: '+marker);
