@@ -104,13 +104,32 @@ function renderResult(){
   document.querySelectorAll('[data-router-machine]').forEach(b=>b.onclick=()=>PrismaApp.openMachine(b.dataset.routerMachine));
 }
 function renderPage(){
-  const host=document.getElementById('page-router');if(!host)return;if(!S().connected){host.innerHTML='<div class="card empty">Conecte a pasta V11 para usar o Roteador NOC.</div>';return}
-  const R=S().routerData;if(!R){host.innerHTML='<div class="card empty">A pasta conectada não trouxe router.js. Reconecte a pasta completa do PRISMA.</div>';return}
-  buildAssoc();const groups=(R.profiles||[]).slice().sort((a,b)=>String(a.n||'').localeCompare(String(b.n||''),'pt-BR'));
-  host.innerHTML='<div class="hero"><h2>ROTEADOR <b>NOC</b></h2><p>Cole a ocorrência. A recomendação cruza vocabulário, tipo de problema, grupo de origem, histórico, regras e evidências reais. Confiança média/ambígua não deve ser usada no automático.</p></div>'+
-  '<div class="card"><div class="card-body"><div class="grid2"><label>Grupo onde RECEBI<select id="routerSource"><option value="">Origem opcional</option>'+groups.map(p=>'<option value="'+p.i+'">'+esc(p.n)+'</option>').join('')+'</select></label><label>Tipo<select id="routerIssue"><option value="auto">Detectar automaticamente</option><option value="media">Mídia / conteúdo</option><option value="offline">Offline / acesso</option><option value="hardware">Hardware / físico</option><option value="network">Rede / internet</option><option value="configuration">Configuração</option><option value="activation">Ativação</option><option value="ticket">Chamado / ticket</option><option value="other">Outro</option></select></label></div><label style="display:block;margin-top:10px">Ocorrência<textarea id="routerInput" style="min-height:120px" placeholder="Cole aqui exatamente como recebeu…"></textarea></label><div class="actions" style="margin-top:10px"><button id="routerAnalyze" class="primary">Analisar e sugerir rota</button></div></div></div><div id="routerOut"></div>';
-  document.getElementById('routerAnalyze').onclick=analyze;document.getElementById('routerInput').onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')analyze()};if(last)renderResult();
+  const host=document.getElementById('page-router');if(!host)return;
+  if(!S().connected){host.innerHTML='<div class="card empty">A base operacional ainda não carregou.</div>';return}
+  const R=S().routerData;if(!R){host.innerHTML='<div class="card empty">O roteador histórico não foi encontrado na base embutida.</div>';return}
+  buildAssoc();
+  const groups=(R.profiles||[]).slice().sort((a,b)=>String(a.n||'').localeCompare(String(b.n||''),'pt-BR'));
+  host.innerHTML=
+    '<div class="home-command" style="padding:20px">'+
+      '<div class="home-kicker">ROTEADOR NOC</div>'+
+      '<h2 style="font-size:24px">Cole a ocorrência. O PRISMA cruza o histórico por você.</h2>'+
+      '<p>Ele considera grupo de origem, vocabulário, tipo de problema, regras históricas, mensagens semelhantes, ponto/máquina e evidências reais.</p>'+
+    '</div>'+
+    '<div class="card" style="margin-top:12px"><div class="card-body">'+
+      '<div class="form-grid">'+
+        '<label>1 • Onde você RECEBEU<select id="routerSource"><option value="">Não sei / origem opcional</option>'+groups.map(p=>'<option value="'+p.i+'">'+esc(p.n)+'</option>').join('')+'</select></label>'+
+        '<label>2 • Tipo do problema<select id="routerIssue"><option value="auto">Detectar automaticamente</option><option value="media">Mídia / conteúdo</option><option value="offline">Offline / acesso</option><option value="hardware">Hardware / físico</option><option value="network">Rede / internet</option><option value="configuration">Configuração</option><option value="activation">Ativação</option><option value="ticket">Chamado / ticket</option><option value="other">Outro</option></select></label>'+
+        '<label class="full">3 • Cole a ocorrência exatamente como chegou<textarea id="routerInput" style="min-height:155px" placeholder="Cole aqui a mensagem, chamado, descrição ou ocorrência…"></textarea></label>'+
+      '</div>'+
+      '<div class="actions" style="margin-top:10px"><button id="routerPaste">Colar do clipboard</button><button id="routerAnalyze" class="primary">Analisar e sugerir destino</button><span class="muted">Ctrl + Enter também analisa</span></div>'+
+    '</div></div>'+
+    '<div id="routerOut"></div>';
+  document.getElementById('routerAnalyze').onclick=analyze;
+  document.getElementById('routerPaste').onclick=async()=>{try{document.getElementById('routerInput').value=await navigator.clipboard.readText();document.getElementById('routerInput').focus()}catch(e){C().toast('O navegador não liberou acesso ao clipboard')}};
+  document.getElementById('routerInput').onkeydown=e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')analyze()};
+  if(last)renderResult();
 }
+
 function invalidate(){last=null;assocMap=new Map();}
 window.PrismaRouter={renderPage,invalidate};
 })();
