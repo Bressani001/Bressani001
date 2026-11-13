@@ -1,0 +1,58 @@
+name: PRISMA V13.1 validate and package
+
+on:
+  push:
+    branches:
+      - prisma-v13.1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Static validation
+        run: node validate_definitive.mjs
+
+      - name: Install Playwright Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Real browser smoke
+        run: node browser_smoke.mjs
+
+      - name: Build clean folder
+        run: |
+          mkdir -p package/PRISMA_V13.1
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='browser_smoke.mjs' \
+            --exclude='validate_definitive.mjs' \
+            --exclude='package' \
+            ./ package/PRISMA_V13.1/
+          test -f package/PRISMA_V13.1/ABRIR_PRISMA.bat
+          test -f package/PRISMA_V13.1/index.html
+          test -f package/PRISMA_V13.1/BASE_PRISMA/ATUAL/whatsapp.js
+
+      - name: Upload PRISMA_V13.1
+        uses: actions/upload-artifact@v4
+        with:
+          name: PRISMA_V13.1
+          path: package/PRISMA_V13.1
+          if-no-files-found: error
+          compression-level: 6
